@@ -1,0 +1,35 @@
+# editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Default settings
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 2
+# Xml files
+[*.xml]
+indent_size = 2
+indent_style = space
+
+# Shell scripts
+[*.sh]
+end_of_line = lf
+[*.{cmd, bat}]
+end_of_line = crlf
+
+# Config files
+[*.{yml,toml}]
+end_of_line = lf
+indent_size = 2
+
+# Document files
+[*.{md,txt}]
+end_of_line = lf
+
+# Makefile
+[Makefile]
+indent_style = tab

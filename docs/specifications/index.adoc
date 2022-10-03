@@ -1,0 +1,6 @@
+== Models
+
+[plantuml]
+----
+include::migration.puml[]
+----

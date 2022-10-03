@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "scala",
+      "request": "launch",
+      "name": "pxtv-backend-api",
+      "mainClass": "com.pxtv.HttpServer",
+      "args": [],
+      "jvmOptions": [],
+      "env": {}
+    }
+  ]
+}
