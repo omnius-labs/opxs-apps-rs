@@ -1,7 +1,7 @@
-package com.omnius.pxtv.migration
+package omnius.pxtv.migration
 
 import com.dimafeng.testcontainers.{ForAllTestContainer, PostgreSQLContainer}
-import com.omnius.pxtv.migration.{Migrator, PostgresOptions}
+import omnius.pxtv.migration.{Migrator, PostgresOptions}
 import org.scalatest.funsuite.AnyFunSuite
 import java.nio.file.Paths
 import java.sql.DriverManager

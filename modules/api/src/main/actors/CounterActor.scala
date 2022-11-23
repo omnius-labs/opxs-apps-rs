@@ -1,4 +1,4 @@
-package com.omnius.pxtv.server.actors
+package omnius.pxtv.api.actors
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior

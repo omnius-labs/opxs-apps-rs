@@ -1,4 +1,12 @@
-package com.omnius.pxtv.server
+package omnius.pxtv.api
+
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.io.StdIn
+import scala.util.Failure
+import scala.util.Success
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern.Askable
@@ -10,19 +18,11 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
-import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import spray.json.DefaultJsonProtocol._
 import spray.json.RootJsonFormat
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.io.StdIn
-import scala.util.Failure
-import scala.util.Success
-
-import com.omnius.pxtv.server.actors.CounterActor
+import omnius.pxtv.api.actors.CounterActor
 
 object HttpServer {
   def main(args: Array[String]): Unit = {

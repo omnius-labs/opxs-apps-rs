@@ -2,5 +2,13 @@
   "files.watcherExclude": {
     "**/target": true
 },
-  "cSpell.words": ["Pxtv"]
+  "cSpell.words": [
+    "akka",
+    "logback",
+    "omnius",
+    "Pxtv",
+    "scalatest",
+    "testcontainers",
+    "testkit"
+  ]
 }

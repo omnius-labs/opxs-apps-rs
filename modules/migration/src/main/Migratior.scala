@@ -1,4 +1,4 @@
-package com.omnius.pxtv.migration
+package omnius.pxtv.migration
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -146,7 +146,7 @@ class Migrator(
     }
   }
 
-  private def semaphoreUnlock(con: Connection):Unit = {
+  private def semaphoreUnlock(con: Connection): Unit = {
     val sql = """
       delete from migration_semaphores where username = 'migrator'
     """
@@ -154,7 +154,7 @@ class Migrator(
 
     try {
       ps.executeUpdate()
-    }  finally {
+    } finally {
       ps.close()
     }
   }

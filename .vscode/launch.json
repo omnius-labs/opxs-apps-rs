@@ -4,8 +4,8 @@
     {
       "type": "scala",
       "request": "launch",
-      "name": "pxtv-backend-api",
-      "mainClass": "com.pxtv.HttpServer",
+      "name": "pxtv-api",
+      "mainClass": "omnius.pxtv.api.HttpServer",
       "args": [],
       "jvmOptions": [],
       "env": {}
