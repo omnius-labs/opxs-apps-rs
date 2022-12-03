@@ -45,13 +45,13 @@ class Migrator(
 
   private def createTables(con: Connection): Unit = {
     val sql = """
-     create table if not exists migration_histories (
+     create table if not exists _migration_histories (
       filename varchar(255) NOT NULL,
       queries text NOT NULL,
       executed_at timestamp without time zone default CURRENT_TIMESTAMP,
       primary key (filename)
     );
-    create table if not exists migration_semaphores (
+    create table if not exists _migration_semaphores (
       username varchar(255) NOT NULL,
       executed_at timestamp without time zone default CURRENT_TIMESTAMP,
       primary key (username)
@@ -84,7 +84,7 @@ class Migrator(
 
   private def fetchMigrationHistories(con: Connection): List[MigrationHistory] = {
     val sql = """
-      select filename, executed_at from migration_histories
+      select filename, executed_at from _migration_histories
     """
     val ps = con.prepareStatement(sql)
     val rs = ps.executeQuery()
@@ -94,7 +94,7 @@ class Migrator(
 
       while (rs.next) {
         val h = MigrationHistory(
-          rs.getString("name"),
+          rs.getString("filename"),
           rs.getTimestamp("executed_at").toLocalDateTime
         );
         buffer += h
@@ -119,7 +119,7 @@ class Migrator(
 
   private def insertMigrationHistory(con: Connection, name: String, queries: String): Unit = {
     val sql = """
-      insert into migration_histories (filename, queries) values (?, ?)
+      insert into _migration_histories (filename, queries) values (?, ?)
     """
     val ps = con.prepareStatement(sql)
     ps.setString(1, name)
@@ -134,7 +134,7 @@ class Migrator(
 
   private def semaphoreLock(con: Connection): Unit = {
     val sql = """
-      insert into migration_semaphores (username) values ('migrator')
+      insert into _migration_semaphores (username) values ('migrator')
     """
     val ps = con.prepareStatement(sql)
 
@@ -147,7 +147,7 @@ class Migrator(
 
   private def semaphoreUnlock(con: Connection): Unit = {
     val sql = """
-      delete from migration_semaphores where username = 'migrator'
+      delete from _migration_semaphores where username = 'migrator'
     """
     val ps = con.prepareStatement(sql)
 
