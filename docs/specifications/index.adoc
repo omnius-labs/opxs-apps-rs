@@ -1,4 +1,6 @@
-== Models
+== Specifications
+
+=== Migration
 
 [plantuml]
 ----
