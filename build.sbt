@@ -5,7 +5,6 @@ lazy val commonSettings = Seq(
   fork := true,
   Compile / scalaSource := (Compile / sourceDirectory).value,
   Test / scalaSource := (Test / sourceDirectory).value,
-  Compile / resourceDirectory := baseDirectory.value / "conf",
   libraryDependencies ++= {
     val akkaVersion = "2.7.0"
     val akkaHttpVersion = "10.4.0"

@@ -1,9 +1,11 @@
 package omnius.pxtv.app
 
-import pureconfig.ConfigSource
+import pureconfig._
+import pureconfig.generic.auto._
 
 object Runner {
   def main(args: Array[String]): Unit = {
-    val appConfig = ConfigSource.default.load[AppConfig]
+    ConfigSource.default.load[AppConfig]
+    val appConfig = ConfigSource.resources("application.conf").loadOrThrow[AppConfig]
   }
 }
