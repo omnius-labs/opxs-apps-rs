@@ -4,10 +4,11 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.SQLException
 import java.time.LocalDateTime
 import scala.collection.immutable.HashSet
+import scala.collection.immutable.List
 import scala.collection.mutable.ListBuffer
-import java.sql.SQLException
 import scala.jdk.CollectionConverters._
 
 class Migrator(
@@ -69,7 +70,7 @@ class Migrator(
 
   private def loadMigrationFiles(dir: String): List[MigrationFile] = {
     val path = Paths.get(dir)
-    val files = Files.list(path).toList.asScala
+    val files = Files.list(path).toList().asScala
 
     val buffer = ListBuffer.empty[MigrationFile]
     for (f <- files) {
@@ -107,14 +108,12 @@ class Migrator(
   }
 
   private def migrate(con: Connection, queries: String): Unit = {
-    for (q <- queries.split(";")) {
-      val ps = con.prepareStatement(q)
+    val ps = con.prepareStatement(queries)
 
-      try {
-        ps.execute()
-      } finally {
-        ps.close()
-      }
+    try {
+      ps.execute()
+    } finally {
+      ps.close()
     }
   }
 
