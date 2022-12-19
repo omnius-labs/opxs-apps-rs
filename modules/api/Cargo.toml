@@ -1,0 +1,14 @@
+[package]
+name = "pxtv-api"
+version = "0.1.0"
+edition = "2021"
+authors = ["Lyrise <lyrise1984@gmail.com>"]
+
+[dependencies]
+anyhow = { workspace = true }
+axum = { workspace = true }
+serde = { workspace = true }
+testcontainers = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
