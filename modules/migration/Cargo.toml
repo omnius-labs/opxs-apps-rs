@@ -1,16 +1,16 @@
 [package]
-name = "pxtv-api"
+name = "migration"
 version = "0.1.0"
 edition = { workspace = true }
 authors = { workspace = true }
 
 [dependencies]
-migration = { path = "../migration" }
-
 anyhow = { workspace = true }
-axum = { workspace = true }
-serde = { workspace = true }
-testcontainers = { workspace = true }
+chrono = { workspace = true }
 tokio = { workspace = true }
+tokio-postgres = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+
+[dev-dependencies]
+testcontainers = { workspace = true }

@@ -5,6 +5,8 @@ use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 
+mod config;
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // let migrator = migration::Migrator::new(url, path, username, description);

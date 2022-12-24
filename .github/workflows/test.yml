@@ -1,0 +1,22 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "**"
+      - "!/docs/**"
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+      - name: Setup rust toolchain
+        uses: actions-rs/toolchain@v1
+      - name: Test
+        run: cargo test

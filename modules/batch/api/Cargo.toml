@@ -1,12 +1,13 @@
 [package]
-name = "pxtv-api"
+name = "pxtv-batch-api"
 version = "0.1.0"
 edition = { workspace = true }
 authors = { workspace = true }
 
 [dependencies]
-migration = { path = "../migration" }
+migration = { path = "../../migration" }
 
+config = { workspace = true }
 anyhow = { workspace = true }
 axum = { workspace = true }
 serde = { workspace = true }
