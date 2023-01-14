@@ -1,5 +1,6 @@
 # Custom
 tmp/
+logs/
 
 # Documents
 docs/*/.asciidoctor
