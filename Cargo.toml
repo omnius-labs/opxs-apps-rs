@@ -12,20 +12,31 @@ aide = { version = "0.10.0", features = [
     "axum-extra",
     "macros",
 ] }
-serde = { version = "1.0", features = ["derive"] }
+anyhow = { version = "1.0.66", features = ["backtrace"] }
+async-trait = "0.1.63"
+axum = { version = "0.6.3", features = ["macros", "headers"] }
+axum-extra = "0.4.2"
+axum-jsonschema = { version = "0.5.0", features = ["aide"] }
+axum-macros = "0.3.1"
+chrono = "0.4.23"
+config = "0.13.3"
+schemars = { version = "0.8.11", features = ["uuid1"] }
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0.91"
 testcontainers = "0.14.0"
 tokio = { version = "1.23.0", features = ["full"] }
 tokio-postgres = { version = "0.7.7", features = ["with-chrono-0_4"] }
 tracing = "0.1.37"
-tracing-subscriber = "0.3.16"
-axum = { version = "0.6.3", features = ["macros"] }
-config = "0.13.3"
-anyhow = { version = "1.0.66", features = ["backtrace"] }
-chrono = "0.4.23"
-uuid = "1.2.2"
-schemars = "0.6.0"
-axum-extra = "0.4.2"
-axum-jsonschema = "0.5.0"
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+uuid = { version = "1.2.2", features = ["serde", "v4"] }
+sqlx = { version = "0.6.2", features = [
+    "postgres",
+    "chrono",
+    "json",
+    "macros",
+    "runtime-tokio-rustls",
+] }
+tower-http = { version = "0.3.5", features = ["cors"] }
 
 [workspace.dev-dependencies]
 testcontainers = "0.14.0"

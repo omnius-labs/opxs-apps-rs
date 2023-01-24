@@ -1,3 +1,10 @@
 {
-  "cSpell.words": ["chrono", "Pxtv"]
+  "cSpell.words": [
+    "chrono",
+    "jsonschema",
+    "openapi",
+    "Pxtv",
+    "redoc",
+    "schemars"
+  ]
 }

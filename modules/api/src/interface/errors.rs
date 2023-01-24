@@ -1,19 +1,14 @@
-use axum::{http::StatusCode, response::IntoResponse};
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use schemars::JsonSchema;
 use serde::Serialize;
 use serde_json::Value;
-use uuid::Uuid;
 
-/// A default error response for most API errors.
 #[derive(Debug, Serialize, JsonSchema)]
 pub struct AppError {
-    /// An error message.
-    pub error: String,
-    /// A unique error ID.
-    pub error_id: Uuid,
     #[serde(skip)]
     pub status: StatusCode,
-    /// Optional Additional error details.
+    pub error: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error_details: Option<Value>,
 }
@@ -21,9 +16,8 @@ pub struct AppError {
 impl AppError {
     pub fn new(error: &str) -> Self {
         Self {
-            error: error.to_string(),
-            error_id: Uuid::new_v4(),
             status: StatusCode::BAD_REQUEST,
+            error: error.to_string(),
             error_details: None,
         }
     }
