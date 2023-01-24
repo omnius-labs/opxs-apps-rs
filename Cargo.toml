@@ -6,16 +6,26 @@ edition = "2021"
 authors = ["Lyrise <lyrise1984@gmail.com>"]
 
 [workspace.dependencies]
-config = "0.13.3"
-anyhow = { version = "1.0.66", features = ["backtrace"] }
-chrono = "0.4.23"
-axum = "0.6.1"
+aide = { version = "0.10.0", features = [
+    "redoc",
+    "axum",
+    "axum-extra",
+    "macros",
+] }
 serde = { version = "1.0", features = ["derive"] }
 testcontainers = "0.14.0"
 tokio = { version = "1.23.0", features = ["full"] }
 tokio-postgres = { version = "0.7.7", features = ["with-chrono-0_4"] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.16"
+axum = { version = "0.6.3", features = ["macros"] }
+config = "0.13.3"
+anyhow = { version = "1.0.66", features = ["backtrace"] }
+chrono = "0.4.23"
+uuid = "1.2.2"
+schemars = "0.6.0"
+axum-extra = "0.4.2"
+axum-jsonschema = "0.5.0"
 
 [workspace.dev-dependencies]
 testcontainers = "0.14.0"

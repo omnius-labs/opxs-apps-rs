@@ -8,9 +8,14 @@ authors = { workspace = true }
 migration = { path = "../migration" }
 
 anyhow = { workspace = true }
+aide = { workspace = true }
 axum = { workspace = true }
 serde = { workspace = true }
 testcontainers = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+schemars = { workspace = true }
+axum-extra = { workspace = true }
+axum-jsonschema = { workspace = true }
