@@ -7,14 +7,15 @@ use aide::redoc::Redoc;
 use axum::response::IntoResponse;
 use axum::Extension;
 
+use crate::domain::AppState;
+
 use super::extractors::Json;
-use super::state::AppState;
 
 pub fn docs_routes(state: AppState) -> ApiRouter {
     aide::gen::infer_responses(true);
 
     let router = ApiRouter::new()
-        .api_route_with(
+        .api_route(
             "/",
             get_with(
                 Redoc::new("/docs/private/api.json")
@@ -22,7 +23,6 @@ pub fn docs_routes(state: AppState) -> ApiRouter {
                     .axum_handler(),
                 |op| op.description("This documentation page."),
             ),
-            |p| p.security_requirement("ApiKey"),
         )
         .route("/private/api.json", get(serve_docs))
         .with_state(state);

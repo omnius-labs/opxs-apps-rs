@@ -1,18 +1,20 @@
 use std::sync::Arc;
 
-use axum::http::StatusCode;
-use axum::Extension;
+use aide::{axum::ApiRouter, openapi::OpenApi, transform::TransformOpenApi};
+use axum::{http::StatusCode, Extension, Server};
+use tower_http::cors::CorsLayer;
 
-use super::docs::docs_routes;
-use super::errors::AppError;
-use super::extractors::Json;
-use super::state::AppState;
+use super::{docs::docs_routes, errors::AppError, extractors::Json};
 
-pub struct Handler {}
+use crate::domain::state::AppState;
 
-impl Handler {
-    pub fn new() -> Self {
-        Self {}
+pub struct WebServer {
+    pub state: AppState,
+}
+
+impl WebServer {
+    pub fn new(state: AppState) -> Self {
+        Self { state }
     }
 
     pub async fn run(&self) -> anyhow::Result<()> {
@@ -22,21 +24,19 @@ impl Handler {
 
         aide::gen::extract_schemas(true);
 
-        let state = AppState::default();
+        let mut api = OpenApi::default();
+        let cors = CorsLayer::new().allow_origin(tower_http::cors::Any);
 
-        let mut api = aide::openapi::OpenApi::default();
-        let cors = tower_http::cors::CorsLayer::new().allow_origin(tower_http::cors::Any);
-
-        let app = aide::axum::ApiRouter::new()
-            .nest_api_service("/docs", docs_routes(state.clone()))
-            .finish_api_with(&mut api, Handler::api_docs)
+        let app = ApiRouter::new()
+            .nest_api_service("/docs", docs_routes(self.state.clone()))
+            .finish_api_with(&mut api, WebServer::api_docs)
             .layer(Extension(Arc::new(api)))
             .layer(cors)
-            .with_state(state);
+            .with_state(self.state.clone());
 
         println!("http://127.0.0.1:3000/docs");
 
-        axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+        Server::bind(&"0.0.0.0:3000".parse().unwrap())
             .serve(app.into_make_service())
             .await
             .expect("failed to start server");
@@ -44,7 +44,7 @@ impl Handler {
         Ok(())
     }
 
-    fn api_docs(api: aide::transform::TransformOpenApi) -> aide::transform::TransformOpenApi {
+    fn api_docs(api: TransformOpenApi) -> TransformOpenApi {
         api.title("pxtv-api")
             .tag(aide::openapi::Tag {
                 name: "todo".into(),

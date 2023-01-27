@@ -1,9 +1,11 @@
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
+mod domain;
+mod infra;
 mod interface;
-
-use interface::Handler;
+mod provider;
+mod usecase;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -14,8 +16,9 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let handler = Handler::new();
-    handler.run().await?;
+    let state = provider::AppStateProvider::provide();
+    let server = interface::WebServer::new(state);
+    server.run().await?;
 
     Ok(())
 }

@@ -1,7 +1,6 @@
 pub mod docs;
 pub mod errors;
 pub mod extractors;
-pub mod handler;
-pub mod state;
+pub mod server;
 
-pub use handler::Handler;
+pub use server::*;

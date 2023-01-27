@@ -1543,6 +1543,7 @@ dependencies = [
  "axum-extra",
  "axum-jsonschema",
  "axum-macros",
+ "chrono",
  "migration",
  "schemars",
  "serde",
