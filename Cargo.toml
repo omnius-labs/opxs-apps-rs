@@ -1,26 +1,17 @@
 [workspace]
-members = ["modules/api", "modules/batch/api", "modules/migration"]
+members = ["modules/api", "modules/migration"]
 
 [workspace.package]
 edition = "2021"
 authors = ["Lyrise <lyrise1984@gmail.com>"]
 
 [workspace.dependencies]
-aide = { version = "0.10.0", features = [
-    "redoc",
-    "axum",
-    "axum-extra",
-    "macros",
-] }
 anyhow = { version = "1.0.66", features = ["backtrace"] }
 async-trait = "0.1.63"
 axum = { version = "0.6.3", features = ["macros", "headers"] }
 axum-extra = "0.4.2"
-axum-jsonschema = { version = "0.5.0", features = ["aide"] }
-axum-macros = "0.3.1"
 chrono = "0.4.23"
 config = "0.13.3"
-schemars = { version = "0.8.11", features = ["uuid1"] }
 serde = { version = "1.0", features = ["derive", "rc"] }
 serde_json = "1.0.91"
 testcontainers = "0.14.0"
@@ -37,6 +28,8 @@ sqlx = { version = "0.6.2", features = [
     "runtime-tokio-rustls",
 ] }
 tower-http = { version = "0.3.5", features = ["cors"] }
+utoipa = "3.0.0"
+utoipa-swagger-ui = { version = "3.0.2", features = ["axum"] }
 
 [workspace.dev-dependencies]
 testcontainers = "0.14.0"

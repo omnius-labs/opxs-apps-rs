@@ -6,5 +6,8 @@
     "Pxtv",
     "redoc",
     "schemars"
-  ]
+  ],
+  "files.watcherExclude": {
+    "**/target": true
+  }
 }

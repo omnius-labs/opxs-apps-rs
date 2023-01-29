@@ -1,6 +1,4 @@
-pub mod docs;
-pub mod errors;
-pub mod extractors;
+pub mod routes;
 pub mod server;
 
 pub use server::*;
