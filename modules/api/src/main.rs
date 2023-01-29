@@ -1,49 +1,30 @@
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::routing::{get, post};
-use axum::{Json, Router};
-use serde::{Deserialize, Serialize};
-use std::net::SocketAddr;
+mod domain;
+mod infra;
+mod interface;
+mod shared;
+mod usecase;
+
+use migration::Migrator;
+use shared::{AppConfig, AppState};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // let migrator = migration::Migrator::new(url, path, username, description);
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::new(
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "pxtv_api=debug".into()),
+        ))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
-    tracing_subscriber::fmt::init();
+    let conf = AppConfig::load("conf/settings.toml");
 
-    let app = Router::new()
-        .route("/", get(root))
-        .route("/users", post(create_user));
+    let migrator = Migrator::new(&conf.database_url, "conf/migrations", "pxtv-api", "").await?;
+    migrator.migrate().await?;
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    tracing::debug!("listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await?;
+    let state = AppState::new(&conf).await?;
+
+    interface::WebServer::serve(&state).await?;
 
     Ok(())
-}
-
-async fn root() -> &'static str {
-    "Hello, World!"
-}
-
-async fn create_user(Json(payload): Json<CreateUser>) -> impl IntoResponse {
-    let user = User {
-        id: 1337,
-        username: payload.username,
-    };
-
-    (StatusCode::CREATED, Json(user))
-}
-
-#[derive(Deserialize)]
-struct CreateUser {
-    username: String,
-}
-
-#[derive(Serialize)]
-struct User {
-    id: u64,
-    username: String,
 }

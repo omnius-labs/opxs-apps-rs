@@ -1,21 +1,35 @@
 [workspace]
-members = ["modules/api", "modules/batch/api", "modules/migration"]
+members = ["modules/api", "modules/migration"]
 
 [workspace.package]
 edition = "2021"
 authors = ["Lyrise <lyrise1984@gmail.com>"]
 
 [workspace.dependencies]
-config = "0.13.3"
 anyhow = { version = "1.0.66", features = ["backtrace"] }
+async-trait = "0.1.63"
+axum = { version = "0.6.3", features = ["macros", "headers"] }
+axum-extra = "0.4.2"
 chrono = "0.4.23"
-axum = "0.6.1"
-serde = { version = "1.0", features = ["derive"] }
+config = "0.13.3"
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0.91"
 testcontainers = "0.14.0"
 tokio = { version = "1.23.0", features = ["full"] }
 tokio-postgres = { version = "0.7.7", features = ["with-chrono-0_4"] }
 tracing = "0.1.37"
-tracing-subscriber = "0.3.16"
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+uuid = { version = "1.2.2", features = ["serde", "v4"] }
+sqlx = { version = "0.6.2", features = [
+    "postgres",
+    "chrono",
+    "json",
+    "macros",
+    "runtime-tokio-rustls",
+] }
+tower-http = { version = "0.3.5", features = ["cors"] }
+utoipa = "3.0.0"
+utoipa-swagger-ui = { version = "3.0.2", features = ["axum"] }
 
 [workspace.dev-dependencies]
 testcontainers = "0.14.0"
