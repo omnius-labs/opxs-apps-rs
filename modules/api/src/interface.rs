@@ -1,4 +1,4 @@
-pub mod routes;
-pub mod server;
+mod routes;
+mod server;
 
-pub use server::*;
+pub use server::WebServer;

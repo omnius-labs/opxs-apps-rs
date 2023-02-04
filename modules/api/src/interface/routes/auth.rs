@@ -2,10 +2,11 @@ use std::sync::Arc;
 
 use axum::{extract::State, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use utoipa::ToSchema;
 
 use crate::{
-    infra::auth::AuthRepoImpl,
+    infra::repo::auth::AuthRepoImpl,
     shared::{AppError, AppState},
     usecase::auth::AuthUseCase,
 };
@@ -29,7 +30,7 @@ pub fn auth(state: AppState) -> Router {
 pub async fn register(
     State(state): State<AppState>,
     Json(req): Json<RegisterParam>,
-) -> Result<Json<Registered>, AppError> {
+) -> Result<Json<Value>, AppError> {
     if req.name.is_empty() || req.email.is_empty() || req.password.is_empty() {
         return Err(AppError::MissingCredential);
     }
@@ -37,11 +38,11 @@ pub async fn register(
     let auth_repo = Arc::new(AuthRepoImpl { db: state.db });
     let auth_usecase = AuthUseCase { auth_repo };
 
-    let id = auth_usecase
+    auth_usecase
         .register(&req.name, &req.email, &req.password)
         .await?;
 
-    Ok(Json(Registered { id }))
+    Ok(Json(json!({"message": "registered successfully"})))
 }
 
 #[derive(Deserialize, ToSchema)]

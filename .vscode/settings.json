@@ -5,7 +5,9 @@
     "openapi",
     "Pxtv",
     "redoc",
-    "schemars"
+    "schemars",
+    "sqlx",
+    "usecase"
   ],
   "files.watcherExclude": {
     "**/target": true

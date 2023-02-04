@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    domain::auth::{model::RegisterUser, repo::AuthRepo},
+    domain::auth::{repo::AuthRepo, service::AuthService},
     shared::AppError,
 };
 
@@ -11,16 +11,13 @@ pub struct AuthUseCase {
 }
 
 impl AuthUseCase {
-    pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<i64, AppError> {
-        let id = self
-            .auth_repo
-            .register(RegisterUser {
-                name: name.to_string(),
-                email: email.to_string(),
-                password: password.to_string(),
-            })
-            .await?;
+    pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<(), AppError> {
+        let service = AuthService {
+            auth_repo: self.auth_repo.clone(),
+        };
 
-        Ok(id)
+        service.register(name, email, password).await?;
+
+        Ok(())
     }
 }

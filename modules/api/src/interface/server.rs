@@ -1,4 +1,4 @@
-use axum::{Router, Server};
+use axum::{response::Redirect, routing::get, Router, Server};
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -12,13 +12,14 @@ impl WebServer {
         let cors = CorsLayer::new().allow_origin(tower_http::cors::Any);
 
         let app = Router::new()
+            .route("/", get(|| async { Redirect::permanent("/docs") }))
             .merge(SwaggerUi::new("/docs").url("/api-doc/openapi.json", ApiDoc::openapi()))
             .nest_service("/auth", routes::auth(state.clone()))
             .layer(cors);
 
         let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
 
-        tracing::debug!("listening on http://{}", addr);
+        tracing::debug!("listening on: http://{}/", addr);
 
         Server::bind(&addr)
             .serve(app.into_make_service())
