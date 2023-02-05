@@ -10,13 +10,15 @@ use crate::shared::AppError;
 pub struct PasswordDeriver;
 
 impl PasswordDeriver {
-    pub fn derive(password: &str) -> Result<PasswordDerived, AppError> {
-        const CREDENTIAL_LEN: usize = digest::SHA256_OUTPUT_LEN;
-        let rng = rand::SystemRandom::new();
-
+    pub fn compute_salt() -> Result<Vec<u8>, AppError> {
         let mut salt = [0u8; CREDENTIAL_LEN];
         rng.fill(&mut salt)
             .map_err(|_| AppError::InternalServerError)?;
+    }
+
+    pub fn derive(password: &str) -> Result<PasswordDerived, AppError> {
+        const CREDENTIAL_LEN: usize = digest::SHA256_OUTPUT_LEN;
+        let rng = rand::SystemRandom::new();
 
         let mut hash = [0u8; CREDENTIAL_LEN];
         pbkdf2::derive(

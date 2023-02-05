@@ -65,10 +65,7 @@ async fn migrate_twice_test() {
     migrator2.migrate().await.expect("Migrator migrate error");
 }
 
-use testcontainers::clients::Cli;
-use testcontainers::core::WaitFor;
-use testcontainers::images::generic::GenericImage;
-use testcontainers::Container;
+use testcontainers::{clients::Cli, core::WaitFor, images::generic::GenericImage, Container};
 
 struct PostgresContainer<'a> {
     #[allow(unused)]

@@ -1,3 +1,7 @@
+[profile.release]
+opt-level = 1
+debug = true
+
 [workspace]
 members = ["modules/api", "modules/migration"]
 
