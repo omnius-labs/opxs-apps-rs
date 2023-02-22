@@ -9,7 +9,7 @@ on:
       - "!/docs/**"
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -19,6 +19,6 @@ jobs:
       - name: Setup Scala
         uses: olafurpg/setup-scala@v11
         with:
-          java-version: 17.0.6
+          java-version: adopt@1.16.0-1
       - name: test
         run: sbt test
