@@ -1,7 +1,4 @@
 {
-  "files.watcherExclude": {
-    "**/target": true
-},
   "cSpell.words": [
     "akka",
     "jdbc",

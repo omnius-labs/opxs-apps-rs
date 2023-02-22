@@ -1,7 +1,6 @@
 package omnius.pxtv.app
 
 import omnius.pxtv.migration.Migrator
-import omnius.pxtv.migration.PostgresOptions
 import pureconfig._
 import pureconfig.generic.auto._
 
@@ -14,8 +13,8 @@ object Runner {
     val migrator =
       new Migrator(
         Paths.get("../../migrations").toAbsolutePath.toString,
-        PostgresOptions(appConfig.database.jdbcUrl, appConfig.database.username, appConfig.database.password)
+        "pxtv-app"
       )
-    migrator.execute()
+    migrator.execute(appConfig.database.jdbcUrl, appConfig.database.username, appConfig.database.password)
   }
 }

@@ -13,20 +13,19 @@ import scala.jdk.CollectionConverters._
 
 class Migrator(
     val basedir: String,
-    val postgres: PostgresOptions
+    val executor: String
 ) {
-  def execute(): Unit = {
-    val con = DriverManager.getConnection(postgres.jdbcUrl, postgres.username, postgres.password)
+  def execute(url: String, username: String, password: String): Unit = {
+    val con = DriverManager.getConnection(url, username, password)
 
     try {
       this.createTables(con)
 
-      val files = this.loadMigrationFiles(this.basedir)
       val histories = this.fetchMigrationHistories(con)
-
       val ignoreSet = HashSet.from(histories.map(_.name))
-      val filteredFiles = files.filterNot(x => ignoreSet.contains(x.name)).toList
 
+      val files = this.loadMigrationFiles(this.basedir)
+      val filteredFiles = files.filterNot(x => ignoreSet.contains(x.name)).toList
       if (filteredFiles.isEmpty) return
 
       this.semaphoreLock(con)
@@ -45,18 +44,19 @@ class Migrator(
 
   private def createTables(con: Connection): Unit = {
     val sql = """
-     create table if not exists _migration_histories (
-      filename varchar(255) NOT NULL,
-      queries text NOT NULL,
-      executed_at timestamp without time zone default CURRENT_TIMESTAMP,
-      primary key (filename)
-    );
-    create table if not exists _migration_semaphores (
-      username varchar(255) NOT NULL,
-      executed_at timestamp without time zone default CURRENT_TIMESTAMP,
-      primary key (username)
-    )
-    """
+create table if not exists _migrations (
+    filename varchar(255) NOT NULL,
+    queries text NOT NULL,
+    executed_at timestamp without time zone default CURRENT_TIMESTAMP,
+    primary key (filename)
+);
+create table if not exists _semaphores (
+    type varchar(255) NOT NULL,
+    executor text NOT NULL,
+    executed_at timestamp without time zone default CURRENT_TIMESTAMP,
+    primary key (type)
+)
+"""
 
     for (q <- sql.split(";")) {
       val ps = con.prepareStatement(q)
@@ -84,8 +84,8 @@ class Migrator(
 
   private def fetchMigrationHistories(con: Connection): List[MigrationHistory] = {
     val sql = """
-      select filename, executed_at from _migration_histories
-    """
+select filename, executed_at from _migrations
+"""
     val ps = con.prepareStatement(sql)
     val rs = ps.executeQuery()
 
@@ -119,8 +119,8 @@ class Migrator(
 
   private def insertMigrationHistory(con: Connection, name: String, queries: String): Unit = {
     val sql = """
-      insert into _migration_histories (filename, queries) values (?, ?)
-    """
+insert into _migrations (filename, queries) values (?, ?)
+"""
     val ps = con.prepareStatement(sql)
     ps.setString(1, name)
     ps.setString(2, queries)
@@ -134,9 +134,10 @@ class Migrator(
 
   private def semaphoreLock(con: Connection): Unit = {
     val sql = """
-      insert into _migration_semaphores (username) values ('migrator')
-    """
+insert into _semaphores (type, executor) values ('migration', ?)
+"""
     val ps = con.prepareStatement(sql)
+    ps.setString(1, this.executor)
 
     try {
       ps.executeUpdate()
@@ -147,8 +148,8 @@ class Migrator(
 
   private def semaphoreUnlock(con: Connection): Unit = {
     val sql = """
-      delete from _migration_semaphores where username = 'migrator'
-    """
+delete from _semaphores where type = 'migration'
+"""
     val ps = con.prepareStatement(sql)
 
     try {
@@ -158,12 +159,6 @@ class Migrator(
     }
   }
 }
-
-case class PostgresOptions(
-    val jdbcUrl: String,
-    val username: String,
-    val password: String
-)
 
 case class MigrationFile(
     val name: String,
