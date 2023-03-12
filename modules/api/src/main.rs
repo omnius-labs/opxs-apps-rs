@@ -1,9 +1,8 @@
-use std::sync::Arc;
+use std::{env, sync::Arc};
 
-use anyhow::anyhow;
-use migration::Migrator;
 use tracing::info;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+use migration::Migrator;
 
 use crate::{
     infra::secret::AwsSecretReader,
@@ -14,35 +13,36 @@ mod domain;
 mod infra;
 mod interface;
 mod shared;
-mod usecase;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "opxs_api=debug".into()),
-        ))
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    if cfg!(debug_assertions) {
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::TRACE)
+            .init();
+    } else {
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::INFO)
+            .json()
+            .init();
+    }
 
-    let cmd = clap::Command::new("opxs-api")
-        .bin_name("opxs-api")
-        .arg(clap::arg!(--"mode" <MODE>));
-    let matches = cmd.get_matches();
-    let mode = matches
-        .get_one::<String>("mode")
-        .ok_or_else(|| anyhow!("'--mode' is not found"))?;
+    info!("----- start -----");
 
-    info!("mode: {mode}");
+    let mode = env::var("RUN_MODE")?;
+    info!("mode: {}", mode);
+    info!("git_semver: {}", env!("VERGEN_GIT_SEMVER"));
+    info!("git_sha: {}", env!("VERGEN_GIT_SHA"));
+    info!("build_timestamp: {}", env!("VERGEN_BUILD_TIMESTAMP"));
 
     let path = format!("conf/{mode}.toml");
     let secret_reader = Arc::new(AwsSecretReader::new().await);
     let conf = AppConfig::load(&path, secret_reader).await?;
 
-    let migrator = Migrator::new(&conf.postgres.url, "conf/migrations", "opxs-api", "").await?;
+    let migrator = Migrator::new(&conf.postgres.url, "./migrations", "opxs-api", "").await?;
     migrator.migrate().await?;
 
-    let state = AppState::new(conf).await?;
+    let state = Arc::new(AppState::new(conf).await?);
     interface::WebServer::serve(&state).await?;
 
     Ok(())

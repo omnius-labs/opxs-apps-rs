@@ -3,12 +3,12 @@ name = "opxs-api"
 version = "0.1.0"
 edition = { workspace = true }
 authors = { workspace = true }
+build = "build.rs"
 
 [dependencies]
 migration = { path = "../migration" }
 aws-config = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }
-lambda-web = { workspace = true }
 chrono = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
@@ -28,7 +28,20 @@ utoipa-swagger-ui = { workspace = true }
 config = { workspace = true }
 ring = { workspace = true }
 hex = { workspace = true }
-clap = { workspace = true }
+urlencoding = { workspace = true }
+axum-aws-lambda = { workspace = true }
+lambda_http = { workspace = true }
+hyper = { workspace = true }
+tower = { workspace = true }
+thiserror = { workspace = true }
+jsonwebtoken = { workspace = true }
+validator = { workspace = true }
+headers = { workspace = true }
+once_cell = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+vergen = { workspace = true }

@@ -1,4 +1,19 @@
-FROM lukemathwalker/cargo-chef:latest-rust-1.66.1 AS chef
+FROM public.ecr.aws/lambda/provided:al2 AS chef
+
+RUN yum install -y gcc \
+    && rm -rf /var/cache/yum/* \
+    && yum clean all
+
+COPY ./rust-toolchain ./rust-toolchain
+
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
+
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y --default-toolchain "$(cat ./rust-toolchain)"
+
+RUN cargo install cargo-chef
+
 WORKDIR /app
 
 FROM chef AS planner
@@ -16,6 +31,9 @@ RUN cargo build --release --bin opxs-api
 # We do not need the Rust toolchain to run the binary!
 FROM public.ecr.aws/lambda/provided:al2 AS runtime
 WORKDIR /app
+
+COPY ./conf ./conf
+COPY ./migrations ./migrations
 
 COPY --from=builder /app/target/release/opxs-api /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/opxs-api"]

@@ -29,3 +29,16 @@ impl SecretReader for AwsSecretReader {
         Ok(serde_json::from_str(json)?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[ignore]
+    #[tokio::test]
+    async fn secret_reader_test() {
+        let secret_reader = AwsSecretReader::new().await;
+        let result = secret_reader.read_value("opxs-api").await.unwrap();
+        println!("{result}");
+    }
+}

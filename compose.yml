@@ -1,25 +1,18 @@
 version: "3.9"
 
 services:
-  sqs:
-    image: softwaremill/elasticmq
-    ports:
-      - 9324:9324
-      - 9325:9325
-    volumes:
-      - ./conf/test/elasticmq.conf:/opt/elasticmq.conf
-      - ./tmp/elasticmq:/data
-
   database:
     image: postgres:14.1
     environment:
+      POSTGRES_DB: local_opxs
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
       POSTGRES_HOST_AUTH_METHOD: 'trust'
     ports:
       - 15432:5432
     volumes:
-      - ./tmp/database/postgres:/var/lib/postgresql/data
-      - ./tmp/database/logs:/var/log
+      - db-data:/var/lib/postgresql/data
     restart: always
+
+volumes:
+  db-data:

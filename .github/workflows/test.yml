@@ -1,4 +1,4 @@
-name: Test
+name: test
 
 on:
   push:
@@ -17,10 +17,19 @@ jobs:
         with:
           submodules: "recursive"
       - name: Setup rust toolchain
+        id: rust_toolchain
         uses: actions-rs/toolchain@v1
-      - name: Setup clippy
-        run: rustup component add clippy
-      - name: Setup cargo-make
-        run: cargo install --force cargo-make
+        with:
+          toolchain: 1.66.1
+      - name: Setup cargo make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: "latest"
+      - name: Cache Cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo
+          key: ${{ runner.os }}-cargo-${{ steps.rust_toolchain.outputs.rustc_hash }}-${{ hashFiles('Cargo.lock') }}
       - name: Test
         run: cargo make test
