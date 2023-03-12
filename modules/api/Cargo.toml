@@ -1,12 +1,14 @@
 [package]
-name = "pxtv-api"
+name = "opxs-api"
 version = "0.1.0"
 edition = { workspace = true }
 authors = { workspace = true }
 
 [dependencies]
 migration = { path = "../migration" }
-
+aws-config = { workspace = true }
+aws-sdk-secretsmanager = { workspace = true }
+lambda-web = { workspace = true }
 chrono = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
@@ -26,3 +28,7 @@ utoipa-swagger-ui = { workspace = true }
 config = { workspace = true }
 ring = { workspace = true }
 hex = { workspace = true }
+clap = { workspace = true }
+
+[dev-dependencies]
+testcontainers = { workspace = true }

@@ -1,4 +1,4 @@
 mod auth_service;
-mod password_deriver;
+mod encrypted_password;
 
 pub use auth_service::AuthService;

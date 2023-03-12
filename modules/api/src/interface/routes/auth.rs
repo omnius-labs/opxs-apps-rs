@@ -6,17 +6,16 @@ use serde_json::{json, Value};
 use utoipa::ToSchema;
 
 use crate::{
-    infra::repo::auth::AuthRepoImpl,
+    infra::auth::PostgresAuthRepo,
     shared::{AppError, AppState},
     usecase::auth::AuthUseCase,
 };
 
+#[allow(unused)]
 pub fn auth(state: AppState) -> Router {
-    let router = Router::new()
+    Router::new()
         .route("/register", post(register))
-        .with_state(state);
-
-    router
+        .with_state(state)
 }
 
 #[utoipa::path(
@@ -27,6 +26,7 @@ pub fn auth(state: AppState) -> Router {
         (status = 200, description = "", body = Registered)
     )
 )]
+#[allow(unused)]
 pub async fn register(
     State(state): State<AppState>,
     Json(req): Json<RegisterParam>,
@@ -35,7 +35,7 @@ pub async fn register(
         return Err(AppError::MissingCredential);
     }
 
-    let auth_repo = Arc::new(AuthRepoImpl { db: state.db });
+    let auth_repo = Arc::new(PostgresAuthRepo { db: state.db });
     let auth_usecase = AuthUseCase { auth_repo };
 
     auth_usecase

@@ -18,5 +18,9 @@ jobs:
           submodules: "recursive"
       - name: Setup rust toolchain
         uses: actions-rs/toolchain@v1
+      - name: Setup clippy
+        run: rustup component add clippy
+      - name: Setup cargo-make
+        run: cargo install --force cargo-make
       - name: Test
-        run: cargo test
+        run: cargo make test

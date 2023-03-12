@@ -1,0 +1,7 @@
+[database]
+host = "tk2-223-21081.vs.sakura.ne.jp"
+port = 15432
+database = "dev_opxs"
+
+[secret]
+id = "opxs-api"

@@ -59,14 +59,13 @@ impl Migrator {
 
     async fn init(&self) -> anyhow::Result<()> {
         let queries = "\
-create table if not exists _migration_histories (
+create table if not exists _migrations (
     filename varchar(255) NOT NULL,
     queries text NOT NULL,
     executed_at timestamp without time zone default CURRENT_TIMESTAMP,
     primary key (filename)
 );
-create table if not exists _migration_semaphores (
-    id smallint NOT NULL,
+create table if not exists _semaphores (
     username varchar(255) NOT NULL,
     description text NOT NULL,
     executed_at timestamp without time zone default CURRENT_TIMESTAMP,
@@ -107,7 +106,7 @@ create table if not exists _migration_semaphores (
         let mut results: Vec<MigrationHistory> = Vec::new();
 
         let query = "\
-select filename, executed_at from _migration_histories
+select filename, executed_at from _migrations
 ";
         let rows = self.client.query(query, &[]).await?;
 
@@ -134,7 +133,7 @@ select filename, executed_at from _migration_histories
 
     async fn insert_migration_history(&self, filename: &str, queries: &str) -> anyhow::Result<()> {
         let statement = "\
-insert into _migration_histories (filename, queries) values ($1, $2)
+insert into _migrations (filename, queries) values ($1, $2)
 ";
         self.client
             .execute(statement, &[&filename, &queries])
@@ -145,7 +144,7 @@ insert into _migration_histories (filename, queries) values ($1, $2)
 
     async fn semaphore_lock(&self) -> anyhow::Result<()> {
         let query = "\
-insert into _migration_semaphores (id, username, description) values (0, $1, $2)
+insert into _semaphores (username, description) values ($1, $2)
 ";
         self.client
             .execute(query, &[&self.username, &self.description])
@@ -156,9 +155,9 @@ insert into _migration_semaphores (id, username, description) values (0, $1, $2)
 
     async fn semaphore_unlock(&self) -> anyhow::Result<()> {
         let query = "\
-delete from _migration_semaphores where id = 0
+delete from _semaphores where username = $1
 ";
-        self.client.execute(query, &[]).await?;
+        self.client.execute(query, &[&self.username]).await?;
 
         Ok(())
     }

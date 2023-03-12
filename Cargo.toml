@@ -10,6 +10,7 @@ edition = "2021"
 authors = ["Lyrise <lyrise1984@gmail.com>"]
 
 [workspace.dependencies]
+lambda-web = { version = "0.2.1", features = ["hyper"] }
 anyhow = { version = "1.0.66", features = ["backtrace"] }
 async-trait = "0.1.63"
 axum = { version = "0.6.3", features = ["macros", "headers"] }
@@ -36,6 +37,9 @@ utoipa = "3.0.0"
 utoipa-swagger-ui = { version = "3.0.2", features = ["axum"] }
 ring = "0.16.20"
 hex = "0.4.3"
+clap = "4.1.8"
+aws-config = "0.54.1"
+aws-sdk-secretsmanager = "0.24.0"
 
 [workspace.dev-dependencies]
 testcontainers = "0.14.0"

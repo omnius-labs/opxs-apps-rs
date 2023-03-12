@@ -1,0 +1,4 @@
+[database]
+host = "localhost"
+port = 15432
+database = "local_opxs"

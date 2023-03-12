@@ -21,10 +21,7 @@ impl WebServer {
 
         tracing::debug!("listening on: http://{}/", addr);
 
-        Server::bind(&addr)
-            .serve(app.into_make_service())
-            .await
-            .expect("failed to start server");
+        Server::bind(&addr).serve(app.into_make_service()).await?;
 
         Ok(())
     }
@@ -42,7 +39,7 @@ impl WebServer {
         )
     ),
     tags(
-        (name = "pxtv", description = "Pxtv API")
+        (name = "opxs", description = "Opxs API")
     )
 )]
 struct ApiDoc;
