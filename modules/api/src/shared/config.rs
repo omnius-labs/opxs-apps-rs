@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use config::Config as ConfigToml;
 use serde::Deserialize;
 
-use crate::domain::secret::service::SecretReader;
+use omnius_core::cloud::secret::SecretReader;
 
 const APPLICATION_NAME: &str = "opxs-api";
 
@@ -110,7 +110,7 @@ impl AppConfig {
 
 #[cfg(test)]
 mod tests {
-    use crate::infra::secret::AwsSecretReader;
+    use omnius_core::cloud::secret::aws::AwsSecretReader;
 
     use super::*;
 

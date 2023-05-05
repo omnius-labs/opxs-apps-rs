@@ -11,7 +11,7 @@ edition = "2021"
 authors = ["Lyrise <lyrise1984@gmail.com>"]
 
 [workspace.dependencies]
-core-rs = { path = "refs/core-rs" }
+omnius-core = { path = "refs/core-rs" }
 
 anyhow = { version = "1.0.66", features = ["backtrace"] }
 async-trait = "0.1.63"

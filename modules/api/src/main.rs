@@ -2,12 +2,11 @@ use std::{env, sync::Arc};
 
 use tracing::info;
 
+use omnius_core::cloud::secret::aws::AwsSecretReader;
+
 use migration::Migrator;
 
-use crate::{
-    infra::secret::AwsSecretReader,
-    shared::{AppConfig, AppState},
-};
+use crate::shared::{AppConfig, AppState};
 
 mod domain;
 mod infra;
