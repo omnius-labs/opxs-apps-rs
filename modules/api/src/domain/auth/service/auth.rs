@@ -14,8 +14,11 @@ use crate::{
 mod jwt;
 mod kdf;
 
+pub use kdf::*;
+
 #[derive(Clone)]
 pub struct AuthService {
+    pub kdf: Kdf,
     pub jwt_conf: JwtConfig,
     pub user_repo: Arc<dyn UserRepo>,
     pub refresh_token_repo: Arc<dyn RefreshTokenRepo>,
@@ -30,8 +33,8 @@ impl AuthService {
             return Err(AppError::DuplicateUserEmail);
         }
 
-        let salt = kdf::salt()?;
-        let password_hash = kdf::derive(password, &salt)?;
+        let salt = self.kdf.salt()?;
+        let password_hash = self.kdf.derive(password, &salt)?;
 
         self.user_repo
             .create(name, email, &hex::encode(password_hash), &hex::encode(salt))
@@ -46,7 +49,7 @@ impl AuthService {
         let password_hash =
             hex::decode(user.password_hash).map_err(|e| AppError::UnexpectedError(e.into()))?;
 
-        if !kdf::verify(password, &salt, &password_hash)? {
+        if !self.kdf.verify(password, &salt, &password_hash)? {
             return Err(AppError::WrongPassword);
         }
 

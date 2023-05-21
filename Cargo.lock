@@ -1448,15 +1448,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "kamadak-exif"
-version = "0.5.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef4fc70d0ab7e5b6bafa30216a6b48705ea964cdfc29c050f2412295eba58077"
-dependencies = [
- "mutate_once",
-]
-
-[[package]]
 name = "lambda_http"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1617,19 +1608,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
-name = "migration"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "testcontainers",
- "tokio",
- "tokio-postgres",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "mime"
 version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1671,12 +1649,6 @@ dependencies = [
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys",
 ]
-
-[[package]]
-name = "mutate_once"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16cf681a23b4d0a43fc35024c176437f9dcd818db34e0f42ab456a0ee5ad497b"
 
 [[package]]
 name = "nom"
@@ -1748,16 +1720,32 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnius-core"
+name = "omnius-core-cloud"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
  "aws-config",
  "aws-sdk-secretsmanager",
- "kamadak-exif",
+ "chrono",
  "serde",
  "serde_json",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "omnius-core-migration"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1790,8 +1778,8 @@ dependencies = [
  "hyper",
  "jsonwebtoken",
  "lambda_http",
- "migration",
- "omnius-core",
+ "omnius-core-cloud",
+ "omnius-core-migration",
  "once_cell",
  "ring",
  "serde",

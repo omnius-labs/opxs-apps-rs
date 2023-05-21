@@ -5,10 +5,12 @@ edition = { workspace = true }
 authors = { workspace = true }
 build = "build.rs"
 
-[dependencies]
-migration = { path = "../migration" }
+[features]
+stable-test = []
 
-omnius-core = { workspace = true }
+[dependencies]
+omnius-core-cloud = { workspace = true }
+omnius-core-migration = { workspace = true }
 
 aws-config = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }

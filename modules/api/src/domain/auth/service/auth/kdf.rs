@@ -6,38 +6,88 @@ use ring::{
     rand::{self, SecureRandom},
 };
 
-const CREDENTIAL_LEN: usize = digest::SHA256_OUTPUT_LEN;
-
-pub fn salt() -> anyhow::Result<Vec<u8>> {
-    let mut salt = [0u8; CREDENTIAL_LEN];
-
-    let rng = rand::SystemRandom::new();
-    rng.fill(&mut salt).map_err(|_| anyhow!("CryptoError"))?;
-
-    Ok(salt.to_vec())
+#[derive(Clone)]
+pub struct Kdf {
+    algorithm: KdfAlgorithm,
+    iterations: u32,
 }
 
-pub fn derive(secret: &str, salt: &[u8]) -> anyhow::Result<Vec<u8>> {
-    let mut hash = [0u8; CREDENTIAL_LEN];
-    pbkdf2::derive(
-        pbkdf2::PBKDF2_HMAC_SHA256,
-        NonZeroU32::new(10_000).unwrap(),
-        salt,
-        secret.as_bytes(),
-        &mut hash,
-    );
-
-    Ok(hash.to_vec())
+#[derive(Clone)]
+pub enum KdfAlgorithm {
+    Pbkdf2HmacSha256,
 }
 
-pub fn verify(secret: &str, salt: &[u8], derived_key: &[u8]) -> anyhow::Result<bool> {
-    let result = pbkdf2::verify(
-        pbkdf2::PBKDF2_HMAC_SHA256,
-        NonZeroU32::new(10_000).unwrap(),
-        salt,
-        secret.as_bytes(),
-        derived_key,
-    );
+impl Kdf {
+    pub fn new(algorithm: KdfAlgorithm, iterations: u32) -> Self {
+        Self {
+            algorithm,
+            iterations,
+        }
+    }
 
-    Ok(result.is_ok())
+    pub fn salt(&self) -> anyhow::Result<Vec<u8>> {
+        let mut salt = vec![0; self.get_credential_len()];
+
+        let rng = rand::SystemRandom::new();
+        rng.fill(&mut salt).map_err(|_| anyhow!("CryptoError"))?;
+
+        Ok(salt)
+    }
+
+    pub fn derive(&self, secret: &str, salt: &[u8]) -> anyhow::Result<Vec<u8>> {
+        match self.algorithm {
+            KdfAlgorithm::Pbkdf2HmacSha256 => {
+                let mut hash = vec![0; self.get_credential_len()];
+                pbkdf2::derive(
+                    pbkdf2::PBKDF2_HMAC_SHA256,
+                    NonZeroU32::new(self.iterations).unwrap(),
+                    salt,
+                    secret.as_bytes(),
+                    &mut hash,
+                );
+                Ok(hash)
+            }
+        }
+    }
+
+    pub fn verify(&self, secret: &str, salt: &[u8], derived_key: &[u8]) -> anyhow::Result<bool> {
+        match self.algorithm {
+            KdfAlgorithm::Pbkdf2HmacSha256 => {
+                let result = pbkdf2::verify(
+                    pbkdf2::PBKDF2_HMAC_SHA256,
+                    NonZeroU32::new(self.iterations).unwrap(),
+                    salt,
+                    secret.as_bytes(),
+                    derived_key,
+                );
+                Ok(result.is_ok())
+            }
+        }
+    }
+
+    fn get_credential_len(&self) -> usize {
+        match self.algorithm {
+            KdfAlgorithm::Pbkdf2HmacSha256 => digest::SHA256_OUTPUT_LEN,
+        }
+    }
+}
+
+//#[cfg(feature = "stable-test")]
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simple_test() {
+        let kdf = Kdf::new(KdfAlgorithm::Pbkdf2HmacSha256, 100);
+
+        let salt = kdf.salt().unwrap();
+        let hash = kdf.derive("test", &salt).unwrap();
+
+        let result_ok = kdf.verify("test", &salt, &hash).unwrap();
+        assert!(result_ok);
+
+        let result_failed = kdf.verify("test_error", &salt, &hash).unwrap();
+        assert!(!result_failed);
+    }
 }
