@@ -17,11 +17,18 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout
         uses: actions/checkout@v3
+      - name: Checkout submodule
+        uses: actions/checkout@v2
         with:
-          submodules: "recursive"
+          repository: git@github.com:omnius-labs/core-rs.git
+          path: refs/core-rs
           ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
+          persist-credentials: true
+      - name: Update submodule
+        run: git submodule update --init
+
       - name: Setup rust toolchain
         uses: dtolnay/rust-toolchain@1.69.0
         with:
@@ -39,11 +46,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout
         uses: actions/checkout@v3
+      - name: Checkout submodule
+        uses: actions/checkout@v2
         with:
-          submodules: "recursive"
+          repository: git@github.com:omnius-labs/core-rs.git
+          path: refs/core-rs
           ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
+          persist-credentials: true
+      - name: Update submodule
+        run: git submodule update --init
+
       - name: Setup rust toolchain
         uses: dtolnay/rust-toolchain@1.69.0
         with:

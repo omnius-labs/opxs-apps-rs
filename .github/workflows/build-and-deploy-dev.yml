@@ -9,15 +9,22 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkout submodule
+        uses: actions/checkout@v2
+        with:
+          repository: git@github.com:omnius-labs/core-rs.git
+          path: refs/core-rs
+          ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
+          persist-credentials: true
+      - name: Update submodule
+        run: git submodule update --init
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:
           platforms: linux/amd64
-      - name: Checkout branch
-        uses: actions/checkout@v3
-        with:
-          submodules: "recursive"
-          ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
 
       - name: Build bin
         uses: docker/build-push-action@v4
