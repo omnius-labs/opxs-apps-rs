@@ -21,7 +21,7 @@ jobs:
       - name: Checkout submodule
         uses: actions/checkout@v2
         with:
-          repository: git@github.com:omnius-labs/core-rs.git
+          repository: omnius-labs/core-rs
           path: refs/core-rs
           ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
           persist-credentials: true
@@ -50,7 +50,7 @@ jobs:
       - name: Checkout submodule
         uses: actions/checkout@v2
         with:
-          repository: git@github.com:omnius-labs/core-rs.git
+          repository: omnius-labs/core-rs
           path: refs/core-rs
           ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
           persist-credentials: true
