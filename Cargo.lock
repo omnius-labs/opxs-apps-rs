@@ -1730,6 +1730,7 @@ dependencies = [
  "chrono",
  "serde",
  "serde_json",
+ "testcontainers",
  "tokio",
  "tokio-postgres",
  "tracing",
@@ -1742,6 +1743,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "testcontainers",
  "tokio",
  "tokio-postgres",
  "tracing",

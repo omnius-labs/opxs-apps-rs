@@ -1,8 +1,9 @@
-[profile.release]
-opt-level = 1
-
 [workspace]
-members = ["modules/api"]
+members = [
+    "./modules/api",
+    "./refs/core-rs/modules/cloud",
+    "./refs/core-rs/modules/migration",
+]
 exclude = ["refs/core-rs"]
 
 [workspace.package]
@@ -10,8 +11,8 @@ edition = "2021"
 authors = ["Lyrise <lyrise1984@gmail.com>"]
 
 [workspace.dependencies]
-omnius-core-cloud = { path = "refs/core-rs/modules/cloud" }
-omnius-core-migration = { path = "refs/core-rs/modules/migration" }
+omnius-core-cloud = { path = "./refs/core-rs/modules/cloud" }
+omnius-core-migration = { path = "./refs/core-rs/modules/migration" }
 
 anyhow = { version = "1.0.66", features = ["backtrace"] }
 async-trait = "0.1.63"
