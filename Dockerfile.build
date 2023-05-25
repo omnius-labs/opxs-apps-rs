@@ -14,7 +14,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y --default-toolchain "$(cat ./rust-toolchain)"
 
-RUN cargo install cargo-chef
+RUN cargo install cargo-chef --locked
 
 FROM chef AS planner
 
