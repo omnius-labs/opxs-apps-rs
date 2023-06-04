@@ -57,10 +57,10 @@ pub async fn register(
 async fn login(
     State(state): State<Arc<AppState>>,
     ValidatedJson(req): ValidatedJson<LoginInput>,
-) -> Result<Json<RegisterOutput>, AppError> {
+) -> Result<Json<LoginOutput>, AppError> {
     let result = state.service.auth.login(&req.email, &req.password).await?;
 
-    Ok(Json(RegisterOutput {
+    Ok(Json(LoginOutput {
         token_type: "bearer".to_string(),
         expires_in: result.expires_in,
         access_token: result.access_token,
@@ -92,18 +92,18 @@ pub struct RegisterInput {
     pub password: String,
 }
 
-#[derive(Serialize, ToSchema)]
-pub struct RegisterOutput {
-    pub token_type: String,
-    pub expires_in: i32,
-    pub access_token: String,
-    pub refresh_token: String,
-}
-
 #[derive(Deserialize, ToSchema, Validate)]
 pub struct LoginInput {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = 8))]
     pub password: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct LoginOutput {
+    pub token_type: String,
+    pub expires_in: i32,
+    pub access_token: String,
+    pub refresh_token: String,
 }

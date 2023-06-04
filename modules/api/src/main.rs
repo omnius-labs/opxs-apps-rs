@@ -5,7 +5,7 @@ use tracing::info;
 use omnius_core_cloud::secret::aws::AwsSecretReader;
 use omnius_core_migration::Migrator;
 
-use crate::shared::{AppConfig, AppState};
+use crate::shared::{AppConfig, AppInfo, AppState};
 
 mod domain;
 mod infra;
@@ -27,15 +27,14 @@ async fn main() -> anyhow::Result<()> {
 
     info!("----- start -----");
 
-    let mode = env::var("RUN_MODE")?;
-    info!("mode: {}", mode);
-    info!("git_semver: {}", env!("VERGEN_GIT_SEMVER"));
-    info!("git_sha: {}", env!("VERGEN_GIT_SHA"));
-    info!("build_timestamp: {}", env!("VERGEN_BUILD_TIMESTAMP"));
+    let info = AppInfo::new()?;
+    info!("mode: {}", info.mode);
+    info!("git_semver: {}", info.git_semver);
+    info!("git_sha: {}", info.git_sha);
+    info!("build_timestamp: {}", info.build_timestamp);
 
-    let path = format!("conf/{mode}.toml");
     let secret_reader = Arc::new(AwsSecretReader::new().await);
-    let conf = AppConfig::load(&path, secret_reader).await?;
+    let conf = AppConfig::load(info, secret_reader).await?;
 
     let migrator = Migrator::new(&conf.postgres.url, "./migrations", "opxs-api", "").await?;
     migrator.migrate().await?;

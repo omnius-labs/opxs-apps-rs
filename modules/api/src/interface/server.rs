@@ -58,7 +58,7 @@ impl WebServer {
     components(
         schemas(
             routes::auth::RegisterInput,
-            routes::auth::RegisterOutput,
+            routes::auth::LoginOutput,
             routes::auth::LoginInput,
             domain::auth::model::User,
         )

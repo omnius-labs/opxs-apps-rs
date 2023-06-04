@@ -1,4 +1,3 @@
-#[cfg(feature = "stable-test")]
 #[cfg(test)]
 mod tests {
     use omnius_core_migration::Migrator;
