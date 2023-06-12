@@ -10,7 +10,7 @@ use crate::{
     infra::auth::{RefreshTokenRepoImpl, UserRepoImpl},
 };
 
-use super::AppConfig;
+use super::{AppConfig, AppInfo};
 
 #[derive(Clone)]
 pub struct AppService {
@@ -19,13 +19,13 @@ pub struct AppService {
 }
 
 impl AppService {
-    pub fn new(db: &Arc<PgPool>, conf: &AppConfig) -> Self {
+    pub fn new(info: &AppInfo, conf: &AppConfig, db: &Arc<PgPool>) -> Self {
         let kdf = Kdf::new(KdfAlgorithm::Pbkdf2HmacSha256, 10_000);
         let user_repo = Arc::new(UserRepoImpl { db: db.clone() });
         let refresh_token_repo = Arc::new(RefreshTokenRepoImpl { db: db.clone() });
 
         Self {
-            health: HealthService {},
+            health: HealthService { info: info.clone() },
             auth: AuthService {
                 kdf,
                 user_repo,

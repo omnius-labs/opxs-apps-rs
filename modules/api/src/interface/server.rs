@@ -20,15 +20,19 @@ impl WebServer {
                 "/api",
                 Router::new()
                     .route("/", get(|| async { Redirect::permanent("/api/docs") }))
-                    .route("/health", get(routes::health))
-                    .with_state(state.clone())
-                    .nest_service("/auth", routes::auth(state)),
+                    .nest_service(
+                        "/v1",
+                        Router::new()
+                            .route("/health", get(routes::health))
+                            .with_state(state.clone())
+                            .nest_service("/auth", routes::auth(state)),
+                    ),
             )
             .layer(cors);
 
         if cfg!(debug_assertions) {
             // Run app on local server
-            let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 3000));
+            let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 8080));
 
             tracing::debug!("listening on: http://{}/api/docs", addr);
             axum::Server::bind(&addr)
@@ -64,9 +68,6 @@ impl WebServer {
         )
     ),
     modifiers(&SecurityAddon),
-    tags(
-        (name = "opxs", description = "Opxs API")
-    )
 )]
 struct ApiDoc;
 

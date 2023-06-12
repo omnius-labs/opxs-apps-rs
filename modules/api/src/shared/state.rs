@@ -3,17 +3,18 @@ use std::sync::Arc;
 use chrono::Duration;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
-use super::{service::AppService, AppConfig};
+use super::{service::AppService, AppConfig, AppInfo};
 
 #[derive(Clone)]
 pub struct AppState {
-    pub db: Arc<PgPool>,
+    pub info: AppInfo,
     pub conf: AppConfig,
+    pub db: Arc<PgPool>,
     pub service: AppService,
 }
 
 impl AppState {
-    pub async fn new(conf: AppConfig) -> anyhow::Result<Self> {
+    pub async fn new(info: AppInfo, conf: AppConfig) -> anyhow::Result<Self> {
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
@@ -21,8 +22,13 @@ impl AppState {
                 .connect(&conf.postgres.url)
                 .await?,
         );
-        let service = AppService::new(&db, &conf);
+        let service = AppService::new(&info, &conf, &db);
 
-        Ok(Self { conf, db, service })
+        Ok(Self {
+            info,
+            conf,
+            db,
+            service,
+        })
     }
 }

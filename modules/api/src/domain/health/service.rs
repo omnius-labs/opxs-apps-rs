@@ -1,20 +1,18 @@
-use std::env;
-
 use serde_json::{json, Value};
 
-use crate::shared::AppError;
+use crate::shared::{AppError, AppInfo};
 
 #[derive(Clone)]
-pub struct HealthService;
+pub struct HealthService {
+    pub info: AppInfo,
+}
 
 impl HealthService {
     pub async fn check(&self) -> Result<Value, AppError> {
-        let mode = env::var("RUN_MODE").map_err(|e| AppError::UnexpectedError(e.into()))?;
-
         let ret = json!({
-            "mode": mode,
-            "git_semver": env!("VERGEN_GIT_SEMVER"),
-            "git_sha": env!("VERGEN_GIT_SHA")
+            "mode": self.info.mode,
+            "git_semver": self.info.git_semver,
+            "git_sha": self.info.git_sha
         });
         Ok(ret)
     }

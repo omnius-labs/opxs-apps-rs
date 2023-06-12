@@ -20,6 +20,7 @@ use crate::{
 pub fn auth(state: &Arc<AppState>) -> Router {
     Router::new()
         .route("/register", post(register))
+        .route("/email-verification", post(register))
         .route("/login", post(login))
         .route("/me", get(me))
         .with_state(state.clone())
@@ -27,7 +28,7 @@ pub fn auth(state: &Arc<AppState>) -> Router {
 
 #[utoipa::path(
     post,
-    path = "/api/auth/register",
+    path = "/api/v1/auth/register",
     request_body = RegisterInput,
     responses(
         (status = 200)
@@ -46,9 +47,30 @@ pub async fn register(
     Ok(StatusCode::OK)
 }
 
+// #[utoipa::path(
+//     post,
+//     path = "/api/v1/auth/email-verification",
+//     request_body = RegisterInput,
+//     responses(
+//         (status = 200)
+//     )
+// )]
+// pub async fn email_verification(
+//     State(state): State<Arc<AppState>>,
+//     ValidatedJson(req): ValidatedJson<EmailVerificationInput>,
+// ) -> Result<StatusCode, AppError> {
+//     state
+//         .service
+//         .auth
+//         .email_verification(&req.token)
+//         .await?;
+
+//     Ok(StatusCode::OK)
+// }
+
 #[utoipa::path(
     post,
-    path = "/api/auth/login",
+    path = "/api/v1/auth/login",
     request_body = LoginInput,
     responses(
         (status = 200, body = RegisterOutput)
@@ -70,7 +92,7 @@ async fn login(
 
 #[utoipa::path(
     get,
-    path = "/api/auth/me",
+    path = "/api/v1/auth/me",
     responses(
         (status = 200)
     ),
@@ -90,6 +112,11 @@ pub struct RegisterInput {
     pub email: String,
     #[validate(length(min = 8))]
     pub password: String,
+}
+
+#[derive(Deserialize, ToSchema, Validate)]
+pub struct EmailVerificationInput {
+    pub token: String,
 }
 
 #[derive(Deserialize, ToSchema, Validate)]

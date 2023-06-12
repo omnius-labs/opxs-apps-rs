@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, fmt};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AppInfo {
@@ -21,5 +21,15 @@ impl AppInfo {
             git_sha,
             build_timestamp,
         })
+    }
+}
+
+impl fmt::Display for AppInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "mode: {},", self.mode)?;
+        write!(f, "git_semver: {},", self.git_semver)?;
+        write!(f, "git_sha: {},", self.git_sha)?;
+        write!(f, "build_timestamp: {}", self.build_timestamp)?;
+        Ok(())
     }
 }

@@ -6,8 +6,6 @@ use serde::Deserialize;
 
 use omnius_core_cloud::secret::SecretReader;
 
-use super::AppInfo;
-
 const APPLICATION_NAME: &str = "opxs-api";
 
 #[derive(Debug, Deserialize)]
@@ -38,7 +36,6 @@ struct SecretToml {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AppConfig {
-    pub mode: String,
     pub postgres: PostgresConfig,
     pub jwt: JwtConfig,
 }
@@ -54,11 +51,9 @@ pub struct JwtConfig {
 }
 
 impl AppConfig {
-    pub async fn load(info: AppInfo, secret_reader: Arc<dyn SecretReader>) -> anyhow::Result<Self> {
-        let path = format!("conf/{mode}.toml");
-
+    pub async fn load(path: &str, secret_reader: Arc<dyn SecretReader>) -> anyhow::Result<Self> {
         let toml = ConfigToml::builder()
-            .add_source(config::File::with_name(&path))
+            .add_source(config::File::with_name(path))
             .build()?;
         let mut toml: AppToml = toml.try_deserialize()?;
 
@@ -106,7 +101,6 @@ impl AppConfig {
             .ok_or_else(|| anyhow!("jwt secret not found"))?;
 
         Ok(Self {
-            mode: mode.to_string(),
             postgres: PostgresConfig { url: postgres_url },
             jwt: JwtConfig { secret: jwt_secret },
         })
@@ -122,7 +116,7 @@ mod tests {
     #[ignore]
     #[tokio::test]
     async fn secret_reader_test() {
-        let secret_reader = Arc::new(AwsSecretReader::new().await);
+        let secret_reader = Arc::new(AwsSecretReader::new().await.unwrap());
         let app_config = AppConfig::load("../../conf/dev", secret_reader)
             .await
             .unwrap();

@@ -1,18 +1,6 @@
-FROM public.ecr.aws/lambda/provided:al2 AS chef
+FROM rust:1.69.0-buster AS chef
 
 WORKDIR /app
-
-RUN yum install -y gcc \
-    && rm -rf /var/cache/yum/* \
-    && yum clean all
-
-COPY ./rust-toolchain ./rust-toolchain
-
-ENV RUSTUP_HOME=/usr/local/rustup \
-    CARGO_HOME=/usr/local/cargo \
-    PATH=/usr/local/cargo/bin:$PATH
-
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y --default-toolchain "$(cat ./rust-toolchain)"
 
 RUN cargo install cargo-chef --locked
 
@@ -42,7 +30,7 @@ COPY Cargo.* .
 RUN cargo build --release --bin opxs-api
 
 # We do not need the Rust toolchain to run the binary!
-FROM public.ecr.aws/lambda/provided:al2 AS runtime
+FROM ubuntu:22.04 AS runtime
 
 WORKDIR /app
 

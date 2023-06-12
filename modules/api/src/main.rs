@@ -1,4 +1,4 @@
-use std::{env, sync::Arc};
+use std::sync::Arc;
 
 use tracing::info;
 
@@ -28,18 +28,16 @@ async fn main() -> anyhow::Result<()> {
     info!("----- start -----");
 
     let info = AppInfo::new()?;
-    info!("mode: {}", info.mode);
-    info!("git_semver: {}", info.git_semver);
-    info!("git_sha: {}", info.git_sha);
-    info!("build_timestamp: {}", info.build_timestamp);
+    info!("{}", info);
 
-    let secret_reader = Arc::new(AwsSecretReader::new().await);
-    let conf = AppConfig::load(info, secret_reader).await?;
+    let secret_reader = Arc::new(AwsSecretReader::new().await?);
+    let conf_path = format!("conf/{mode}.toml", mode = info.mode);
+    let conf = AppConfig::load(&conf_path, secret_reader).await?;
 
     let migrator = Migrator::new(&conf.postgres.url, "./migrations", "opxs-api", "").await?;
     migrator.migrate().await?;
 
-    let state = Arc::new(AppState::new(conf).await?);
+    let state = Arc::new(AppState::new(info, conf).await?);
     interface::WebServer::serve(&state).await?;
 
     Ok(())

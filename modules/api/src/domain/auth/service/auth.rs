@@ -43,6 +43,10 @@ impl AuthService {
         Ok(())
     }
 
+    // pub async fn email_verification(&self, token:&str) -> Result<(), AppError>{
+
+    // }
+
     pub async fn login(&self, email: &str, password: &str) -> Result<AuthToken, AppError> {
         let user = self.user_repo.find_by_email(email).await?;
         let salt = hex::decode(user.salt).map_err(|e| AppError::UnexpectedError(e.into()))?;
