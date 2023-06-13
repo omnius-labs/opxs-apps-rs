@@ -68,7 +68,6 @@ jobs:
           provenance: false
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api,mode=max
-          load: true
       - name: Update ECS
         run: |
           aws ecs update-service --cluster opxs-api-cluster --service opxs-api --force-new-deployment
