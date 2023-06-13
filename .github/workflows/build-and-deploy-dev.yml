@@ -38,8 +38,8 @@ jobs:
           push: false
           tags: opxs-api-build-image
           provenance: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.dev.v1.docker-build-cache,name=opxs-api-builder
+          cache-to: type=s3,region=us-east-1,bucket=opxs.dev.v1.docker-build-cache,name=opxs-api-builder,mode=max
           load: true
       - name: Copy bin
         run: |
@@ -65,8 +65,9 @@ jobs:
           push: true
           tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-api:latest
           provenance: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.dev.v1.docker-build-cache,name=opxs-api
+          cache-to: type=s3,region=us-east-1,bucket=opxs.dev.v1.docker-build-cache,name=opxs-api,mode=max
+          load: true
       - name: Update ECS
         run: |
           aws ecs update-service --cluster opxs-api-cluster --service opxs-api --force-new-deployment
