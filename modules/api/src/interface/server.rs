@@ -30,22 +30,13 @@ impl WebServer {
             )
             .layer(cors);
 
-        if cfg!(debug_assertions) {
-            // Run app on local server
-            let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 8080));
+        // Run app on local server
+        let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 8080));
 
-            tracing::debug!("listening on: http://{}/api/docs", addr);
-            axum::Server::bind(&addr)
-                .serve(app.into_make_service())
-                .await?;
-        } else {
-            // Run app on AWS Lambda
-            let app = tower::ServiceBuilder::new()
-                .layer(axum_aws_lambda::LambdaLayer::default())
-                .service(app);
-
-            lambda_http::run(app).await.unwrap();
-        }
+        tracing::info!("listening on: http://localhost:8080/api/docs");
+        axum::Server::bind(&addr)
+            .serve(app.into_make_service())
+            .await?;
 
         Ok(())
     }

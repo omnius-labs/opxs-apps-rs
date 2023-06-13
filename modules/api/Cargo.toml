@@ -34,8 +34,6 @@ config = { workspace = true }
 ring = { workspace = true }
 hex = { workspace = true }
 urlencoding = { workspace = true }
-axum-aws-lambda = { workspace = true }
-lambda_http = { workspace = true }
 hyper = { workspace = true }
 tower = { workspace = true }
 thiserror = { workspace = true }
