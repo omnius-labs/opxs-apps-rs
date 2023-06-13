@@ -11,7 +11,7 @@ const APPLICATION_NAME: &str = "opxs-api";
 #[derive(Debug, Deserialize)]
 struct AppToml {
     pub postgres: PostgresToml,
-    pub jwt: JwtToml,
+    pub jwt: Option<JwtToml>,
     pub secret: Option<SecretToml>,
 }
 
@@ -26,7 +26,7 @@ struct PostgresToml {
 
 #[derive(Debug, Deserialize)]
 struct JwtToml {
-    pub secret: Option<String>,
+    pub secret: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -79,9 +79,9 @@ impl AppConfig {
                     toml.postgres.password = Some(postgres_password);
                 }
             }
-            if toml.jwt.secret.is_none() {
+            if toml.jwt.is_none() {
                 if let Some(jwt_secret) = jwt_secret {
-                    toml.jwt.secret = Some(jwt_secret);
+                    toml.jwt = Some(JwtToml { secret: jwt_secret });
                 }
             }
         }
@@ -97,7 +97,7 @@ impl AppConfig {
         );
         let jwt_secret = toml
             .jwt
-            .secret
+            .map(|n| n.secret)
             .ok_or_else(|| anyhow!("jwt secret not found"))?;
 
         Ok(Self {

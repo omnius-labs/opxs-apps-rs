@@ -3,7 +3,5 @@ host = "tk2-223-21081.vs.sakura.ne.jp"
 port = 15432
 database = "dev_opxs"
 
-[jwt]
-
 [secret]
 id = "opxs-api"
