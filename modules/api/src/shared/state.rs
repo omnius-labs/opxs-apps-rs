@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use axum::extract::FromRef;
+use axum_extra::extract::cookie;
 use chrono::Duration;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
@@ -11,6 +13,7 @@ pub struct AppState {
     pub conf: AppConfig,
     pub db: Arc<PgPool>,
     pub service: AppService,
+    cookie_key: cookie::Key,
 }
 
 impl AppState {
@@ -29,6 +32,13 @@ impl AppState {
             conf,
             db,
             service,
+            cookie_key: cookie::Key::generate(),
         })
+    }
+}
+
+impl FromRef<AppState> for cookie::Key {
+    fn from_ref(state: &AppState) -> Self {
+        state.cookie_key.clone()
     }
 }

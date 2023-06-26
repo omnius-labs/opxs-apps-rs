@@ -1,16 +1,21 @@
 use std::sync::Arc;
 
-use axum::{response::Redirect, routing::get, Router};
+use axum::{extract::State, response::Redirect, routing::get, Json, Router};
+use serde_json::Value;
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::{domain, interface::routes, shared::AppState};
+use crate::{
+    domain,
+    interface::routes::auth,
+    shared::{AppError, AppState},
+};
 
 pub struct WebServer;
 
 impl WebServer {
-    pub async fn serve(state: &Arc<AppState>) -> anyhow::Result<()> {
+    pub async fn serve(state: &AppState) -> anyhow::Result<()> {
         let cors = CorsLayer::new().allow_origin(tower_http::cors::Any);
 
         let app = Router::new()
@@ -23,9 +28,9 @@ impl WebServer {
                     .nest_service(
                         "/v1",
                         Router::new()
-                            .route("/health", get(routes::health))
+                            .route("/health", get(health))
                             .with_state(state.clone())
-                            .nest_service("/auth", routes::auth(state)),
+                            .nest_service("/auth", auth::gen_router(state)),
                     ),
             )
             .layer(cors);
@@ -42,20 +47,33 @@ impl WebServer {
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/health",
+    responses(
+        (status = 200)
+    )
+)]
+#[allow(unused)]
+pub async fn health(State(state): State<Arc<AppState>>) -> Result<Json<Value>, AppError> {
+    let ret = state.service.health.check().await?;
+    Ok(Json(ret))
+}
+
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        routes::health,
-        routes::auth::register,
-        routes::auth::login,
-        routes::auth::me,
+        health,
+        auth::me,
+        auth::email::register,
+        auth::email::login,
     ),
     components(
         schemas(
-            routes::auth::RegisterInput,
-            routes::auth::LoginOutput,
-            routes::auth::LoginInput,
             domain::auth::model::User,
+            auth::email::RegisterInput,
+            auth::email::LoginInput,
+            auth::email::LoginOutput,
         )
     ),
     modifiers(&SecurityAddon),

@@ -17,7 +17,11 @@ omnius-core-migration = { path = "./refs/core-rs/modules/migration" }
 anyhow = { version = "1.0.66", features = ["backtrace"] }
 async-trait = "0.1.63"
 axum = { version = "0.6.3", features = ["macros", "headers"] }
-axum-extra = "0.4.2"
+axum-extra = { version = "0.4.2", features = [
+    "cookie",
+    "cookie-signed",
+    "cookie-private",
+] }
 chrono = "0.4.23"
 config = "0.13.3"
 serde = { version = "1.0", features = ["derive", "rc"] }
