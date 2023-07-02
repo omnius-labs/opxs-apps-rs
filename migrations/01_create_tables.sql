@@ -1,28 +1,11 @@
---- _world
-
-CREATE TABLE _world (
-    key VARCHAR(255) NOT NULL PRIMARY KEY,
-    value TEXT NOT NULL,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TRIGGER update_world_updated_at_step1
-    BEFORE UPDATE ON _world FOR EACH ROW
-    EXECUTE PROCEDURE refresh_updated_at_none();
-CREATE TRIGGER update_world_updated_at_step2
-    BEFORE UPDATE OF updated_at ON _world FOR EACH ROW
-    EXECUTE PROCEDURE refresh_updated_at_same();
-CREATE TRIGGER update_world_updated_at_step3
-    BEFORE UPDATE ON _world FOR EACH ROW
-    EXECUTE PROCEDURE refresh_updated_at_current();
-
 --- users
 
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
+    authentication_type VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
     password_hash VARCHAR(255) NOT NULL,
     salt VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -38,6 +21,8 @@ CREATE TRIGGER update_users_updated_at_step2
 CREATE TRIGGER update_users_updated_at_step3
   BEFORE UPDATE ON users FOR EACH ROW
   EXECUTE PROCEDURE refresh_updated_at_current();
+
+--- refresh_tokens
 
 CREATE TABLE refresh_tokens (
     id BIGSERIAL PRIMARY KEY,

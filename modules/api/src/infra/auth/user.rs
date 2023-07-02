@@ -14,13 +14,7 @@ pub struct UserRepoImpl {
 
 #[async_trait]
 impl UserRepo for UserRepoImpl {
-    async fn create(
-        &self,
-        name: &str,
-        email: &str,
-        password_hash: &str,
-        salt: &str,
-    ) -> Result<(), AppError> {
+    async fn create_with_password(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<(), AppError> {
         if self.find_by_email(email).await.is_ok() {
             return Err(AppError::DuplicateUserEmail);
         }
@@ -36,6 +30,27 @@ INSERT INTO users (name, email, password_hash, salt)
         .bind(email)
         .bind(password_hash)
         .bind(salt)
+        .fetch_one(self.db.as_ref())
+        .await
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+
+        Ok(())
+    }
+
+    async fn create_without_password(&self, name: &str, email: &str) -> Result<(), AppError> {
+        if self.find_by_email(email).await.is_ok() {
+            return Err(AppError::DuplicateUserEmail);
+        }
+
+        sqlx::query(
+            r#"
+INSERT INTO users (name, email)
+    VALUES ($1, $2)
+    RETURNING id
+"#,
+        )
+        .bind(name)
+        .bind(email)
         .fetch_one(self.db.as_ref())
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;

@@ -33,10 +33,5 @@ pub fn sign(secret: &str, sub: &str, expires_in: Duration) -> Result<String, App
 }
 
 pub fn verify(secret: &str, token: &str) -> Result<Claims, AppError> {
-    Ok(jsonwebtoken::decode(
-        token,
-        &DecodingKey::from_secret(secret.as_bytes()),
-        &Validation::default(),
-    )
-    .map(|n| n.claims)?)
+    Ok(jsonwebtoken::decode(token, &DecodingKey::from_secret(secret.as_bytes()), &Validation::default()).map(|n| n.claims)?)
 }

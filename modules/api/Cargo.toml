@@ -41,6 +41,8 @@ jsonwebtoken = { workspace = true }
 validator = { workspace = true }
 headers = { workspace = true }
 once_cell = { workspace = true }
+reqwest = { workspace = true }
+base64 = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{routing::get, Json, Router};
 
 use crate::{
@@ -11,12 +9,12 @@ pub mod email;
 pub mod google;
 
 #[allow(unused)]
-pub fn gen_router(state: &Arc<AppState>) -> Router {
+pub fn gen_service(state: AppState) -> Router {
     Router::new()
         .route("/me", get(me))
-        .nest_service("/email", email::gen_router(state))
-        .nest_service("/google", google::gen_router(state))
-        .with_state(state.clone())
+        .nest_service("/email", email::gen_service(state.clone()))
+        .nest_service("/google", google::gen_service(state.clone()))
+        .with_state(state)
 }
 
 #[utoipa::path(

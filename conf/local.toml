@@ -5,5 +5,5 @@ database = "local_opxs"
 user = "postgres"
 password = "postgres"
 
-[jwt]
-secret = "test"
+[secret]
+id = "opxs-api"

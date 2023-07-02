@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{extract::State, routing::post, Json, Router};
 use hyper::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -12,12 +10,12 @@ use crate::{
 };
 
 #[allow(unused)]
-pub fn gen_router(state: &Arc<AppState>) -> Router {
+pub fn gen_service(state: AppState) -> Router {
     Router::new()
         .route("/register", post(register))
-        .route("/verification", post(register))
+        // .route("/verification", post(register))
         .route("/login", post(login))
-        .with_state(state.clone())
+        .with_state(state)
 }
 
 #[utoipa::path(
@@ -28,15 +26,8 @@ pub fn gen_router(state: &Arc<AppState>) -> Router {
         (status = 200)
     )
 )]
-pub async fn register(
-    State(state): State<Arc<AppState>>,
-    ValidatedJson(req): ValidatedJson<RegisterInput>,
-) -> Result<StatusCode, AppError> {
-    state
-        .service
-        .auth
-        .register(&req.name, &req.email, &req.password)
-        .await?;
+pub async fn register(State(state): State<AppState>, ValidatedJson(req): ValidatedJson<RegisterInput>) -> Result<StatusCode, AppError> {
+    state.service.auth.register_with_password(&req.name, &req.email, &req.password).await?;
 
     Ok(StatusCode::OK)
 }
@@ -70,11 +61,8 @@ pub async fn register(
         (status = 200, body = RegisterOutput)
     )
 )]
-async fn login(
-    State(state): State<Arc<AppState>>,
-    ValidatedJson(req): ValidatedJson<LoginInput>,
-) -> Result<Json<LoginOutput>, AppError> {
-    let result = state.service.auth.login(&req.email, &req.password).await?;
+async fn login(State(state): State<AppState>, ValidatedJson(req): ValidatedJson<LoginInput>) -> Result<Json<LoginOutput>, AppError> {
+    let result = state.service.auth.login_with_password(&req.email, &req.password).await?;
 
     Ok(Json(LoginOutput {
         token_type: "bearer".to_string(),

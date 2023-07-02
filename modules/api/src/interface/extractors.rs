@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     async_trait,
     extract::{rejection::JsonRejection, FromRequest, TypedHeader},
@@ -16,15 +14,14 @@ use crate::{
 };
 
 #[async_trait]
-impl<B> FromRequest<Arc<AppState>, B> for User
+impl<B> FromRequest<AppState, B> for User
 where
     B: Send + 'static,
 {
     type Rejection = AppError;
 
-    async fn from_request(req: Request<B>, state: &Arc<AppState>) -> Result<Self, Self::Rejection> {
-        let TypedHeader(Authorization(bearer)) =
-            TypedHeader::<Authorization<Bearer>>::from_request(req, state).await?;
+    async fn from_request(req: Request<B>, state: &AppState) -> Result<Self, Self::Rejection> {
+        let TypedHeader(Authorization(bearer)) = TypedHeader::<Authorization<Bearer>>::from_request(req, state).await?;
 
         let access_token = bearer.token();
         let user = state.service.auth.verify(access_token).await?;

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{extract::State, response::Redirect, routing::get, Json, Router};
 use serde_json::Value;
 use tower_http::cors::CorsLayer;
@@ -15,7 +13,7 @@ use crate::{
 pub struct WebServer;
 
 impl WebServer {
-    pub async fn serve(state: &AppState) -> anyhow::Result<()> {
+    pub async fn serve(state: AppState) -> anyhow::Result<()> {
         let cors = CorsLayer::new().allow_origin(tower_http::cors::Any);
 
         let app = Router::new()
@@ -23,15 +21,13 @@ impl WebServer {
             .merge(SwaggerUi::new("/api/docs").url("/api/api-doc/openapi.json", ApiDoc::openapi()))
             .nest_service(
                 "/api",
-                Router::new()
-                    .route("/", get(|| async { Redirect::permanent("/api/docs") }))
-                    .nest_service(
-                        "/v1",
-                        Router::new()
-                            .route("/health", get(health))
-                            .with_state(state.clone())
-                            .nest_service("/auth", auth::gen_router(state)),
-                    ),
+                Router::new().route("/", get(|| async { Redirect::permanent("/api/docs") })).nest_service(
+                    "/v1",
+                    Router::new()
+                        .route("/health", get(health))
+                        .with_state(state.clone())
+                        .nest_service("/auth", auth::gen_service(state.clone())),
+                ),
             )
             .layer(cors);
 
@@ -39,9 +35,7 @@ impl WebServer {
         let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 8080));
 
         tracing::info!("listening on: http://localhost:8080/api/docs");
-        axum::Server::bind(&addr)
-            .serve(app.into_make_service())
-            .await?;
+        axum::Server::bind(&addr).serve(app.into_make_service()).await?;
 
         Ok(())
     }
@@ -55,7 +49,7 @@ impl WebServer {
     )
 )]
 #[allow(unused)]
-pub async fn health(State(state): State<Arc<AppState>>) -> Result<Json<Value>, AppError> {
+pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppError> {
     let ret = state.service.health.check().await?;
     Ok(Json(ret))
 }
@@ -87,11 +81,9 @@ impl utoipa::Modify for SecurityAddon {
         if let Some(components) = openapi.components.as_mut() {
             components.add_security_scheme(
                 "bearer_token",
-                utoipa::openapi::security::SecurityScheme::Http(
-                    utoipa::openapi::security::Http::new(
-                        utoipa::openapi::security::HttpAuthScheme::Bearer,
-                    ),
-                ),
+                utoipa::openapi::security::SecurityScheme::Http(utoipa::openapi::security::Http::new(
+                    utoipa::openapi::security::HttpAuthScheme::Bearer,
+                )),
             )
         }
     }

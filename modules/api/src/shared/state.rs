@@ -9,15 +9,19 @@ use super::{service::AppService, AppConfig, AppInfo};
 
 #[derive(Clone)]
 pub struct AppState {
-    pub info: AppInfo,
-    pub conf: AppConfig,
+    pub info: Arc<AppInfo>,
+    pub conf: Arc<AppConfig>,
     pub db: Arc<PgPool>,
-    pub service: AppService,
+    pub service: Arc<AppService>,
     cookie_key: cookie::Key,
 }
 
 impl AppState {
     pub async fn new(info: AppInfo, conf: AppConfig) -> anyhow::Result<Self> {
+        let info = Arc::new(info);
+
+        let conf = Arc::new(conf);
+
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
@@ -25,7 +29,8 @@ impl AppState {
                 .connect(&conf.postgres.url)
                 .await?,
         );
-        let service = AppService::new(&info, &conf, &db);
+
+        let service = Arc::new(AppService::new(&info, &conf, &db));
 
         Ok(Self {
             info,

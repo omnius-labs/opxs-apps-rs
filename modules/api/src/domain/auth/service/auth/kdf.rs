@@ -19,13 +19,10 @@ pub enum KdfAlgorithm {
 
 impl Kdf {
     pub fn new(algorithm: KdfAlgorithm, iterations: u32) -> Self {
-        Self {
-            algorithm,
-            iterations,
-        }
+        Self { algorithm, iterations }
     }
 
-    pub fn salt(&self) -> anyhow::Result<Vec<u8>> {
+    pub fn gen_salt(&self) -> anyhow::Result<Vec<u8>> {
         let mut salt = vec![0; self.get_credential_len()];
 
         let rng = rand::SystemRandom::new();
@@ -81,7 +78,7 @@ mod tests {
     fn simple_test() {
         let kdf = Kdf::new(KdfAlgorithm::Pbkdf2HmacSha256, 100);
 
-        let salt = kdf.salt().unwrap();
+        let salt = kdf.gen_salt().unwrap();
         let hash = kdf.derive("test", &salt).unwrap();
 
         let result_ok = kdf.verify("test", &salt, &hash).unwrap();

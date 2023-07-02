@@ -12,12 +12,7 @@ pub struct RefreshTokenRepoImpl {
 
 #[async_trait]
 impl RefreshTokenRepo for RefreshTokenRepoImpl {
-    async fn create(
-        &self,
-        user_id: &i64,
-        token: &str,
-        expires_at: &DateTime<Utc>,
-    ) -> Result<(), AppError> {
+    async fn create(&self, user_id: &i64, token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
         sqlx::query(
             r#"
 INSERT INTO refresh_tokens (user_id, token, expires_at)

@@ -21,9 +21,9 @@ pub enum AppError {
     #[error(transparent)]
     ValidationError(#[from] validator::ValidationErrors),
     #[error("user not found")]
+    RegisterError(anyhow::Error),
+    #[error("user not found")]
     UserNotFound,
-    // #[error("wrong credentials")]
-    // WrongCredentials,
     #[error("password doesn't match")]
     WrongPassword,
     #[error("duplicate user email")]

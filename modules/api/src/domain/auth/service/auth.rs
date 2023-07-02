@@ -25,7 +25,7 @@ pub struct AuthService {
 }
 
 impl AuthService {
-    pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<(), AppError> {
+    pub async fn register_with_password(&self, name: &str, email: &str, password: &str) -> Result<(), AppError> {
         if self.user_repo.find_by_name(name).await.is_ok() {
             return Err(AppError::DuplicateUserName);
         }
@@ -33,25 +33,36 @@ impl AuthService {
             return Err(AppError::DuplicateUserEmail);
         }
 
-        let salt = self.kdf.salt()?;
+        let salt = self.kdf.gen_salt()?;
         let password_hash = self.kdf.derive(password, &salt)?;
 
         self.user_repo
-            .create(name, email, &hex::encode(password_hash), &hex::encode(salt))
+            .create_with_password(name, email, &hex::encode(password_hash), &hex::encode(salt))
             .await?;
 
         Ok(())
     }
 
-    // pub async fn email_verification(&self, token:&str) -> Result<(), AppError>{
+    pub async fn register_without_password(&self, name: &str, email: &str) -> Result<(), AppError> {
+        if self.user_repo.find_by_name(name).await.is_ok() {
+            return Err(AppError::DuplicateUserName);
+        }
+        if self.user_repo.find_by_email(email).await.is_ok() {
+            return Err(AppError::DuplicateUserEmail);
+        }
 
-    // }
+        self.user_repo.create_without_password(name, email).await?;
 
-    pub async fn login(&self, email: &str, password: &str) -> Result<AuthToken, AppError> {
+        Ok(())
+    }
+
+    // TODO
+    // SystemClockProvider
+    // RandomStringProvider
+    pub async fn login_with_password(&self, email: &str, password: &str) -> Result<AuthToken, AppError> {
         let user = self.user_repo.find_by_email(email).await?;
         let salt = hex::decode(user.salt).map_err(|e| AppError::UnexpectedError(e.into()))?;
-        let password_hash =
-            hex::decode(user.password_hash).map_err(|e| AppError::UnexpectedError(e.into()))?;
+        let password_hash = hex::decode(user.password_hash).map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         if !self.kdf.verify(password, &salt, &password_hash)? {
             return Err(AppError::WrongPassword);
@@ -61,9 +72,7 @@ impl AuthService {
         let refresh_token = Uuid::new_v4().simple().to_string();
         let expires_at = Utc::now() + Duration::days(14);
 
-        self.refresh_token_repo
-            .create(&user.id, &refresh_token, &expires_at)
-            .await?;
+        self.refresh_token_repo.create(&user.id, &refresh_token, &expires_at).await?;
 
         Ok(AuthToken {
             expires_in: 3600,
@@ -71,6 +80,26 @@ impl AuthService {
             refresh_token,
         })
     }
+
+    pub async fn login_without_password(&self, email: &str) -> Result<AuthToken, AppError> {
+        let user = self.user_repo.find_by_email(email).await?;
+
+        let access_token = jwt::sign(&self.jwt_conf.secret, email, Duration::hours(1))?;
+        let refresh_token = Uuid::new_v4().simple().to_string();
+        let expires_at = Utc::now() + Duration::days(14);
+
+        self.refresh_token_repo.create(&user.id, &refresh_token, &expires_at).await?;
+
+        Ok(AuthToken {
+            expires_in: 3600,
+            access_token,
+            refresh_token,
+        })
+    }
+
+    // pub async fn validate_email(&self, token:&str) -> Result<(), AppError>{
+
+    // }
 
     // pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken, AppError> {
     //     todo!()
