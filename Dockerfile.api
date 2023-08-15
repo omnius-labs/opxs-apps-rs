@@ -3,7 +3,8 @@ FROM debian:buster-slim AS runtime
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-    ca-certificates \
+    pkg-config \
+    libssl-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
