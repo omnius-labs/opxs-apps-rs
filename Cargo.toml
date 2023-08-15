@@ -1,5 +1,12 @@
 [workspace]
-members = ["./modules/api"]
+members = [
+    "./modules/api",
+    "./refs/core-rs/modules/base",
+    "./refs/core-rs/modules/cloud",
+    "./refs/core-rs/modules/image",
+    "./refs/core-rs/modules/migration",
+    "./refs/core-rs/modules/testkit",
+]
 exclude = ["refs/core-rs"]
 
 [workspace.package]
