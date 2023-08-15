@@ -24,7 +24,7 @@ where
         let TypedHeader(Authorization(bearer)) = TypedHeader::<Authorization<Bearer>>::from_request(req, state).await?;
 
         let access_token = bearer.token();
-        let user = state.service.auth.verify(access_token).await?;
+        let user = state.service.token.get_user(access_token).await?;
         Ok(user)
     }
 }

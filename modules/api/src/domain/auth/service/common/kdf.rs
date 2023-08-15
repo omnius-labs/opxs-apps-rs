@@ -69,7 +69,7 @@ impl Kdf {
     }
 }
 
-//#[cfg(feature = "stable-test")]
+#[cfg(feature = "stable-test")]
 #[cfg(test)]
 mod tests {
     use super::*;

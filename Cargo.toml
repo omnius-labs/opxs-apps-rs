@@ -1,9 +1,5 @@
 [workspace]
-members = [
-    "./modules/api",
-    "./refs/core-rs/modules/cloud",
-    "./refs/core-rs/modules/migration",
-]
+members = ["./modules/api"]
 exclude = ["refs/core-rs"]
 
 [workspace.package]
@@ -11,9 +7,14 @@ edition = "2021"
 authors = ["Lyrise <lyrise1984@gmail.com>"]
 
 [workspace.dependencies]
+omnius-core-base = { path = "./refs/core-rs/modules/base" }
 omnius-core-cloud = { path = "./refs/core-rs/modules/cloud" }
+omnius-core-image = { path = "./refs/core-rs/modules/image" }
 omnius-core-migration = { path = "./refs/core-rs/modules/migration" }
+omnius-core-testkit = { path = "./refs/core-rs/modules/testkit" }
 
+rand = "0.8.5"
+rand_chacha = "0.3.1"
 reqwest = { version = "0.11.18", features = ["json"] }
 anyhow = { version = "1.0.66", features = ["backtrace"] }
 async-trait = "0.1.63"
@@ -63,3 +64,4 @@ validator = { version = "0.16", features = ["derive"] }
 headers = "0.3.8"
 once_cell = "1.17.1"
 base64 = "0.21.2"
+futures = "0.3.28"

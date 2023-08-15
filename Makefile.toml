@@ -18,3 +18,9 @@ dependencies = ["fmt-check", "clippy"]
 command = "cargo"
 args = ["test"]
 dependencies = ["lint"]
+
+[tasks.watch]
+workspace = false
+command = "cargo"
+install_crate = "watch"
+args = ["watch", "-x", "run"]

@@ -3,18 +3,26 @@ use chrono::{DateTime, Utc};
 
 use crate::shared::AppError;
 
-use super::model::User;
+use super::model::{EmailUser, User};
 
 #[async_trait]
-pub trait UserRepo: Sync + Send + 'static {
-    async fn create_with_password(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<(), AppError>;
-    async fn create_without_password(&self, name: &str, email: &str) -> Result<(), AppError>;
-    async fn delete(&self, email: &str) -> Result<(), AppError>;
-    async fn find_by_email(&self, email: &str) -> Result<User, AppError>;
-    async fn find_by_name(&self, name: &str) -> Result<User, AppError>;
+pub trait EmailAuthRepo {
+    async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<i64, AppError>;
+    async fn delete_user(&self, email: &str) -> Result<(), AppError>;
+    async fn exist_user(&self, email: &str) -> Result<bool, AppError>;
+    async fn get_user(&self, email: &str) -> Result<EmailUser, AppError>;
 }
 
 #[async_trait]
-pub trait RefreshTokenRepo: Sync + Send + 'static {
-    async fn create(&self, user_id: &i64, token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError>;
+pub trait ProviderAuthRepo {
+    async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<i64, AppError>;
+    async fn delete_user(&self, provider_type: &str, provider_user_id: &str) -> Result<(), AppError>;
+    async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AppError>;
+    async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AppError>;
+}
+
+#[async_trait]
+pub trait TokenRepo {
+    async fn create_token(&self, user_id: &i64, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError>;
+    async fn get_user(&self, user_id: i64) -> Result<User, AppError>;
 }

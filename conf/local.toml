@@ -5,5 +5,9 @@ database = "local_opxs"
 user = "postgres"
 password = "postgres"
 
+[jwt.secret]
+current = "current"
+retired = "retired"
+
 [secret]
 id = "opxs-api"

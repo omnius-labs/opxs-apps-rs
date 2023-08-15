@@ -6,6 +6,8 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Error, ToSchema)]
 pub enum AppError {
+    #[error("world mismatch")]
+    WorldMismatchError,
     #[error(transparent)]
     SqlxError(#[from] sqlx::Error),
     #[error(transparent)]
@@ -23,6 +25,8 @@ pub enum AppError {
     #[error("user not found")]
     RegisterError(anyhow::Error),
     #[error("user not found")]
+    LoginError(anyhow::Error),
+    #[error("user not found")]
     UserNotFound,
     #[error("password doesn't match")]
     WrongPassword,
@@ -30,6 +34,8 @@ pub enum AppError {
     DuplicateUserEmail,
     #[error("duplicate user name")]
     DuplicateUserName,
+    #[error("duplicate user provider")]
+    DuplicateUserProvider,
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }

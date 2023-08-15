@@ -1,9 +1,9 @@
 use tracing::info;
 
-use omnius_core_cloud::secret::aws::AwsSecretReader;
+use omnius_core_cloud::secrets::aws::AwsSecretsReader;
 use omnius_core_migration::Migrator;
 
-use crate::shared::{AppConfig, AppInfo, AppState};
+use crate::shared::{AppConfig, AppInfo, AppState, WorldValidator};
 
 mod domain;
 mod infra;
@@ -23,9 +23,12 @@ async fn main() -> anyhow::Result<()> {
     let info = AppInfo::new()?;
     info!("{}", info);
 
-    let secret_reader = Box::new(AwsSecretReader::new().await?);
+    let secret_reader = Box::new(AwsSecretsReader::new().await?);
     let conf_path = format!("conf/{mode}.toml", mode = info.mode);
     let conf = AppConfig::load(&conf_path, secret_reader).await?;
+
+    let world_verifier = WorldValidator {};
+    world_verifier.verify(&info.mode, &conf.postgres.url).await?;
 
     let migrator = Migrator::new(&conf.postgres.url, "./migrations", "opxs-api", "").await?;
     migrator.migrate().await?;

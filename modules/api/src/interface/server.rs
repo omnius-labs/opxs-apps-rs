@@ -61,13 +61,18 @@ pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppErr
         auth::me,
         auth::email::register,
         auth::email::login,
+        auth::google::nonce,
+        auth::google::register,
+        auth::google::login,
     ),
     components(
         schemas(
-            domain::auth::model::User,
+            domain::auth::model::EmailUser,
             auth::email::RegisterInput,
             auth::email::LoginInput,
-            auth::email::LoginOutput,
+            auth::google::NonceOutput,
+            auth::google::RegisterInput,
+            auth::google::LoginInput,
         )
     ),
     modifiers(&SecurityAddon),

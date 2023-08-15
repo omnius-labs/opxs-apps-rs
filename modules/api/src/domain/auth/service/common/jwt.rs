@@ -1,6 +1,10 @@
-use chrono::{Duration, Utc};
+use std::sync::Arc;
+
+use chrono::{DateTime, Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
+
+use omnius_core_base::clock::SystemClock;
 
 use crate::shared::AppError;
 
@@ -12,10 +16,7 @@ pub struct Claims {
 }
 
 impl Claims {
-    pub fn new(sub: &str, expires_in: Duration) -> Self {
-        let iat = Utc::now();
-        let exp = iat + expires_in;
-
+    pub fn new(sub: &str, iat: DateTime<Utc>, exp: DateTime<Utc>) -> Self {
         Self {
             sub: sub.to_string(),
             iat: iat.timestamp(),
@@ -24,14 +25,18 @@ impl Claims {
     }
 }
 
-pub fn sign(secret: &str, sub: &str, expires_in: Duration) -> Result<String, AppError> {
+pub fn sign(secret: &str, sub: &str, expires_in: Duration, clock: &Arc<dyn SystemClock<Utc> + Send + Sync>) -> Result<String, AppError> {
+    let iat = clock.now();
+    let exp = iat + expires_in;
     Ok(jsonwebtoken::encode(
         &Header::default(),
-        &Claims::new(sub, expires_in),
+        &Claims::new(sub, iat, exp),
         &EncodingKey::from_secret(secret.as_bytes()),
     )?)
 }
 
 pub fn verify(secret: &str, token: &str) -> Result<Claims, AppError> {
-    Ok(jsonwebtoken::decode(token, &DecodingKey::from_secret(secret.as_bytes()), &Validation::default()).map(|n| n.claims)?)
+    let key = DecodingKey::from_secret(secret.as_bytes());
+    let validation = Validation::default();
+    Ok(jsonwebtoken::decode(token, &key, &validation).map(|token| token.claims)?)
 }

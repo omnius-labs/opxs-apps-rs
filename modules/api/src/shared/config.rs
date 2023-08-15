@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use config::Config as ConfigToml;
 use serde::Deserialize;
 
-use omnius_core_cloud::secret::SecretReader;
+use omnius_core_cloud::secrets::SecretsReader;
 
 const APPLICATION_NAME: &str = "opxs-api";
 
@@ -25,7 +25,13 @@ struct PostgresToml {
 
 #[derive(Debug, Deserialize)]
 struct JwtToml {
-    pub secret: String,
+    pub secret: JwtSecretToml,
+}
+
+#[derive(Debug, Deserialize)]
+struct JwtSecretToml {
+    pub current: String,
+    pub retired: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -58,7 +64,13 @@ pub struct PostgresConfig {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JwtConfig {
-    pub secret: String,
+    pub secret: JwtSecretConfig,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JwtSecretConfig {
+    pub current: String,
+    pub retired: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -73,7 +85,7 @@ pub struct GoogleAuthConfig {
 }
 
 impl AppConfig {
-    pub async fn load(path: &str, secret_reader: Box<dyn SecretReader>) -> anyhow::Result<Self> {
+    pub async fn load(path: &str, secret_reader: Box<dyn SecretsReader>) -> anyhow::Result<Self> {
         let toml = ConfigToml::builder().add_source(config::File::with_name(path)).build()?;
         let mut toml: AppToml = toml.try_deserialize()?;
 
@@ -81,7 +93,8 @@ impl AppConfig {
             let secret_value = secret_reader.read_value(&secret.id).await?;
             let postgres_user = secret_value.get("postgres_user").map(|n| n.as_str().unwrap_or_default().to_string());
             let postgres_password = secret_value.get("postgres_password").map(|n| n.as_str().unwrap_or_default().to_string());
-            let jwt_secret = secret_value.get("jwt_secret").map(|n| n.as_str().unwrap_or_default().to_string());
+            let jwt_secret_current = secret_value.get("jwt_secret_current").map(|n| n.as_str().unwrap_or_default().to_string());
+            let jwt_secret_retired = secret_value.get("jwt_secret_retired").map(|n| n.as_str().unwrap_or_default().to_string());
             let auth_google_client_id = secret_value
                 .get("auth_google_client_id")
                 .map(|n| n.as_str().unwrap_or_default().to_string());
@@ -99,10 +112,13 @@ impl AppConfig {
                     toml.postgres.password = Some(postgres_password);
                 }
             }
-            if toml.jwt.is_none() {
-                if let Some(jwt_secret) = jwt_secret {
-                    toml.jwt = Some(JwtToml { secret: jwt_secret });
-                }
+            if toml.jwt.is_none() && jwt_secret_current.is_some() && jwt_secret_retired.is_some() {
+                toml.jwt = Some(JwtToml {
+                    secret: JwtSecretToml {
+                        current: jwt_secret_current.unwrap(),
+                        retired: jwt_secret_retired.unwrap(),
+                    },
+                });
             }
             if toml.auth.is_none() && auth_google_client_id.is_some() && auth_google_client_secret.is_some() {
                 toml.auth = Some(AuthToml {
@@ -137,7 +153,12 @@ impl AppConfig {
 
         Ok(Self {
             postgres: PostgresConfig { url: postgres_url },
-            jwt: JwtConfig { secret: jwt_secret },
+            jwt: JwtConfig {
+                secret: JwtSecretConfig {
+                    current: jwt_secret.current,
+                    retired: jwt_secret.retired,
+                },
+            },
             auth: AuthConfig {
                 google: GoogleAuthConfig {
                     client_id: auth_google_client_id,
@@ -150,14 +171,14 @@ impl AppConfig {
 
 #[cfg(test)]
 mod tests {
-    use omnius_core_cloud::secret::aws::AwsSecretReader;
+    use omnius_core_cloud::secrets::aws::AwsSecretsReader;
 
     use super::*;
 
     #[ignore]
     #[tokio::test]
     async fn secret_reader_test() {
-        let secret_reader = Box::new(AwsSecretReader::new().await.unwrap());
+        let secret_reader = Box::new(AwsSecretsReader::new().await.unwrap());
         let app_config = AppConfig::load("../../conf/dev", secret_reader).await.unwrap();
         println!("{:?}", app_config);
     }

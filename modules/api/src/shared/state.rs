@@ -3,14 +3,18 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 use axum_extra::extract::cookie;
 use chrono::Duration;
+use omnius_core_base::{
+    clock::SystemClockUtc,
+    random_string::{RandomBase16StringCase, RandomBase16StringProvider},
+};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
-use super::{service::AppService, AppConfig, AppInfo};
+use super::{AppConfig, AppInfo, AppService};
 
 #[derive(Clone)]
 pub struct AppState {
-    pub info: Arc<AppInfo>,
-    pub conf: Arc<AppConfig>,
+    pub info: AppInfo,
+    pub conf: AppConfig,
     pub db: Arc<PgPool>,
     pub service: Arc<AppService>,
     cookie_key: cookie::Key,
@@ -18,10 +22,11 @@ pub struct AppState {
 
 impl AppState {
     pub async fn new(info: AppInfo, conf: AppConfig) -> anyhow::Result<Self> {
-        let info = Arc::new(info);
-
-        let conf = Arc::new(conf);
-
+        let system_clock = Arc::new(SystemClockUtc {});
+        let random_string_generator = Arc::new(RandomBase16StringProvider {
+            len: 32,
+            string_case: RandomBase16StringCase::Lower,
+        });
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
@@ -30,7 +35,7 @@ impl AppState {
                 .await?,
         );
 
-        let service = Arc::new(AppService::new(&info, &conf, &db));
+        let service = Arc::new(AppService::new(&info, &conf, db.clone(), system_clock, random_string_generator));
 
         Ok(Self {
             info,
