@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS runtime
+FROM debian:buster-slim AS runtime
 
 WORKDIR /app
 
