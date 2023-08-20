@@ -67,12 +67,15 @@ DELETE FROM users
     }
 
     async fn exist_user(&self, email: &str) -> Result<bool, AppError> {
-        let row = sqlx::query(
+        let (existed,): (bool,) = sqlx::query_as(
             r#"
-SELECT COUNT(1) FROM users u
-    JOIN users_auth_email e on u.id = e.user_id
-    WHERE e.email = $1
-    LIMIT 1;
+SELECT EXISTS (
+    SELECT COUNT(1)
+        FROM users u
+        JOIN users_auth_email e on u.id = e.user_id
+        WHERE e.email = $1
+        LIMIT 1
+);
 "#,
         )
         .bind(email)
@@ -80,25 +83,28 @@ SELECT COUNT(1) FROM users u
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
-        let count = row.try_get::<i64, _>(0)?;
-
-        Ok(count == 1)
+        Ok(existed)
     }
 
     async fn get_user(&self, email: &str) -> Result<EmailUser, AppError> {
-        let user: EmailUser = sqlx::query_as(
+        let user: Option<EmailUser> = sqlx::query_as(
             r#"
-SELECT u.id, e.email, e.password_hash, e.salt, u.created_at, u.updated_at FROM users u
+SELECT u.id, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
+    FROM users u
     JOIN users_auth_email e on u.id = e.user_id
     WHERE e.email = $1
     LIMIT 1;
 "#,
         )
         .bind(email)
-        .fetch_one(self.db.as_ref())
+        .fetch_optional(self.db.as_ref())
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
-        Ok(user)
+        if user.is_none() {
+            return Err(AppError::UserNotFound);
+        }
+
+        Ok(user.unwrap())
     }
 }

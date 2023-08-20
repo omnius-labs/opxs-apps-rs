@@ -1,16 +1,16 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use omnius_core_base::{clock::SystemClock, random_string::RandomStringGenerator};
+use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 use sqlx::PgPool;
 
 use crate::{
     domain::{
-        auth::service::{EmailAuthService, GoogleAuthService, GoogleOAuth2ProviderImpl, Kdf, KdfAlgorithm, TokenService},
+        auth::service::{EmailAuthService, GoogleAuthService, GoogleOAuth2ProviderImpl, Kdf, KdfAlgorithm, TokenService, UserService},
         health::service::HealthService,
     },
     infra::{
-        auth::{email_auth::EmailAuthRepoImpl, provider_auth::ProviderAuthRepoImpl, token::TokenRepoImpl},
+        auth::{email_auth::EmailAuthRepoImpl, provider_auth::ProviderAuthRepoImpl, token::TokenRepoImpl, user::UserRepoImpl},
         health::world::WorldRepoImpl,
     },
 };
@@ -18,10 +18,13 @@ use crate::{
 use super::{AppConfig, AppInfo};
 
 pub struct AppService {
+    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
     pub health: HealthService,
     pub email_auth: EmailAuthService,
     pub google_auth: GoogleAuthService,
     pub token: TokenService,
+    pub user: UserService,
 }
 
 impl AppService {
@@ -30,9 +33,11 @@ impl AppService {
         conf: &AppConfig,
         db: Arc<PgPool>,
         system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
-        random_string_generator: Arc<dyn RandomStringGenerator + Send + Sync>,
+        random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
     ) -> Self {
         Self {
+            system_clock: system_clock.clone(),
+            random_bytes_provider: random_bytes_provider.clone(),
             health: HealthService {
                 info: info.clone(),
                 world_repo: Arc::new(WorldRepoImpl { db: db.clone() }),
@@ -49,9 +54,12 @@ impl AppService {
             },
             token: TokenService {
                 system_clock: system_clock.clone(),
-                token_generator: random_string_generator.clone(),
+                random_bytes_provider: random_bytes_provider.clone(),
                 jwt_conf: conf.jwt.clone(),
-                token_repo: Arc::new(TokenRepoImpl { db }),
+                token_repo: Arc::new(TokenRepoImpl { db: db.clone() }),
+            },
+            user: UserService {
+                user_repo: Arc::new(UserRepoImpl { db }),
             },
         }
     }

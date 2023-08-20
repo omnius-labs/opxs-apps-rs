@@ -4,12 +4,14 @@ use axum::{
     http::Request,
     Json,
 };
+use chrono::{DateTime, NaiveDateTime, Utc};
 use headers::{authorization::Bearer, Authorization};
 use serde::de::DeserializeOwned;
+use tracing::info;
 use validator::Validate;
 
 use crate::{
-    domain::auth::model::User,
+    domain::auth::{model::User, service::jwt},
     shared::{AppError, AppState},
 };
 
@@ -21,10 +23,22 @@ where
     type Rejection = AppError;
 
     async fn from_request(req: Request<B>, state: &AppState) -> Result<Self, Self::Rejection> {
-        let TypedHeader(Authorization(bearer)) = TypedHeader::<Authorization<Bearer>>::from_request(req, state).await?;
+        let TypedHeader(Authorization(bearer)) = TypedHeader::<Authorization<Bearer>>::from_request(req, state)
+            .await
+            .map_err(|_| AppError::BearerHeaderNotFound)?;
 
         let access_token = bearer.token();
-        let user = state.service.token.get_user(access_token).await?;
+        let claims = jwt::verify(&state.conf.jwt.secret.current, access_token)?;
+
+        let expired_at: DateTime<Utc> = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(claims.exp, 0).unwrap_or(NaiveDateTime::MIN), Utc);
+        let now = state.service.system_clock.now();
+        if expired_at < now {
+            return Err(AppError::AccessTokenExpired);
+        }
+
+        let user_id = claims.sub.parse::<i64>().map_err(|e| AppError::UnexpectedError(e.into()))?;
+        let user = state.service.user.get_user(&user_id).await?;
+
         Ok(user)
     }
 }

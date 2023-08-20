@@ -3,10 +3,7 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 use axum_extra::extract::cookie;
 use chrono::Duration;
-use omnius_core_base::{
-    clock::SystemClockUtc,
-    random_string::{RandomBase16StringCase, RandomBase16StringProvider},
-};
+use omnius_core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
 use super::{AppConfig, AppInfo, AppService};
@@ -23,10 +20,7 @@ pub struct AppState {
 impl AppState {
     pub async fn new(info: AppInfo, conf: AppConfig) -> anyhow::Result<Self> {
         let system_clock = Arc::new(SystemClockUtc {});
-        let random_string_generator = Arc::new(RandomBase16StringProvider {
-            len: 32,
-            string_case: RandomBase16StringCase::Lower,
-        });
+        let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
@@ -35,7 +29,7 @@ impl AppState {
                 .await?,
         );
 
-        let service = Arc::new(AppService::new(&info, &conf, db.clone(), system_clock, random_string_generator));
+        let service = Arc::new(AppService::new(&info, &conf, db.clone(), system_clock, random_bytes_provider));
 
         Ok(Self {
             info,

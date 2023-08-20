@@ -15,7 +15,7 @@ pub struct EmailAuthService {
 impl EmailAuthService {
     pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<i64, AppError> {
         if self.auth_repo.exist_user(email).await? {
-            return Err(AppError::DuplicateUserEmail);
+            return Err(AppError::DuplicateEmail);
         }
 
         let salt = self.kdf.gen_salt()?;

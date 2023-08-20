@@ -20,13 +20,13 @@ SELECT EXISTS (
         pg_tables
     WHERE
         schemaname = 'public' AND tablename  = '_world'
-    );
+);
 ";
         let (existed,): (bool,) = sqlx::query_as(sql).fetch_one(&db).await?;
 
         if !existed {
             let sql = "
-CREATE TABLE _world (
+CREATE TABLE IF NOT EXISTS _world (
     key VARCHAR(255) NOT NULL PRIMARY KEY,
     value TEXT NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -36,7 +36,8 @@ CREATE TABLE _world (
             sqlx::query(sql).execute(&db).await?;
         }
 
-        let row: Result<PgRow, sqlx::Error> = sqlx::query("SELECT (value) FROM _world WHERE key = 'mode'").fetch_one(&db).await;
+        let sql = "SELECT (value) FROM _world WHERE key = 'mode'";
+        let row: Result<PgRow, sqlx::Error> = sqlx::query(sql).fetch_one(&db).await;
 
         match row {
             Ok(row) => {
@@ -47,9 +48,9 @@ CREATE TABLE _world (
                 Ok(WorldValidatedStatus::Match)
             }
             Err(sqlx::Error::RowNotFound) => {
-                let sql = format!("INSERT INTO _world (key, value) VALUES ('mode', '{mode}')");
-                sqlx::query(&sql).execute(&db).await?;
-                Ok(WorldValidatedStatus::Set)
+                let sql = "INSERT INTO _world (key, value) VALUES ('mode', $1)";
+                sqlx::query(sql).bind(mode).execute(&db).await?;
+                Ok(WorldValidatedStatus::Init)
             }
             Err(err) => Err(err.into()),
         }
@@ -58,8 +59,8 @@ CREATE TABLE _world (
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum WorldValidatedStatus {
+    Init,
     Match,
-    Set,
 }
 
 #[cfg(test)]
@@ -75,7 +76,7 @@ mod tests {
 
         let world_verifier = WorldValidator {};
         let res = world_verifier.verify("aaa", &container.connection_string).await;
-        assert_eq!(res.unwrap(), WorldValidatedStatus::Set);
+        assert_eq!(res.unwrap(), WorldValidatedStatus::Init);
 
         let res = world_verifier.verify("aaa", &container.connection_string).await;
         assert_eq!(res.unwrap(), WorldValidatedStatus::Match);

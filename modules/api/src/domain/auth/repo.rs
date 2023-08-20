@@ -24,5 +24,12 @@ pub trait ProviderAuthRepo {
 #[async_trait]
 pub trait TokenRepo {
     async fn create_token(&self, user_id: &i64, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError>;
-    async fn get_user(&self, user_id: i64) -> Result<User, AppError>;
+    async fn delete_token(&self, refresh_token: &str) -> Result<(), AppError>;
+    async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError>;
+    async fn get_user_id(&self, refresh_token: &str, max_expires_at: &DateTime<Utc>) -> Result<i64, AppError>;
+}
+
+#[async_trait]
+pub trait UserRepo {
+    async fn get_user(&self, user_id: &i64) -> Result<User, AppError>;
 }

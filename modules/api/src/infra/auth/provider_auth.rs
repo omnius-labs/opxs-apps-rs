@@ -67,12 +67,15 @@ DELETE FROM users
     }
 
     async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AppError> {
-        let row = sqlx::query(
+        let (existed,): (bool,) = sqlx::query_as(
             r#"
-SELECT COUNT(1) FROM users u
-    JOIN users_auth_provider p on u.id = p.user_id
-    WHERE p.provider_type = $1 AND p.provider_user_id = $2
-    LIMIT 1;
+SELECT EXISTS (
+    SELECT COUNT(1)
+        FROM users u
+        JOIN users_auth_provider p on u.id = p.user_id
+        WHERE p.provider_type = $1 AND p.provider_user_id = $2
+        LIMIT 1
+);
 "#,
         )
         .bind(provider_type)
@@ -81,15 +84,14 @@ SELECT COUNT(1) FROM users u
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
-        let count = row.try_get::<i64, _>(0)?;
-
-        Ok(count == 1)
+        Ok(existed)
     }
 
     async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AppError> {
-        let user: User = sqlx::query_as(
+        let user: Option<User> = sqlx::query_as(
             r#"
-SELECT * FROM users u
+SELECT *
+    FROM users u
     JOIN users_auth_provider p on u.id = p.user_id
     WHERE p.provider_type = $1 AND p.provider_user_id = $2
     LIMIT 1;
@@ -97,10 +99,14 @@ SELECT * FROM users u
         )
         .bind(provider_type)
         .bind(provider_user_id)
-        .fetch_one(self.db.as_ref())
+        .fetch_optional(self.db.as_ref())
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
-        Ok(user)
+        if user.is_none() {
+            return Err(AppError::UserNotFound);
+        }
+
+        Ok(user.unwrap())
     }
 }

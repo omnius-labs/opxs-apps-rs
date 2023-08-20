@@ -29,10 +29,11 @@ impl GoogleAuthService {
         let id_token_payload = oauth2_token.id_token_payload()?;
 
         if auth_nonce != id_token_payload.nonce {
-            return Err(AppError::RegisterError(anyhow::anyhow!("Nonce mismatch error")));
+            return Err(AppError::RegisterRejection(anyhow::anyhow!("Nonce mismatch error")));
         }
-        if self.auth_repo.exist_user("google", &id_token_payload.sub).await? {
-            return Err(AppError::DuplicateUserName);
+
+        if let Ok(user) = self.auth_repo.get_user("google", &id_token_payload.sub).await {
+            return Ok(user.id);
         }
 
         let user_info = self.oauth2_provider.get_user_info(&oauth2_token.access_token).await?;
@@ -56,10 +57,7 @@ impl GoogleAuthService {
         let id_token_payload = oauth2_token.id_token_payload()?;
 
         if auth_nonce != id_token_payload.nonce {
-            return Err(AppError::LoginError(anyhow::anyhow!("Nonce mismatch error")));
-        }
-        if !self.auth_repo.exist_user("google", &id_token_payload.sub).await? {
-            return Err(AppError::UserNotFound);
+            return Err(AppError::LoginRejection(anyhow::anyhow!("Nonce mismatch error")));
         }
 
         let user = self.auth_repo.get_user("google", &id_token_payload.sub).await?;

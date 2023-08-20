@@ -6,8 +6,6 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Error, ToSchema)]
 pub enum AppError {
-    #[error("world mismatch")]
-    WorldMismatchError,
     #[error(transparent)]
     SqlxError(#[from] sqlx::Error),
     #[error(transparent)]
@@ -22,20 +20,25 @@ pub enum AppError {
     AxumJsonRejection(#[from] axum::extract::rejection::JsonRejection),
     #[error(transparent)]
     ValidationError(#[from] validator::ValidationErrors),
-    #[error("user not found")]
-    RegisterError(anyhow::Error),
-    #[error("user not found")]
-    LoginError(anyhow::Error),
+
+    #[error("world mismatch")]
+    WorldMismatchError,
+    #[error("register error")]
+    RegisterRejection(anyhow::Error),
+    #[error("login error")]
+    LoginRejection(anyhow::Error),
+    #[error("bearer header not found")]
+    BearerHeaderNotFound,
+    #[error("access token expired")]
+    AccessTokenExpired,
+    #[error("refresh token not found")]
+    RefreshTokenNotFound,
     #[error("user not found")]
     UserNotFound,
     #[error("password doesn't match")]
     WrongPassword,
-    #[error("duplicate user email")]
-    DuplicateUserEmail,
-    #[error("duplicate user name")]
-    DuplicateUserName,
-    #[error("duplicate user provider")]
-    DuplicateUserProvider,
+    #[error("duplicate email")]
+    DuplicateEmail,
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -43,12 +46,24 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let status = match self {
-            AppError::ValidationError(_) => StatusCode::BAD_REQUEST,
+            AppError::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::JwtError(_) => StatusCode::BAD_REQUEST,
+            AppError::TokioRecvError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::AxumTypedHeaderError(_) => StatusCode::BAD_REQUEST,
+            AppError::AxumExtensionError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::AxumJsonRejection(_) => StatusCode::BAD_REQUEST,
-            AppError::DuplicateUserEmail => StatusCode::CONFLICT,
-            AppError::DuplicateUserName => StatusCode::CONFLICT,
+            AppError::ValidationError(_) => StatusCode::BAD_REQUEST,
+
+            AppError::WorldMismatchError => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::RegisterRejection(_) => StatusCode::BAD_REQUEST,
+            AppError::LoginRejection(_) => StatusCode::BAD_REQUEST,
+            AppError::BearerHeaderNotFound => StatusCode::UNAUTHORIZED,
+            AppError::AccessTokenExpired => StatusCode::UNAUTHORIZED,
+            AppError::RefreshTokenNotFound => StatusCode::UNAUTHORIZED,
             AppError::UserNotFound => StatusCode::NOT_FOUND,
-            _ => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::WrongPassword => StatusCode::BAD_REQUEST,
+            AppError::DuplicateEmail => StatusCode::CONFLICT,
+            AppError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
         if status == StatusCode::INTERNAL_SERVER_ERROR {

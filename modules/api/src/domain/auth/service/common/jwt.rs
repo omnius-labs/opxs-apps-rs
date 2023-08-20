@@ -1,10 +1,6 @@
-use std::sync::Arc;
-
 use chrono::{DateTime, Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-
-use omnius_core_base::clock::SystemClock;
 
 use crate::shared::AppError;
 
@@ -25,8 +21,7 @@ impl Claims {
     }
 }
 
-pub fn sign(secret: &str, sub: &str, expires_in: Duration, clock: &Arc<dyn SystemClock<Utc> + Send + Sync>) -> Result<String, AppError> {
-    let iat = clock.now();
+pub fn sign(secret: &str, sub: &str, expires_in: Duration, iat: DateTime<Utc>) -> Result<String, AppError> {
     let exp = iat + expires_in;
     Ok(jsonwebtoken::encode(
         &Header::default(),
