@@ -22,9 +22,7 @@ where
     type Rejection = AppError;
 
     async fn from_request(req: Request<B>, state: &AppState) -> Result<Self, Self::Rejection> {
-        let TypedHeader(Authorization(bearer)) = TypedHeader::<Authorization<Bearer>>::from_request(req, state)
-            .await
-            .map_err(|_| AppError::BearerHeaderNotFound)?;
+        let TypedHeader(Authorization(bearer)) = TypedHeader::<Authorization<Bearer>>::from_request(req, state).await?;
 
         let access_token = bearer.token();
         let claims = jwt::verify(&state.conf.jwt.secret.current, access_token)?;

@@ -27,8 +27,6 @@ pub enum AppError {
     RegisterRejection(anyhow::Error),
     #[error("login error")]
     LoginRejection(anyhow::Error),
-    #[error("bearer header not found")]
-    BearerHeaderNotFound,
     #[error("access token expired")]
     AccessTokenExpired,
     #[error("refresh token not found")]
@@ -57,7 +55,6 @@ impl IntoResponse for AppError {
             AppError::WorldMismatchError => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::RegisterRejection(_) => StatusCode::BAD_REQUEST,
             AppError::LoginRejection(_) => StatusCode::BAD_REQUEST,
-            AppError::BearerHeaderNotFound => StatusCode::UNAUTHORIZED,
             AppError::AccessTokenExpired => StatusCode::UNAUTHORIZED,
             AppError::RefreshTokenNotFound => StatusCode::UNAUTHORIZED,
             AppError::UserNotFound => StatusCode::NOT_FOUND,
