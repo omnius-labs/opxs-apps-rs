@@ -7,7 +7,6 @@ use axum::{
 use chrono::{DateTime, NaiveDateTime, Utc};
 use headers::{authorization::Bearer, Authorization};
 use serde::de::DeserializeOwned;
-use tracing::info;
 use validator::Validate;
 
 use crate::{
