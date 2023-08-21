@@ -5,6 +5,8 @@
 
 ### Local
 
+https://localhost.omnius-labs.com/api/docs/
+
 ```sh
 # start opxs-api
 RUN_MODE=local cargo make watch
