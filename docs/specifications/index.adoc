@@ -1,8 +1,0 @@
-== Specifications
-
-=== Migration
-
-[plantuml]
-----
-include::migration.puml[]
-----
