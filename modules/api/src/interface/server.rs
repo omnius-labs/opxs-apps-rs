@@ -1,14 +1,9 @@
-use axum::{extract::State, response::Redirect, routing::get, Json, Router};
-use serde_json::Value;
+use axum::{response::Redirect, routing::get, Router};
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::{
-    domain,
-    interface::routes::auth,
-    shared::{AppError, AppState},
-};
+use crate::{domain, interface::routes::v1, shared::AppState};
 
 pub struct WebServer;
 
@@ -21,17 +16,12 @@ impl WebServer {
             .merge(SwaggerUi::new("/api/docs").url("/api/api-doc/openapi.json", ApiDoc::openapi()))
             .nest_service(
                 "/api",
-                Router::new().route("/", get(|| async { Redirect::permanent("/api/docs") })).nest_service(
-                    "/v1",
-                    Router::new()
-                        .route("/health", get(health))
-                        .with_state(state.clone())
-                        .nest_service("/auth", auth::gen_service(state.clone())),
-                ),
+                Router::new()
+                    .route("/", get(|| async { Redirect::permanent("/api/docs") }))
+                    .nest_service("/v1", v1::gen_service(state)),
             )
             .layer(cors);
 
-        // Run app on local server
         let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 8080));
 
         tracing::info!("listening on: http://localhost:8080/api/docs");
@@ -41,38 +31,25 @@ impl WebServer {
     }
 }
 
-#[utoipa::path(
-    get,
-    path = "/api/health",
-    responses(
-        (status = 200)
-    )
-)]
-#[allow(unused)]
-pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppError> {
-    let ret = state.service.health.check().await?;
-    Ok(Json(ret))
-}
-
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        health,
-        auth::me,
-        auth::email::register,
-        auth::email::login,
-        auth::google::nonce,
-        auth::google::register,
-        auth::google::login,
+        v1::health,
+        v1::auth::me,
+        v1::auth::email::register,
+        v1::auth::email::login,
+        v1::auth::google::nonce,
+        v1::auth::google::register,
+        v1::auth::google::login,
     ),
     components(
         schemas(
             domain::auth::model::EmailUser,
-            auth::email::RegisterInput,
-            auth::email::LoginInput,
-            auth::google::NonceOutput,
-            auth::google::RegisterInput,
-            auth::google::LoginInput,
+            v1::auth::email::RegisterInput,
+            v1::auth::email::LoginInput,
+            v1::auth::google::NonceOutput,
+            v1::auth::google::RegisterInput,
+            v1::auth::google::LoginInput,
         )
     ),
     modifiers(&SecurityAddon),
