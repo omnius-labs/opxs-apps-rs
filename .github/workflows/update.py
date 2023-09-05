@@ -9,7 +9,7 @@ def extract(filepath: str, pattern: str) -> str:
             if m:
                 return m.group(1)
 
-def replace_file(filepath: str,pattern:str, replacement: str) :
+def replace_file(filepath: str, pattern:str, replacement: str):
     with open(filepath, 'r') as file:
         file_contents = file.read()
         replaced_text = re.sub(pattern, replacement, file_contents)
@@ -24,7 +24,17 @@ print(chef_version)
 
 replace_filepath = 'Dockerfile.build'
 replace_pattern = r'lukemathwalker\/cargo-chef:\d+\.\d+\.\d+-rust-\d+\.\d+\.\d+-slim-buster'
-replace_text = r'lukemathwalker/cargo-chef:{0}-rust-{1}-slim-buster'.format(chef_version,rust_version)
+replace_text = r'lukemathwalker/cargo-chef:{0}-rust-{1}-slim-buster'.format(chef_version, rust_version)
+replace_file(replace_filepath, replace_pattern, replace_text)
+
+replace_filepath = '.github/workflows/test.yml'
+replace_pattern = r'dtolnay/rust-toolchain@\d+\.\d+\.\d+'
+replace_text = r'dtolnay/rust-toolchain@{0}'.format(rust_version)
+replace_file(replace_filepath, replace_pattern, replace_text)
+
+replace_filepath = '.github/workflows/test-slim.yml'
+replace_pattern = r'dtolnay/rust-toolchain@\d+\.\d+\.\d+'
+replace_text = r'dtolnay/rust-toolchain@{0}'.format(rust_version)
 replace_file(replace_filepath, replace_pattern, replace_text)
 
 with open(os.environ.get("GITHUB_OUTPUT", "github_output.txt"), "a") as file:
