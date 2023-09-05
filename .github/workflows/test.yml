@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout submodule
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: omnius-labs/core-rs
           path: refs/core-rs
@@ -47,9 +47,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout submodule
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: omnius-labs/core-rs
           path: refs/core-rs
