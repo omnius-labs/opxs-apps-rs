@@ -13,9 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.label.name == 'dependabot'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkout submodule
+        uses: actions/checkout@v2
+        with:
+          repository: omnius-labs/core-rs
+          path: refs/core-rs
+          ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
+          persist-credentials: true
+
+      - name: Update submodule
+        run: git submodule update --init
       - name: update rust version
         id: update_rust_version
         run: python .github/workflows/update.py
+
       - name: create pull request
         uses: peter-evans/create-pull-request@v4
         with:
