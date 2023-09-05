@@ -1,10 +1,12 @@
 version: 2
 updates:
-- package-ecosystem: docker
-  directory: "/"
-  schedule:
-  interval: "daily"
-  groups:
-    dependencies:
-      patterns:
-        - "*"
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "dependabot"
+    groups:
+      dependencies:
+        patterns:
+          - "*"

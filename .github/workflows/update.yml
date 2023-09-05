@@ -1,0 +1,20 @@
+name: update
+
+on:
+  pull_request:
+    types: [opened, labeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    if: github.event.label.name == 'dependabot'
+    steps:
+      - name: Display the path
+        run: |
+          import os
+          print(os.environ['PATH'])
+        shell: python
