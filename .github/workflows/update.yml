@@ -22,18 +22,17 @@ jobs:
           path: refs/core-rs
           ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
           persist-credentials: true
-
       - name: Update submodule
         run: git submodule update --init
+
       - name: update rust version
         id: update_rust_version
         run: python .github/workflows/update.py
-
       - name: create pull request
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.PAT_WORKFLOW_UPDATE }}
           base: ${{ github.head_ref }}
-          commit-message: Update rust
+          commit-message: "update: rust version"
           delete-branch: true
-          title: "Update Rust ${{ steps.update_rust_version.outputs.rust_version }}"
+          title: "[Update] Rust version ${{ steps.update_rust_version.outputs.rust_version }}"
