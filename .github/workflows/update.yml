@@ -13,8 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.label.name == 'dependabot'
     steps:
-      - name: Display the path
-        run: |
-          import os
-          print(os.environ['PATH'])
-        shell: python
+      - name: update rust version
+        id: update_rust_version
+        run: python .github/workflows/update.py
+      - name: create pull request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: Update rust
+          delete-branch: true
+          title: "Update Rust ${{ steps.update_rust_version.outputs.rust_version }}"
