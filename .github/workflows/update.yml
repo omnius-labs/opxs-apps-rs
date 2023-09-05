@@ -32,6 +32,7 @@ jobs:
       - name: create pull request
         uses: peter-evans/create-pull-request@v4
         with:
+          token: ${{ env.PAT_WORKFLOW_UPDATE }}
           base: ${{ github.head_ref }}
           commit-message: Update rust
           delete-branch: true
