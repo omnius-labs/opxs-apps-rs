@@ -37,12 +37,12 @@ pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppErr
     Ok(Json(ret))
 }
 
-async fn handle_web_socket_upgrade(ws: WebSocketUpgrade) -> Response {
-    ws.on_upgrade(handle_web_socket)
+async fn handle_web_socket_upgrade(wsu: WebSocketUpgrade) -> Response {
+    wsu.on_upgrade(handle_web_socket)
 }
 
-async fn handle_web_socket(socket: WebSocket) {
-    let (sender, receiver) = socket.split();
+async fn handle_web_socket(ws: WebSocket) {
+    let (sender, receiver) = ws.split();
 
     tokio::spawn(write(sender));
     tokio::spawn(read(receiver));

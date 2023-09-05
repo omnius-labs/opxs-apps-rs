@@ -6,12 +6,15 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Error, ToSchema)]
 pub enum AppError {
+    // Library
     #[error(transparent)]
     SqlxError(#[from] sqlx::Error),
     #[error(transparent)]
     JwtError(#[from] jsonwebtoken::errors::Error),
     #[error(transparent)]
     TokioRecvError(#[from] tokio::sync::oneshot::error::RecvError),
+    #[error(transparent)]
+    AxumError(#[from] axum::Error),
     #[error(transparent)]
     AxumTypedHeaderError(#[from] axum::extract::rejection::TypedHeaderRejection),
     #[error(transparent)]
@@ -20,7 +23,14 @@ pub enum AppError {
     AxumJsonRejection(#[from] axum::extract::rejection::JsonRejection),
     #[error(transparent)]
     ValidationError(#[from] validator::ValidationErrors),
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
 
+    // WebSocket
+    #[error("web socket handshake error")]
+    WebSocketHandshakeError(anyhow::Error),
+
+    // Service
     #[error("world mismatch")]
     WorldMismatchError,
     #[error("register error")]
@@ -37,8 +47,6 @@ pub enum AppError {
     WrongPassword,
     #[error("duplicate email")]
     DuplicateEmail,
-    #[error(transparent)]
-    UnexpectedError(#[from] anyhow::Error),
 }
 
 impl IntoResponse for AppError {
