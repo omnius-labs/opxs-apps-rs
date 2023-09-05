@@ -18,15 +18,9 @@ def replace_file(filepath: str, pattern:str, replacement: str):
         file.write(replaced_text)
 
 rust_version = extract('rust-toolchain', r'(\d+\.\d+\.\d+)')
-chef_version = extract('Dockerfile.build', r'FROM lukemathwalker\/cargo-chef:(\d+\.\d+\.\d+)-rust-\d+\.\d+\.\d+-slim-buster AS chef')
 print(rust_version)
-print(chef_version)
 
-replace_filepath = 'Dockerfile.build'
-replace_pattern = r'lukemathwalker\/cargo-chef:\d+\.\d+\.\d+-rust-\d+\.\d+\.\d+-slim-buster'
-replace_text = r'lukemathwalker/cargo-chef:{0}-rust-{1}-slim-buster'.format(chef_version, rust_version)
-replace_file(replace_filepath, replace_pattern, replace_text)
-
+# workflows
 replace_filepath = '.github/workflows/test.yml'
 replace_pattern = r'dtolnay/rust-toolchain@\d+\.\d+\.\d+'
 replace_text = r'dtolnay/rust-toolchain@{0}'.format(rust_version)
@@ -37,5 +31,15 @@ replace_pattern = r'dtolnay/rust-toolchain@\d+\.\d+\.\d+'
 replace_text = r'dtolnay/rust-toolchain@{0}'.format(rust_version)
 replace_file(replace_filepath, replace_pattern, replace_text)
 
+# dockerfiles
+chef_version = extract('Dockerfile.build', r'FROM lukemathwalker\/cargo-chef:(\d+\.\d+\.\d+)-rust-\d+\.\d+\.\d+-slim-buster AS chef')
+print(chef_version)
+
+replace_filepath = 'Dockerfile.build'
+replace_pattern = r'lukemathwalker/cargo-chef:\d+\.\d+\.\d+-rust-\d+\.\d+\.\d+-slim-buster'
+replace_text = r'lukemathwalker/cargo-chef:{0}-rust-{1}-slim-buster'.format(chef_version, rust_version)
+replace_file(replace_filepath, replace_pattern, replace_text)
+
+# github outputs
 with open(os.environ.get("GITHUB_OUTPUT", "github_output.txt"), "a") as file:
     file.write('rust_version={0}'.format(rust_version))
