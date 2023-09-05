@@ -32,7 +32,7 @@ jobs:
       - name: create pull request
         uses: peter-evans/create-pull-request@v4
         with:
-          base: ${{ github.ref_name }}
+          base: ${{ github.head_ref }}
           commit-message: Update rust
           delete-branch: true
           title: "Update Rust ${{ steps.update_rust_version.outputs.rust_version }}"
