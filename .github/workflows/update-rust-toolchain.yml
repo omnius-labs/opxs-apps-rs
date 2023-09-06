@@ -36,3 +36,4 @@ jobs:
           commit-message: "update: rust version"
           delete-branch: true
           title: "[Update] Rust toolchain version ${{ steps.update_rust_version.outputs.rust_version }}"
+          branch: features/update-rust-version
