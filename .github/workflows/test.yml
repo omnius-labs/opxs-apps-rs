@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout submodule
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: omnius-labs/core-rs
           path: refs/core-rs
@@ -30,7 +30,7 @@ jobs:
         run: git submodule update --init
 
       - name: Setup rust toolchain
-        uses: dtolnay/rust-toolchain@1.71.1
+        uses: dtolnay/rust-toolchain@1.72.0
         with:
           components: clippy, rustfmt
       - name: Setup cargo make
@@ -47,9 +47,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout submodule
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: omnius-labs/core-rs
           path: refs/core-rs
@@ -59,7 +59,7 @@ jobs:
         run: git submodule update --init
 
       - name: Setup rust toolchain
-        uses: dtolnay/rust-toolchain@1.71.1
+        uses: dtolnay/rust-toolchain@1.72.0
         with:
           components: clippy, rustfmt
       - name: Setup cargo make
