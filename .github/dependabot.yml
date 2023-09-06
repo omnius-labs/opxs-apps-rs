@@ -20,3 +20,13 @@ updates:
       dependencies:
         patterns:
           - "docker"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "dependabot"
+    groups:
+      dependencies:
+        patterns:
+          - "github-actions"
