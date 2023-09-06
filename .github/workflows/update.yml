@@ -29,7 +29,7 @@ jobs:
         id: update_rust_version
         run: python .github/workflows/update.py
       - name: create pull request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.PAT_WORKFLOW_UPDATE }}
           base: ${{ github.head_ref }}
