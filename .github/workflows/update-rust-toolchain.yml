@@ -1,7 +1,7 @@
 name: update-rust-toolchain
 
 on:
-  push:
+  pull_request:
     paths:
       - "rust-toolchain"
 
