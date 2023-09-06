@@ -1,10 +1,9 @@
 name: update-rust-toolchain
 
 on:
-  pull_request:
+  push:
     paths:
       - "rust-toolchain"
-    types: [opened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
