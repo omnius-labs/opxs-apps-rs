@@ -1,8 +1,9 @@
-name: update
+name: update-rust-toolchain
 
 on:
   pull_request:
-    types: [opened, labeled]
+    paths:
+      - "rust-toolchain"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,7 +12,6 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    if: github.event.label.name == 'dependabot'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
 
       - name: update rust version
         id: update_rust_version
-        run: python .github/workflows/update.py
+        run: python .github/workflows/update-rust-toolchain.py
       - name: create pull request
         uses: peter-evans/create-pull-request@v5
         with:
@@ -35,4 +35,4 @@ jobs:
           base: ${{ github.head_ref }}
           commit-message: "update: rust version"
           delete-branch: true
-          title: "[Update] Rust version ${{ steps.update_rust_version.outputs.rust_version }}"
+          title: "[Update] Rust toolchain version ${{ steps.update_rust_version.outputs.rust_version }}"
