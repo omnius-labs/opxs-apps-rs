@@ -31,7 +31,6 @@ impl WebServer {
             )
             .layer(cors);
 
-        // Run app on local server
         let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 8080));
 
         tracing::info!("listening on: http://localhost:8080/api/docs");

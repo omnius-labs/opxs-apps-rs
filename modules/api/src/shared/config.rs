@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use config::Config as ConfigToml;
 use serde::Deserialize;
 
-use omnius_core_cloud::secrets::SecretsReader;
+use omnius_core_cloud::aws::secrets::SecretsReader;
 
 const APPLICATION_NAME: &str = "opxs-api";
 
@@ -90,7 +90,7 @@ impl AppConfig {
         let mut toml: AppToml = toml.try_deserialize()?;
 
         if let Some(secret) = &toml.secret {
-            let secret_value = secret_reader.read_value(&secret.id).await?;
+            let secret_value = serde_json::from_str::<serde_json::Value>(&secret_reader.read_value(&secret.id).await?)?;
             let postgres_user = secret_value.get("postgres_user").map(|n| n.as_str().unwrap_or_default().to_string());
             let postgres_password = secret_value.get("postgres_password").map(|n| n.as_str().unwrap_or_default().to_string());
             let jwt_secret_current = secret_value.get("jwt_secret_current").map(|n| n.as_str().unwrap_or_default().to_string());
@@ -171,14 +171,15 @@ impl AppConfig {
 
 #[cfg(test)]
 mod tests {
-    use omnius_core_cloud::secrets::aws::AwsSecretsReader;
+    use omnius_core_cloud::aws::secrets::SecretsReaderImpl;
 
     use super::*;
 
     #[ignore]
     #[tokio::test]
     async fn secret_reader_test() {
-        let secret_reader = Box::new(AwsSecretsReader::new().await.unwrap());
+        let sdk_config = aws_config::load_from_env().await;
+        let secret_reader = Box::new(SecretsReaderImpl::new(sdk_config).await.unwrap());
         let app_config = AppConfig::load("../../conf/dev", secret_reader).await.unwrap();
         println!("{:?}", app_config);
     }

@@ -1,6 +1,6 @@
 use tracing::info;
 
-use omnius_core_cloud::secrets::aws::AwsSecretsReader;
+use omnius_core_cloud::aws::secrets::SecretsReaderImpl;
 use omnius_core_migration::Migrator;
 
 use crate::shared::{AppConfig, AppInfo, AppState, WorldValidator};
@@ -23,7 +23,8 @@ async fn main() -> anyhow::Result<()> {
     let info = AppInfo::new()?;
     info!("{}", info);
 
-    let secret_reader = Box::new(AwsSecretsReader::new().await?);
+    let sdk_config = aws_config::load_from_env().await;
+    let secret_reader = Box::new(SecretsReaderImpl::new(sdk_config).await?);
     let conf_path = format!("conf/{mode}.toml", mode = info.mode);
     let conf = AppConfig::load(&conf_path, secret_reader).await?;
 
