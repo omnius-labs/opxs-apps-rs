@@ -2,6 +2,7 @@
 
 participant api
 database db
+
 api -> api : read migration files
 api -> db : fetch migration histories
 db --> api
