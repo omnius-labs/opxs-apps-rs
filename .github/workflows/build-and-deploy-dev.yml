@@ -72,3 +72,17 @@ jobs:
       - name: Update ECS
         run: |
           aws ecs update-service --cluster opxs-api-cluster --service opxs-api --force-new-deployment
+
+      - name: Build and Push image to Amazon ECR (opxs-batch-email-send)
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.batch-email-send
+          push: true
+          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send:latest
+          provenance: false
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send,mode=max
+      - name: Update Lambda
+        run: |
+          aws lambda update-function-code --function-name opxs-batch-email-send --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send:latestG

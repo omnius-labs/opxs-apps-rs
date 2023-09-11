@@ -4,10 +4,15 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
-use crate::{
-    domain::auth::{model::User, repo::TokenRepo},
-    shared::AppError,
-};
+use crate::{domain::auth::model::User, shared::AppError};
+
+#[async_trait]
+pub trait TokenRepo {
+    async fn create_token(&self, user_id: &i64, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError>;
+    async fn delete_token(&self, refresh_token: &str) -> Result<(), AppError>;
+    async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError>;
+    async fn get_user_id(&self, refresh_token: &str, max_expires_at: &DateTime<Utc>) -> Result<i64, AppError>;
+}
 
 pub struct TokenRepoImpl {
     pub db: Arc<PgPool>,

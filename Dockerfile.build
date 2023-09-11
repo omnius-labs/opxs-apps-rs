@@ -1,4 +1,4 @@
-FROM lukemathwalker/cargo-chef:0.1.62-rust-1.71.1-slim-buster AS chef
+FROM lukemathwalker/cargo-chef:0.1.62-rust-1.72.0-slim-buster AS chef
 
 WORKDIR /app
 
@@ -39,3 +39,5 @@ FROM debian:buster-slim AS runtime
 WORKDIR /app
 
 COPY --from=builder /app/target/release/opxs-api ./opxs-api
+COPY --from=builder /app/target/release/opxs-batch-email-send ./opxs-batch-email-send
+COPY --from=builder /app/target/release/opxs-batch-email-bounce ./opxs-batch-email-bounce

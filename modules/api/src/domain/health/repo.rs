@@ -1,8 +1,3 @@
-use async_trait::async_trait;
+mod world;
 
-use crate::shared::AppError;
-
-#[async_trait]
-pub trait WorldRepo {
-    async fn get_mode(&self) -> Result<String, AppError>;
-}
+pub use world::*;

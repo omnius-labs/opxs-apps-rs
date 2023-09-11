@@ -6,16 +6,19 @@ use omnius_core_migration::Migrator;
 use crate::shared::{AppConfig, AppInfo, AppState, WorldValidator};
 
 mod domain;
-mod infra;
 mod interface;
 mod shared;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     if cfg!(debug_assertions) {
-        tracing_subscriber::fmt().with_max_level(tracing::Level::TRACE).init();
+        tracing_subscriber::fmt().with_max_level(tracing::Level::TRACE).with_target(false).init();
     } else {
-        tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).json().init();
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::INFO)
+            .with_target(false)
+            .json()
+            .init();
     }
 
     info!("----- start -----");

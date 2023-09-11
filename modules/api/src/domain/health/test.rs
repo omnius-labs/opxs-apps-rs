@@ -9,8 +9,7 @@ mod tests {
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
     use crate::{
-        domain::health::service::HealthService,
-        infra::health::world::WorldRepoImpl,
+        domain::health::{repo::WorldRepoImpl, service::HealthService},
         shared::{AppInfo, WorldValidator},
     };
 

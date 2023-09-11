@@ -1,6 +1,8 @@
 [workspace]
 members = [
     "./modules/api",
+    "./modules/batch-email-send",
+    "./modules/batch-email-bounce",
     "./refs/core-rs/modules/base",
     "./refs/core-rs/modules/cloud",
     "./refs/core-rs/modules/image",
@@ -12,6 +14,7 @@ exclude = ["refs/core-rs"]
 [workspace.package]
 edition = "2021"
 authors = ["Lyrise <lyrise1984@gmail.com>"]
+version = "0.1.0"
 
 [workspace.dependencies]
 omnius-core-base = { path = "./refs/core-rs/modules/base" }

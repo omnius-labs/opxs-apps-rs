@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY ./conf ./conf
 COPY ./migrations ./migrations
-COPY ./bin/opxs-api /usr/local/bin/
+COPY ./bin/opxs-batch-email-send /usr/local/bin/
 
-ENTRYPOINT ["/usr/local/bin/opxs-api"]
+ENTRYPOINT ["/usr/local/bin/opxs-batch-email-send"]

@@ -4,15 +4,12 @@ use chrono::Utc;
 use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 use sqlx::PgPool;
 
-use crate::{
-    domain::{
-        auth::service::{EmailAuthService, GoogleAuthService, GoogleOAuth2ProviderImpl, Kdf, KdfAlgorithm, TokenService, UserService},
-        health::service::HealthService,
+use crate::domain::{
+    auth::{
+        repo::{EmailAuthRepoImpl, ProviderAuthRepoImpl, TokenRepoImpl, UserRepoImpl},
+        service::{EmailAuthService, GoogleAuthService, GoogleOAuth2ProviderImpl, Kdf, KdfAlgorithm, TokenService, UserService},
     },
-    infra::{
-        auth::{email_auth::EmailAuthRepoImpl, provider_auth::ProviderAuthRepoImpl, token::TokenRepoImpl, user::UserRepoImpl},
-        health::world::WorldRepoImpl,
-    },
+    health::{repo::WorldRepoImpl, service::HealthService},
 };
 
 use super::{AppConfig, AppInfo};

@@ -3,10 +3,15 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use sqlx::{PgPool, Row};
 
-use crate::{
-    domain::auth::{model::EmailUser, repo::EmailAuthRepo},
-    shared::AppError,
-};
+use crate::{domain::auth::model::EmailUser, shared::AppError};
+
+#[async_trait]
+pub trait EmailAuthRepo {
+    async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<i64, AppError>;
+    async fn delete_user(&self, email: &str) -> Result<(), AppError>;
+    async fn exist_user(&self, email: &str) -> Result<bool, AppError>;
+    async fn get_user(&self, email: &str) -> Result<EmailUser, AppError>;
+}
 
 pub struct EmailAuthRepoImpl {
     pub db: Arc<PgPool>,
