@@ -2308,7 +2308,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "opxs-batch-email-bounce"
+name = "opxs-batch-send-email"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2356,7 +2356,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "opxs-batch-email-send"
+name = "opxs-batch-send-email-feedback"
 version = "0.1.0"
 dependencies = [
  "anyhow",
