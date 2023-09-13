@@ -1,0 +1,9 @@
+FROM public.ecr.aws/lambda/provided:al2 AS runtime
+
+WORKDIR /app
+
+COPY ./conf ./conf
+COPY ./migrations ./migrations
+COPY ./bin/opxs-batch-send-email-feedback /usr/local/bin/
+
+ENTRYPOINT ["/usr/local/bin/opxs-batch-send-email-feedback"]

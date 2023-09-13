@@ -1,5 +1,5 @@
 [package]
-name = "opxs-batch-email-send"
+name = "opxs-batch-send-email"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }

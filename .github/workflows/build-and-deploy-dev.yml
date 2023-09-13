@@ -75,30 +75,30 @@ jobs:
         run: |
           aws ecs update-service --cluster opxs-api-cluster --service opxs-api --force-new-deployment
 
-      - name: Build and Push image to Amazon ECR (opxs-batch-email-send)
+      - name: Build and Push image to Amazon ECR (opxs-batch-send-email)
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: Dockerfile.batch-email-send
+          file: Dockerfile.batch-send-email
           push: true
-          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send:latest
+          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email:latest
           provenance: false
-          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send
-          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-send-email
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-send-email,mode=max
       - name: Update Lambda
         run: |
-          aws lambda update-function-code --function-name opxs-batch-email-send --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send:latest
+          aws lambda update-function-code --function-name opxs-batch-send-email --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email:latest
 
-      - name: Build and Push image to Amazon ECR (opxs-batch-email-bounce)
+      - name: Build and Push image to Amazon ECR (opxs-batch-send-email-feedback)
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: Dockerfile.batch-email-bounce
+          file: Dockerfile.batch-send-email-feedback
           push: true
-          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-bounce:latest
+          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email-feedback:latest
           provenance: false
-          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-bounce
-          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-bounce,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-send-email-feedback
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-send-email-feedback,mode=max
       - name: Update Lambda
         run: |
-          aws lambda update-function-code --function-name opxs-batch-email-bounce --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-bounce:latest
+          aws lambda update-function-code --function-name opxs-batch-send-email-feedback --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email-feedback:latest
