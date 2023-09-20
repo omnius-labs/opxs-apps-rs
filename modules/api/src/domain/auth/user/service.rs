@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
-use crate::{
-    domain::auth::{model::User, repo::UserRepo},
-    shared::AppError,
-};
+use crate::{domain::auth::model::User, shared::AppError};
+
+use super::UserRepo;
 
 pub struct UserService {
     pub user_repo: Arc<dyn UserRepo + Send + Sync>,

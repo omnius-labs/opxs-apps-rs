@@ -3,14 +3,14 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
 pub struct AuthToken {
     pub expires_in: i32,
     pub access_token: String,
     pub refresh_token: String,
 }
 
-#[derive(Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
 pub struct User {
     pub id: i64,
     pub name: String,
@@ -18,7 +18,7 @@ pub struct User {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
 pub struct EmailUser {
     pub id: i64,
     pub name: String,

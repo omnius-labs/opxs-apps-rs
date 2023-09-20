@@ -1,3 +1,6 @@
+pub mod common;
+pub mod email;
+pub mod google;
 pub mod model;
-pub mod repo;
-pub mod service;
+pub mod token;
+pub mod user;

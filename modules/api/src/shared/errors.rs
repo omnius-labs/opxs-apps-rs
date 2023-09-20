@@ -25,8 +25,6 @@ pub enum AppError {
     ValidationError(#[from] validator::ValidationErrors),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
-    #[error("web socket error")]
-    WebSocketError(anyhow::Error),
 
     // Service
     #[error("world mismatch")]
@@ -45,6 +43,8 @@ pub enum AppError {
     WrongPassword,
     #[error("duplicate email")]
     DuplicateEmail,
+    #[error("email verify token expired")]
+    EmailVerifyTokenExpired,
 }
 
 impl IntoResponse for AppError {
@@ -58,7 +58,7 @@ impl IntoResponse for AppError {
             AppError::AxumExtensionError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::AxumJsonRejection(_) => StatusCode::BAD_REQUEST,
             AppError::ValidationError(_) => StatusCode::BAD_REQUEST,
-            AppError::WebSocketError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
 
             AppError::WorldMismatchError => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::RegisterRejection(_) => StatusCode::BAD_REQUEST,
@@ -68,7 +68,7 @@ impl IntoResponse for AppError {
             AppError::UserNotFound => StatusCode::NOT_FOUND,
             AppError::WrongPassword => StatusCode::BAD_REQUEST,
             AppError::DuplicateEmail => StatusCode::CONFLICT,
-            AppError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::EmailVerifyTokenExpired => StatusCode::UNAUTHORIZED,
         };
 
         if status == StatusCode::INTERNAL_SERVER_ERROR {

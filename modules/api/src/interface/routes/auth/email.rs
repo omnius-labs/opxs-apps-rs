@@ -1,4 +1,5 @@
 use axum::{extract::State, routing::post, Json, Router};
+use hyper::StatusCode;
 use serde::Deserialize;
 use utoipa::ToSchema;
 use validator::Validate;
@@ -13,7 +14,7 @@ use crate::{
 pub fn gen_service(state: AppState) -> Router {
     Router::new()
         .route("/register", post(register))
-        // .route("/verification", post(register))
+        .route("/verify", post(verify))
         .route("/login", post(login))
         .with_state(state)
 }
@@ -23,15 +24,13 @@ pub fn gen_service(state: AppState) -> Router {
     path = "/api/v1/auth/email/register",
     request_body = RegisterInput,
     responses(
-        (status = 200, body = AuthToken)
+        (status = 200)
     )
 )]
-pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<Json<AuthToken>, AppError> {
-    let user_id = state.service.email_auth.register(&input.name, &input.email, &input.password).await?;
+pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<StatusCode, AppError> {
+    let _ = state.service.email_auth.register(&input.name, &input.email, &input.password).await?;
 
-    let auth_token = state.service.token.create(&user_id).await?;
-
-    Ok(Json(auth_token))
+    Ok(StatusCode::OK)
 }
 
 #[derive(Deserialize, ToSchema, Validate)]
@@ -44,31 +43,24 @@ pub struct RegisterInput {
     pub password: String,
 }
 
-// #[utoipa::path(
-//     post,
-//     path = "/api/v1/auth/email-verification",
-//     request_body = RegisterInput,
-//     responses(
-//         (status = 200)
-//     )
-// )]
-// pub async fn email_verification(
-//     State(state): State<Arc<AppState>>,
-//     ValidatedJson(req): ValidatedJson<EmailVerificationInput>,
-// ) -> Result<StatusCode, AppError> {
-//     state
-//         .service
-//         .auth
-//         .email_verification(&req.token)
-//         .await?;
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/email/verify",
+    request_body = RegisterInput,
+    responses(
+        (status = 200)
+    )
+)]
+pub async fn verify(State(state): State<AppState>, ValidatedJson(req): ValidatedJson<EmailVerificationInput>) -> Result<StatusCode, AppError> {
+    state.service.email_auth.verify(&req.token).await?;
 
-//     Ok(StatusCode::OK)
-// }
+    Ok(StatusCode::OK)
+}
 
-// #[derive(Deserialize, ToSchema, Validate)]
-// pub struct EmailVerificationInput {
-//     pub token: String,
-// }
+#[derive(Deserialize, ToSchema, Validate)]
+pub struct EmailVerificationInput {
+    pub token: String,
+}
 
 #[utoipa::path(
     post,

@@ -6,8 +6,11 @@ use sqlx::PgPool;
 
 use crate::domain::{
     auth::{
-        repo::{EmailAuthRepoImpl, ProviderAuthRepoImpl, TokenRepoImpl, UserRepoImpl},
-        service::{EmailAuthService, GoogleAuthService, GoogleOAuth2ProviderImpl, Kdf, KdfAlgorithm, TokenService, UserService},
+        common::{Kdf, KdfAlgorithm},
+        email::{EmailAuthRepoImpl, EmailAuthService},
+        google::{GoogleAuthService, GoogleOAuth2ProviderImpl, ProviderAuthRepoImpl},
+        token::{TokenRepoImpl, TokenService},
+        user::{UserRepoImpl, UserService},
     },
     health::{repo::WorldRepoImpl, service::HealthService},
 };
@@ -25,13 +28,7 @@ pub struct AppService {
 }
 
 impl AppService {
-    pub fn new(
-        info: &AppInfo,
-        conf: &AppConfig,
-        db: Arc<PgPool>,
-        system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
-        random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
-    ) -> Self {
+    pub fn new(info: &AppInfo, conf: &AppConfig, db: Arc<PgPool>, system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>, random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>) -> Self {
         Self {
             system_clock: system_clock.clone(),
             random_bytes_provider: random_bytes_provider.clone(),
@@ -41,12 +38,17 @@ impl AppService {
             },
             email_auth: EmailAuthService {
                 auth_repo: Arc::new(EmailAuthRepoImpl { db: db.clone() }),
+                system_clock: system_clock.clone(),
+                random_bytes_provider: random_bytes_provider.clone(),
                 jwt_conf: conf.jwt.clone(),
-                kdf: Kdf::new(KdfAlgorithm::Pbkdf2HmacSha256, 1024),
+                kdf: Kdf {
+                    algorithm: KdfAlgorithm::Pbkdf2HmacSha256,
+                    iterations: 1024,
+                },
             },
             google_auth: GoogleAuthService {
-                auth_repo: Arc::new(ProviderAuthRepoImpl { db: db.clone() }),
                 oauth2_provider: Arc::new(GoogleOAuth2ProviderImpl {}),
+                auth_repo: Arc::new(ProviderAuthRepoImpl { db: db.clone() }),
                 auth_conf: conf.auth.clone(),
             },
             token: TokenService {

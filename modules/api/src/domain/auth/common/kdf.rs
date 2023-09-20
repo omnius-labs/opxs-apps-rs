@@ -8,8 +8,8 @@ use ring::{
 
 #[derive(Clone)]
 pub struct Kdf {
-    algorithm: KdfAlgorithm,
-    iterations: u32,
+    pub algorithm: KdfAlgorithm,
+    pub iterations: u32,
 }
 
 #[derive(Clone)]
@@ -18,10 +18,6 @@ pub enum KdfAlgorithm {
 }
 
 impl Kdf {
-    pub fn new(algorithm: KdfAlgorithm, iterations: u32) -> Self {
-        Self { algorithm, iterations }
-    }
-
     pub fn gen_salt(&self) -> anyhow::Result<Vec<u8>> {
         let mut salt = vec![0; self.get_credential_len()];
 

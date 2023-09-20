@@ -2,7 +2,8 @@ use aws_lambda_events::event::sqs::SqsEvent;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use tracing::info;
 
-async fn function_handler(_event: LambdaEvent<SqsEvent>) -> Result<(), Error> {
+async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(), Error> {
+    info!("{:?}", event);
     Ok(())
 }
 

@@ -2,7 +2,8 @@ use aws_lambda_events::event::sns::SnsEvent;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use tracing::info;
 
-async fn function_handler(_event: LambdaEvent<SnsEvent>) -> Result<(), Error> {
+async fn function_handler(event: LambdaEvent<SnsEvent>) -> Result<(), Error> {
+    info!("{:?}", event);
     Ok(())
 }
 

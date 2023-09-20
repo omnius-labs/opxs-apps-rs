@@ -27,7 +27,9 @@ async fn main() -> anyhow::Result<()> {
     info!("{}", info);
 
     let sdk_config = aws_config::load_from_env().await;
-    let secret_reader = Box::new(SecretsReaderImpl::new(sdk_config).await?);
+    let secret_reader = Box::new(SecretsReaderImpl {
+        client: aws_sdk_secretsmanager::Client::new(&sdk_config),
+    });
     let conf_path = format!("conf/{mode}.toml", mode = info.mode);
     let conf = AppConfig::load(&conf_path, secret_reader).await?;
 

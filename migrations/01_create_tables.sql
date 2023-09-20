@@ -1,4 +1,4 @@
---- users
+-- users
 
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
@@ -12,7 +12,7 @@ CREATE TRIGGER update_users_updated_at_step1 BEFORE UPDATE ON users FOR EACH ROW
 CREATE TRIGGER update_users_updated_at_step2 BEFORE UPDATE OF updated_at ON users FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
 CREATE TRIGGER update_users_updated_at_step3 BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
 
---- users_auth_email
+-- users_auth_email
 
 CREATE TABLE users_auth_email (
     id BIGSERIAL PRIMARY KEY,
@@ -29,7 +29,7 @@ CREATE TRIGGER update_users_auth_email_updated_at_step1 BEFORE UPDATE ON users_a
 CREATE TRIGGER update_users_auth_email_updated_at_step2 BEFORE UPDATE OF updated_at ON users_auth_email FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
 CREATE TRIGGER update_users_auth_email_updated_at_step3 BEFORE UPDATE ON users_auth_email FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
 
---- users_auth_provider
+-- users_auth_provider
 
 CREATE TABLE users_auth_provider (
     id BIGSERIAL PRIMARY KEY,
@@ -45,7 +45,7 @@ CREATE TRIGGER update_users_auth_provider_updated_at_step1 BEFORE UPDATE ON user
 CREATE TRIGGER update_users_auth_provider_updated_at_step2 BEFORE UPDATE OF updated_at ON users_auth_provider FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
 CREATE TRIGGER update_users_auth_provider_updated_at_step3 BEFORE UPDATE ON users_auth_provider FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
 
---- users_tokens
+-- users_tokens
 
 CREATE TABLE users_tokens (
     id BIGSERIAL PRIMARY KEY,
@@ -59,3 +59,32 @@ CREATE TABLE users_tokens (
 CREATE TRIGGER update_users_tokens_updated_at_step1 BEFORE UPDATE ON users_tokens FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
 CREATE TRIGGER update_users_tokens_updated_at_step2 BEFORE UPDATE OF updated_at ON users_tokens FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
 CREATE TRIGGER update_users_tokens_updated_at_step3 BEFORE UPDATE ON users_tokens FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
+
+-- email_send_addresses
+
+CREATE TABLE email_send_addresses (
+    id BIGSERIAL PRIMARY KEY,
+    address VARCHAR(255) NOT NULL UNIQUE,
+    is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TRIGGER email_send_addresses_updated_at_step1 BEFORE UPDATE ON email_send_addresses FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
+CREATE TRIGGER email_send_addresses_updated_at_step2 BEFORE UPDATE OF updated_at ON email_send_addresses FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
+CREATE TRIGGER email_send_addresses_updated_at_step3 BEFORE UPDATE ON email_send_addresses FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
+
+-- email_send_logs
+
+CREATE TABLE email_send_logs (
+    id BIGSERIAL PRIMARY KEY,
+    email_send_address_id INTEGER NOT NULL,
+    event_type VARCHAR(32) NOT NULL,
+    event_detail TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (email_send_address_id) REFERENCES email_send_addresses(id) ON DELETE CASCADE
+);
+COMMENT ON COLUMN email_send_logs.event_type IS 'bounce or spam';
+CREATE TRIGGER email_send_logs_updated_at_step1 BEFORE UPDATE ON email_send_logs FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
+CREATE TRIGGER email_send_logs_updated_at_step2 BEFORE UPDATE OF updated_at ON email_send_logs FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
+CREATE TRIGGER email_send_logs_updated_at_step3 BEFORE UPDATE ON email_send_logs FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();

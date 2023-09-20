@@ -75,7 +75,7 @@ DELETE FROM users
         let (existed,): (bool,) = sqlx::query_as(
             r#"
 SELECT EXISTS (
-    SELECT COUNT(1)
+    SELECT u.id
         FROM users u
         JOIN users_auth_provider p on u.id = p.user_id
         WHERE p.provider_type = $1 AND p.provider_user_id = $2

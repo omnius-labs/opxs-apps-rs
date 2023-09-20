@@ -6,4 +6,11 @@
     "files.watcherExclude": {
         "**/target": true
     },
+    "cSpell.words": [
+        "omnius",
+        "opxs",
+        "sesv",
+        "testcontainers",
+        "testkit"
+    ],
 }

@@ -3,6 +3,7 @@ members = [
     "./modules/api",
     "./modules/batch-send-email",
     "./modules/batch-send-email-feedback",
+    "./modules/message",
     "./refs/core-rs/modules/base",
     "./refs/core-rs/modules/cloud",
     "./refs/core-rs/modules/image",
@@ -10,6 +11,7 @@ members = [
     "./refs/core-rs/modules/testkit",
 ]
 exclude = ["refs/core-rs"]
+resolver = "2"
 
 [workspace.package]
 edition = "2021"
@@ -22,6 +24,19 @@ omnius-core-cloud = { path = "./refs/core-rs/modules/cloud" }
 omnius-core-image = { path = "./refs/core-rs/modules/image" }
 omnius-core-migration = { path = "./refs/core-rs/modules/migration" }
 omnius-core-testkit = { path = "./refs/core-rs/modules/testkit" }
+
+opxs-message = { path = "./modules/message" }
+
+lambda_runtime = "0.8.1"
+aws_lambda_events = { version = "0.10.0", default-features = false, features = [
+    "sns",
+    "sqs",
+] }
+aws-config = "0.56.1"
+aws-sdk-secretsmanager = "0.30.0"
+aws-sdk-s3 = "0.30.0"
+aws-sdk-sqs = "0.30.0"
+aws-sdk-sesv2 = "0.30.0"
 
 rand = "0.8.5"
 rand_chacha = "0.3.1"
@@ -62,8 +77,6 @@ vergen = { version = "7", default-features = false, features = [
     "git",
 ] }
 urlencoding = "2.1.2"
-axum-aws-lambda = "0.4.0"
-lambda_http = "0.7"
 hyper = "0.14"
 tower = "0.4"
 thiserror = "1.0.40"
@@ -75,9 +88,3 @@ base64 = "0.21.2"
 futures = "0.3.28"
 futures-util = "0.3.28"
 serial_test = "2.0.0"
-
-aws-config = "0.56.1"
-aws-sdk-secretsmanager = "0.30.0"
-aws-sdk-s3 = "0.30.0"
-aws-sdk-sqs = "0.30.0"
-aws-sdk-sesv2 = "0.30.0"

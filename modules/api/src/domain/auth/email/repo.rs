@@ -11,6 +11,7 @@ pub trait EmailAuthRepo {
     async fn delete_user(&self, email: &str) -> Result<(), AppError>;
     async fn exist_user(&self, email: &str) -> Result<bool, AppError>;
     async fn get_user(&self, email: &str) -> Result<EmailUser, AppError>;
+    async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError>;
 }
 
 pub struct EmailAuthRepoImpl {
@@ -25,7 +26,7 @@ impl EmailAuthRepo for EmailAuthRepoImpl {
         let row = sqlx::query(
             r#"
 INSERT INTO users (name, authentication_type)
-    VALUES ($1, 'provider')
+    VALUES ($1, 'email')
     RETURNING id;
 "#,
         )
@@ -40,6 +41,11 @@ INSERT INTO users (name, authentication_type)
             r#"
 INSERT INTO users_auth_email (user_id, email, password_hash, salt)
     VALUES ($1, $2, $3, $4)
+    ON CONFLICT (email)
+    DO UPDATE SET
+        user_id = $1,
+        password_hash = $3,
+        salt = $4
     RETURNING id;
 "#,
         )
@@ -75,10 +81,10 @@ DELETE FROM users
         let (existed,): (bool,) = sqlx::query_as(
             r#"
 SELECT EXISTS (
-    SELECT COUNT(1)
+    SELECT u.id
         FROM users u
         JOIN users_auth_email e on u.id = e.user_id
-        WHERE e.email = $1
+        WHERE e.email = $1 AND e.email_verified = true
         LIMIT 1
 );
 "#,
@@ -94,10 +100,10 @@ SELECT EXISTS (
     async fn get_user(&self, email: &str) -> Result<EmailUser, AppError> {
         let user: Option<EmailUser> = sqlx::query_as(
             r#"
-SELECT u.id, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
+SELECT u.id, u.name, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
     FROM users u
     JOIN users_auth_email e on u.id = e.user_id
-    WHERE e.email = $1
+    WHERE e.email = $1 AND e.email_verified = true
     LIMIT 1;
 "#,
         )
@@ -111,5 +117,22 @@ SELECT u.id, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
         }
 
         Ok(user.unwrap())
+    }
+
+    async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError> {
+        sqlx::query(
+            r#"
+UPDATE users_auth_email
+    SET email_verified = $2
+    WHERE email = $1;
+"#,
+        )
+        .bind(email)
+        .bind(email_verified)
+        .execute(self.db.as_ref())
+        .await
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+
+        Ok(())
     }
 }

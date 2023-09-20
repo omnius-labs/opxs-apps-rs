@@ -179,7 +179,9 @@ mod tests {
     #[tokio::test]
     async fn secret_reader_test() {
         let sdk_config = aws_config::load_from_env().await;
-        let secret_reader = Box::new(SecretsReaderImpl::new(sdk_config).await.unwrap());
+        let secret_reader = Box::new(SecretsReaderImpl {
+            client: aws_sdk_secretsmanager::Client::new(&sdk_config),
+        });
         let app_config = AppConfig::load("../../conf/dev", secret_reader).await.unwrap();
         println!("{:?}", app_config);
     }

@@ -5,9 +5,11 @@ use chrono::{Duration, Utc};
 use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
 use crate::{
-    domain::auth::{model::AuthToken, repo::TokenRepo, service::jwt},
+    domain::auth::{common::jwt, model::AuthToken},
     shared::{AppError, JwtConfig},
 };
+
+use super::TokenRepo;
 
 pub struct TokenService {
     pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
@@ -19,8 +21,10 @@ pub struct TokenService {
 impl TokenService {
     pub async fn create(&self, user_id: &i64) -> Result<AuthToken, AppError> {
         let now = self.system_clock.now();
+
+        let sub = user_id.to_string();
         let expires_in = Duration::days(14);
-        let access_token = jwt::sign(&self.jwt_conf.secret.current, user_id.to_string().as_str(), expires_in, now)?;
+        let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, expires_in, now)?;
         let refresh_token = hex::encode(self.random_bytes_provider.get_bytes(32));
         let expires_at = now + expires_in;
 
@@ -39,11 +43,11 @@ impl TokenService {
 
     pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken, AppError> {
         let now = self.system_clock.now();
-
         let user_id = self.token_repo.get_user_id(refresh_token, &now).await?;
 
+        let sub = user_id.to_string();
         let expires_in = Duration::days(14);
-        let access_token = jwt::sign(&self.jwt_conf.secret.current, user_id.to_string().as_str(), expires_in, now)?;
+        let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, expires_in, now)?;
         let refresh_token = hex::encode(self.random_bytes_provider.get_bytes(32));
         let expires_at = now + expires_in;
 

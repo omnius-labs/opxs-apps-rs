@@ -2286,6 +2286,7 @@ dependencies = [
  "omnius-core-migration",
  "omnius-core-testkit",
  "once_cell",
+ "opxs-message",
  "reqwest",
  "ring",
  "serde",
@@ -2398,6 +2399,29 @@ dependencies = [
  "urlencoding",
  "utoipa",
  "utoipa-swagger-ui",
+ "uuid",
+ "validator",
+ "vergen",
+]
+
+[[package]]
+name = "opxs-message"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "omnius-core-base",
+ "omnius-core-cloud",
+ "omnius-core-image",
+ "omnius-core-migration",
+ "omnius-core-testkit",
+ "serde",
+ "serde_json",
+ "serial_test",
+ "testcontainers",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
  "uuid",
  "validator",
  "vergen",
