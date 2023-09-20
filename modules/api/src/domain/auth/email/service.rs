@@ -29,7 +29,9 @@ impl EmailAuthService {
         let salt = self.kdf.gen_salt()?;
         let password_hash = self.kdf.derive(password, &salt)?;
 
-        self.auth_repo.create_user(name, email, &hex::encode(password_hash), &hex::encode(salt)).await?;
+        self.auth_repo
+            .create_user(name, email, &hex::encode(password_hash), &hex::encode(salt))
+            .await?;
 
         let now = self.system_clock.now();
 
@@ -106,7 +108,9 @@ mod tests {
         );
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../migrations");
-        let migrator = Migrator::new(&container.connection_string, migrations_path, "opxs-api", "").await.unwrap();
+        let migrator = Migrator::new(&container.connection_string, migrations_path, "opxs-api", "")
+            .await
+            .unwrap();
         migrator.migrate().await.unwrap();
 
         let system_clock = Arc::new(SystemClockUtc {});
@@ -132,7 +136,10 @@ mod tests {
         };
 
         let token = auth_service.register("name", "test@example.com", "password").await.unwrap();
-        assert!(matches!(auth_service.login("test@example.com", "password").await, Err(AppError::UserNotFound)));
+        assert!(matches!(
+            auth_service.login("test@example.com", "password").await,
+            Err(AppError::UserNotFound)
+        ));
         auth_service.verify(&token).await.unwrap();
         assert!(auth_service.login("test@example.com", "password").await.is_ok());
     }

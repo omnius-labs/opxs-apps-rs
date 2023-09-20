@@ -15,7 +15,12 @@ impl GoogleAuthService {
     pub async fn register(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<i64, AppError> {
         let oauth2_token = self
             .oauth2_provider
-            .get_oauth2_token(auth_code, auth_redirect_uri, &self.auth_conf.google.client_id, &self.auth_conf.google.client_secret)
+            .get_oauth2_token(
+                auth_code,
+                auth_redirect_uri,
+                &self.auth_conf.google.client_id,
+                &self.auth_conf.google.client_secret,
+            )
             .await?;
 
         let id_token_payload = oauth2_token.id_token_payload()?;
@@ -38,7 +43,12 @@ impl GoogleAuthService {
     pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<i64, AppError> {
         let oauth2_token = self
             .oauth2_provider
-            .get_oauth2_token(auth_code, auth_redirect_uri, &self.auth_conf.google.client_id, &self.auth_conf.google.client_secret)
+            .get_oauth2_token(
+                auth_code,
+                auth_redirect_uri,
+                &self.auth_conf.google.client_id,
+                &self.auth_conf.google.client_secret,
+            )
             .await?;
 
         let id_token_payload = oauth2_token.id_token_payload()?;

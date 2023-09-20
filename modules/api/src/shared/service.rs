@@ -28,7 +28,13 @@ pub struct AppService {
 }
 
 impl AppService {
-    pub fn new(info: &AppInfo, conf: &AppConfig, db: Arc<PgPool>, system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>, random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>) -> Self {
+    pub fn new(
+        info: &AppInfo,
+        conf: &AppConfig,
+        db: Arc<PgPool>,
+        system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+        random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
+    ) -> Self {
         Self {
             system_clock: system_clock.clone(),
             random_bytes_provider: random_bytes_provider.clone(),

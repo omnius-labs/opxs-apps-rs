@@ -48,7 +48,11 @@ pub struct NonceOutput {
         (status = 200, body = AuthToken)
     )
 )]
-pub async fn register(State(state): State<AppState>, jar: SignedCookieJar, Json(input): Json<RegisterInput>) -> Result<(SignedCookieJar, Json<AuthToken>), AppError> {
+pub async fn register(
+    State(state): State<AppState>,
+    jar: SignedCookieJar,
+    Json(input): Json<RegisterInput>,
+) -> Result<(SignedCookieJar, Json<AuthToken>), AppError> {
     let cookie_nonce: Option<String> = jar.get("nonce").map(|cookie| cookie.value().to_owned());
     if cookie_nonce.is_none() {
         return Err(AppError::RegisterRejection(anyhow::anyhow!("Nonce not found")));
@@ -56,7 +60,11 @@ pub async fn register(State(state): State<AppState>, jar: SignedCookieJar, Json(
     let cookie_nonce = cookie_nonce.unwrap();
     let jar = jar.remove(Cookie::named("nonce"));
 
-    let user_id = state.service.google_auth.register(&input.code, &input.redirect_uri, &cookie_nonce).await?;
+    let user_id = state
+        .service
+        .google_auth
+        .register(&input.code, &input.redirect_uri, &cookie_nonce)
+        .await?;
 
     let auth_token = state.service.token.create(&user_id).await?;
 

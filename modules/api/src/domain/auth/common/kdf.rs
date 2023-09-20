@@ -72,7 +72,10 @@ mod tests {
 
     #[test]
     fn simple_test() {
-        let kdf = Kdf::new(KdfAlgorithm::Pbkdf2HmacSha256, 100);
+        let kdf = Kdf {
+            algorithm: KdfAlgorithm::Pbkdf2HmacSha256,
+            iterations: 100,
+        };
 
         let salt = kdf.gen_salt().unwrap();
         let hash = kdf.derive("test", &salt).unwrap();
