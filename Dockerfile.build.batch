@@ -42,7 +42,7 @@ COPY ./refs ./refs
 COPY Cargo.* .
 
 # Build application
-RUN cargo build --release --bin opxs-api
+RUN cargo build --release --bin opxs-batch-send-email --bin opxs-batch-send-email-feedback
 
 # We do not need the Rust toolchain to run the binary!
 FROM chef AS runtime
