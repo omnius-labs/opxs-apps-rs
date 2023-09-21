@@ -2,6 +2,11 @@ FROM public.ecr.aws/lambda/provided:al2 AS runtime
 
 WORKDIR /app
 
+RUN yum install -y \
+    openssl-devel \
+    && rm -rf /var/cache/yum/* \
+    && yum clean all
+
 COPY ./conf ./conf
 COPY ./migrations ./migrations
 COPY ./bin/opxs-batch-send-email /usr/local/bin/

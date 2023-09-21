@@ -1,12 +1,23 @@
-FROM lukemathwalker/cargo-chef:0.1.61-rust-1.69.0-slim-buster AS chef
+FROM public.ecr.aws/lambda/provided:al2 AS chef
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
+RUN yum install -y \
+    gcc \
+    openssl-devel \
     pkg-config \
-    libssl-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/cache/yum/* \
+    && yum clean all
+
+COPY ./rust-toolchain ./rust-toolchain
+
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
+
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y --default-toolchain "$(cat ./rust-toolchain)"
+
+RUN cargo install cargo-chef --locked
 
 FROM chef AS planner
 
@@ -34,10 +45,9 @@ COPY Cargo.* .
 RUN cargo build --release --bin opxs-api
 
 # We do not need the Rust toolchain to run the binary!
-FROM debian:buster-slim AS runtime
+FROM chef AS runtime
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/opxs-api ./opxs-api
 COPY --from=builder /app/target/release/opxs-batch-send-email ./opxs-batch-send-email
 COPY --from=builder /app/target/release/opxs-batch-send-email-feedback ./opxs-batch-send-email-feedback

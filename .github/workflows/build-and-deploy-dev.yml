@@ -39,23 +39,41 @@ jobs:
         with:
           platforms: linux/amd64
 
-      - name: Build bin
+      - name: Build bin (api)
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.build
+          file: Dockerfile.build.api
           push: false
-          tags: opxs-api-build-image
+          tags: opxs-build-api-image
           provenance: false
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api-builder
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api-builder,mode=max
           load: true
-      - name: Copy bin
+      - name: Copy bin (api)
         run: |
-          docker run --name opxs-api-builder -d opxs-api-build-image
+          docker run --name opxs-api-builder -d opxs-build-api-image
           docker cp opxs-api-builder:/app ./bin
           docker stop opxs-api-builder
           docker rm opxs-api-builder
+
+      - name: Build bin (batch)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.build.batch
+          push: false
+          tags: opxs-build-batch-image
+          provenance: false
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-builder
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-builder,mode=max
+          load: true
+      - name: Copy bin (batch)
+        run: |
+          docker run --name opxs-batch-builder -d opxs-build-batch-image
+          docker cp opxs-batch-builder:/app ./bin
+          docker stop opxs-batch-builder
+          docker rm opxs-batch-builder
 
       - name: Login to Amazon ECR
         id: aws-ecr
