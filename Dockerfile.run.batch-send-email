@@ -4,12 +4,11 @@ WORKDIR /app
 
 RUN yum install -y \
     openssl-devel \
-    pkg-config \
     && rm -rf /var/cache/yum/* \
     && yum clean all
 
 COPY ./conf ./conf
 COPY ./migrations ./migrations
-COPY ./bin/batch/opxs-batch-send-email /usr/local/bin/
+COPY ./bin/batch/opxs-batch-send-email ${LAMBDA_RUNTIME_DIR}/bootstrap
 
-ENTRYPOINT ["/usr/local/bin/opxs-batch-send-email"]
+CMD [ "lambda-handler" ]
