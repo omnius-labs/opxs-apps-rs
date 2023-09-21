@@ -54,7 +54,7 @@ jobs:
         run: |
           mkdir -p ./bin/api
           docker run --name opxs-api-builder -d opxs-build-api-image
-          docker cp opxs-api-builder:/app ./bin/api
+          docker cp opxs-api-builder:/app/opxs-api ./bin/api
           docker stop opxs-api-builder
           docker rm opxs-api-builder
 
@@ -73,7 +73,8 @@ jobs:
         run: |
           mkdir -p ./bin/batch
           docker run --name opxs-batch-builder -d opxs-build-batch-image
-          docker cp opxs-batch-builder:/app ./bin/batch
+          docker cp opxs-batch-builder:/app/opxs-batch-send-email ./bin/batch
+          docker cp opxs-batch-builder:/app/opxs-batch-send-email-feedback ./bin/batch
           docker stop opxs-batch-builder
           docker rm opxs-batch-builder
 
