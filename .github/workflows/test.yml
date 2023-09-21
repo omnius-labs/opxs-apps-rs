@@ -30,7 +30,7 @@ jobs:
         run: git submodule update --init
 
       - name: Setup rust toolchain
-        uses: dtolnay/rust-toolchain@1.71.1
+        uses: dtolnay/rust-toolchain@1.72.1
         with:
           components: clippy, rustfmt
       - name: Setup cargo make
@@ -59,7 +59,7 @@ jobs:
         run: git submodule update --init
 
       - name: Setup rust toolchain
-        uses: dtolnay/rust-toolchain@1.71.1
+        uses: dtolnay/rust-toolchain@1.72.1
         with:
           components: clippy, rustfmt
       - name: Setup cargo make
