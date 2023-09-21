@@ -11,6 +11,6 @@ RUN apt-get update && apt-get install -y \
 
 COPY ./conf ./conf
 COPY ./migrations ./migrations
-COPY ./bin/opxs-api /usr/local/bin/
+COPY ./bin/api/opxs-api /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/opxs-api"]

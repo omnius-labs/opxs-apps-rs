@@ -1,7 +1,7 @@
 #!/usr/env bash
 set -euo pipefail
 
-rm -rf ./bin
+rm -rf ./bin/batch
 
 docker build -f ./Dockerfile.build.batch . -t opxs-build-batch-image
 docker run --name opxs-batch-builder -d opxs-build-batch-image

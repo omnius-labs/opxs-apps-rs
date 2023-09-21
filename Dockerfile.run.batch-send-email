@@ -9,6 +9,6 @@ RUN yum install -y \
 
 COPY ./conf ./conf
 COPY ./migrations ./migrations
-COPY ./bin/opxs-batch-send-email /usr/local/bin/
+COPY ./bin/batch/opxs-batch-send-email /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/opxs-batch-send-email"]
