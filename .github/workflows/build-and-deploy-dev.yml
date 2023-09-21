@@ -83,7 +83,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.api
+          file: Dockerfile.run.api
           push: true
           tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-api:latest
           provenance: false
@@ -97,7 +97,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.batch-send-email
+          file: Dockerfile.run.batch-send-email
           push: true
           tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email:latest
           provenance: false
@@ -111,7 +111,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.batch-send-email-feedback
+          file: Dockerfile.run.batch-send-email-feedback
           push: true
           tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email-feedback:latest
           provenance: false
