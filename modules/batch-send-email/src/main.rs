@@ -9,7 +9,7 @@ async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(), Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    println("----- test 1 -----");
+    println!("----- test 1 -----");
     if cfg!(debug_assertions) {
         tracing_subscriber::fmt().with_max_level(tracing::Level::TRACE).with_target(false).init();
     } else {
@@ -19,11 +19,11 @@ async fn main() -> Result<(), Error> {
             .json()
             .init();
     }
-    println("----- test 2 -----");
+    println!("----- test 2 -----");
 
     info!("----- start -----");
 
-    println("----- test 3 -----");
+    println!("----- test 3 -----");
 
     run(service_fn(function_handler)).await
 }
