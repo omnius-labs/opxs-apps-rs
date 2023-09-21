@@ -52,6 +52,7 @@ jobs:
           load: true
       - name: Copy bin (api)
         run: |
+          mkdir -p ./bin/api
           docker run --name opxs-api-builder -d opxs-build-api-image
           docker cp opxs-api-builder:/app ./bin/api
           docker stop opxs-api-builder
@@ -70,6 +71,7 @@ jobs:
           load: true
       - name: Copy bin (batch)
         run: |
+          mkdir -p ./bin/batch
           docker run --name opxs-batch-builder -d opxs-build-batch-image
           docker cp opxs-batch-builder:/app ./bin/batch
           docker stop opxs-batch-builder
