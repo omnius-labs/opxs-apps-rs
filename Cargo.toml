@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "./modules/api",
-    "./modules/batch-send-email",
-    "./modules/batch-send-email-feedback",
+    "./modules/batch-email-send",
+    "./modules/batch-email-send-feedback",
     "./modules/message",
     "./refs/core-rs/modules/base",
     "./refs/core-rs/modules/cloud",

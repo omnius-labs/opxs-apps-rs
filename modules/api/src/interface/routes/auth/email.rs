@@ -1,5 +1,10 @@
-use axum::{extract::State, routing::post, Json, Router};
+use axum::{
+    extract::{Query, State},
+    routing::{get, post},
+    Json, Router,
+};
 use hyper::StatusCode;
+use opxs_message::batch::email_send::EmailConfirmRequest;
 use serde::Deserialize;
 use utoipa::ToSchema;
 use validator::Validate;
@@ -14,7 +19,7 @@ use crate::{
 pub fn gen_service(state: AppState) -> Router {
     Router::new()
         .route("/register", post(register))
-        .route("/verify", post(verify))
+        .route("/confirm", get(confirm))
         .route("/login", post(login))
         .with_state(state)
 }
@@ -28,7 +33,17 @@ pub fn gen_service(state: AppState) -> Router {
     )
 )]
 pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<StatusCode, AppError> {
-    let _ = state.service.email_auth.register(&input.name, &input.email, &input.password).await?;
+    let token = state.service.email_auth.register(&input.name, &input.email, &input.password).await?;
+
+    let email_confirm_request = EmailConfirmRequest {
+        to_address: input.email,
+        token,
+    };
+    state
+        .service
+        .send_email_sqs_sender
+        .send_message(&serde_json::to_string(&email_confirm_request).unwrap())
+        .await?;
 
     Ok(StatusCode::OK)
 }
@@ -45,14 +60,14 @@ pub struct RegisterInput {
 
 #[utoipa::path(
     post,
-    path = "/api/v1/auth/email/verify",
+    path = "/api/v1/auth/email/confirm",
     request_body = RegisterInput,
     responses(
         (status = 200)
     )
 )]
-pub async fn verify(State(state): State<AppState>, ValidatedJson(req): ValidatedJson<EmailVerificationInput>) -> Result<StatusCode, AppError> {
-    state.service.email_auth.verify(&req.token).await?;
+pub async fn confirm(State(state): State<AppState>, input: Query<EmailVerificationInput>) -> Result<StatusCode, AppError> {
+    state.service.email_auth.confirm(&input.token).await?;
 
     Ok(StatusCode::OK)
 }
@@ -70,8 +85,8 @@ pub struct EmailVerificationInput {
         (status = 200, body = AuthToken)
     )
 )]
-async fn login(State(state): State<AppState>, ValidatedJson(req): ValidatedJson<LoginInput>) -> Result<Json<AuthToken>, AppError> {
-    let user_id = state.service.email_auth.login(&req.email, &req.password).await?;
+async fn login(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<LoginInput>) -> Result<Json<AuthToken>, AppError> {
+    let user_id = state.service.email_auth.login(&input.email, &input.password).await?;
 
     let auth_token = state.service.token.create(&user_id).await?;
 

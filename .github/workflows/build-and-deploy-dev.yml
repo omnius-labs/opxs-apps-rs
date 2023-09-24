@@ -73,8 +73,8 @@ jobs:
         run: |
           mkdir -p ./bin/batch
           docker run --name opxs-batch-builder -d opxs-build-batch-image
-          docker cp opxs-batch-builder:/app/opxs-batch-send-email ./bin/batch
-          docker cp opxs-batch-builder:/app/opxs-batch-send-email-feedback ./bin/batch
+          docker cp opxs-batch-builder:/app/opxs-batch-email-send ./bin/batch
+          docker cp opxs-batch-builder:/app/opxs-batch-email-send-feedback ./bin/batch
           docker stop opxs-batch-builder
           docker rm opxs-batch-builder
 
@@ -96,30 +96,30 @@ jobs:
         run: |
           aws ecs update-service --cluster opxs-api-cluster --service opxs-api --force-new-deployment
 
-      - name: Build and Push image to Amazon ECR (opxs-batch-send-email)
+      - name: Build and Push image to Amazon ECR (opxs-batch-email-send)
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.run.batch-send-email
+          file: Dockerfile.run.batch-email-send
           push: true
-          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email:latest
+          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send:latest
           provenance: false
-          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-send-email
-          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-send-email,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send,mode=max
       - name: Update Lambda
         run: |
-          aws lambda update-function-code --function-name opxs-batch-send-email --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email:latest
+          aws lambda update-function-code --function-name opxs-batch-email-send --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send:latest
 
-      - name: Build and Push image to Amazon ECR (opxs-batch-send-email-feedback)
+      - name: Build and Push image to Amazon ECR (opxs-batch-email-send-feedback)
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.run.batch-send-email-feedback
+          file: Dockerfile.run.batch-email-send-feedback
           push: true
-          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email-feedback:latest
+          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-feedback:latest
           provenance: false
-          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-send-email-feedback
-          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-send-email-feedback,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback,mode=max
       - name: Update Lambda
         run: |
-          aws lambda update-function-code --function-name opxs-batch-send-email-feedback --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-send-email-feedback:latest
+          aws lambda update-function-code --function-name opxs-batch-email-send-feedback --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-feedback:latest

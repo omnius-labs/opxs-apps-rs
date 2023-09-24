@@ -2,17 +2,20 @@ use std::sync::Arc;
 
 use chrono::Utc;
 use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
+use omnius_core_cloud::aws::sqs::SqsSender;
 use sqlx::PgPool;
 
-use crate::domain::{
-    auth::{
-        common::{Kdf, KdfAlgorithm},
-        email::{EmailAuthRepoImpl, EmailAuthService},
-        google::{GoogleAuthService, GoogleOAuth2ProviderImpl, ProviderAuthRepoImpl},
-        token::{TokenRepoImpl, TokenService},
-        user::{UserRepoImpl, UserService},
+use crate::{
+    common::{Kdf, KdfAlgorithm},
+    domain::{
+        auth::{
+            email::{EmailAuthRepoImpl, EmailAuthService},
+            google::{GoogleAuthService, GoogleOAuth2ProviderImpl, ProviderAuthRepoImpl},
+            token::{TokenRepoImpl, TokenService},
+            user::{UserRepoImpl, UserService},
+        },
+        health::{repo::WorldRepoImpl, service::HealthService},
     },
-    health::{repo::WorldRepoImpl, service::HealthService},
 };
 
 use super::{AppConfig, AppInfo};
@@ -20,6 +23,7 @@ use super::{AppConfig, AppInfo};
 pub struct AppService {
     pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
     pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
+    pub send_email_sqs_sender: Arc<dyn SqsSender + Send + Sync>,
     pub health: HealthService,
     pub email_auth: EmailAuthService,
     pub google_auth: GoogleAuthService,
@@ -34,10 +38,14 @@ impl AppService {
         db: Arc<PgPool>,
         system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
         random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
+        send_email_sqs_sender: Arc<dyn SqsSender + Send + Sync>,
     ) -> Self {
         Self {
             system_clock: system_clock.clone(),
             random_bytes_provider: random_bytes_provider.clone(),
+
+            send_email_sqs_sender: send_email_sqs_sender.clone(),
+
             health: HealthService {
                 info: info.clone(),
                 world_repo: Arc::new(WorldRepoImpl { db: db.clone() }),

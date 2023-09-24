@@ -5,6 +5,7 @@ use omnius_core_migration::Migrator;
 
 use crate::shared::{AppConfig, AppInfo, AppState, WorldValidator};
 
+mod common;
 mod domain;
 mod interface;
 mod shared;
@@ -26,9 +27,8 @@ async fn main() -> anyhow::Result<()> {
     let info = AppInfo::new()?;
     info!("{}", info);
 
-    let sdk_config = aws_config::load_from_env().await;
     let secret_reader = Box::new(SecretsReaderImpl {
-        client: aws_sdk_secretsmanager::Client::new(&sdk_config),
+        client: aws_sdk_secretsmanager::Client::new(&aws_config::load_from_env().await),
     });
     let conf_path = format!("conf/{mode}.toml", mode = info.mode);
     let conf = AppConfig::load(&conf_path, secret_reader).await?;

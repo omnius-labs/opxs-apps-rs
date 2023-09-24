@@ -5,7 +5,7 @@ use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
 use crate::{
-    domain::auth::common::{jwt, Kdf},
+    common::{jwt, Kdf},
     shared::{AppError, JwtConfig},
 };
 
@@ -58,7 +58,7 @@ impl EmailAuthService {
         Ok(user.id)
     }
 
-    pub async fn verify(&self, token: &str) -> Result<(), AppError> {
+    pub async fn confirm(&self, token: &str) -> Result<(), AppError> {
         let claims = jwt::verify(&self.jwt_conf.secret.current, token)?;
 
         let expired_at: DateTime<Utc> = DateTime::from_utc(NaiveDateTime::from_timestamp_opt(claims.exp, 0).unwrap_or(NaiveDateTime::MIN), Utc);
@@ -86,10 +86,7 @@ mod tests {
     use omnius_core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
 
-    use crate::{
-        domain::auth::{common::KdfAlgorithm, email::repo::EmailAuthRepoImpl},
-        shared::JwtSecretConfig,
-    };
+    use crate::{common::KdfAlgorithm, domain::auth::email::repo::EmailAuthRepoImpl, shared::JwtSecretConfig};
 
     use super::*;
 
@@ -140,7 +137,7 @@ mod tests {
             auth_service.login("test@example.com", "password").await,
             Err(AppError::UserNotFound)
         ));
-        auth_service.verify(&token).await.unwrap();
+        auth_service.confirm(&token).await.unwrap();
         assert!(auth_service.login("test@example.com", "password").await.is_ok());
     }
 }

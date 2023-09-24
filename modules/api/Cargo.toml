@@ -19,6 +19,9 @@ opxs-message = { workspace = true }
 
 aws-config = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }
+aws-sdk-s3 = { workspace = true }
+aws-sdk-sqs = { workspace = true }
+aws-sdk-sesv2 = { workspace = true }
 
 chrono = { workspace = true }
 anyhow = { workspace = true }

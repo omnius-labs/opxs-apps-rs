@@ -9,6 +9,6 @@ RUN yum install -y \
 
 COPY ./conf ./conf
 COPY ./migrations ./migrations
-COPY ./bin/batch/opxs-batch-send-email ${LAMBDA_RUNTIME_DIR}/bootstrap
+COPY ./bin/batch/opxs-batch-email-send ${LAMBDA_RUNTIME_DIR}/bootstrap
 
 CMD [ "lambda-handler" ]

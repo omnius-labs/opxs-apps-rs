@@ -10,7 +10,8 @@ use serde::de::DeserializeOwned;
 use validator::Validate;
 
 use crate::{
-    domain::auth::{common::jwt, model::User},
+    common::jwt,
+    domain::auth::model::User,
     shared::{AppError, AppState},
 };
 

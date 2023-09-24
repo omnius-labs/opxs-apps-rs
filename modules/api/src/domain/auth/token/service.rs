@@ -5,7 +5,8 @@ use chrono::{Duration, Utc};
 use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
 use crate::{
-    domain::auth::{common::jwt, model::AuthToken},
+    common::jwt,
+    domain::auth::model::AuthToken,
     shared::{AppError, JwtConfig},
 };
 

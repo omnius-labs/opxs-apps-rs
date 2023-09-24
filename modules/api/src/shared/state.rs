@@ -4,6 +4,7 @@ use axum::extract::FromRef;
 use axum_extra::extract::cookie;
 use chrono::Duration;
 use omnius_core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
+use omnius_core_cloud::aws::sqs::SqsSenderImpl;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
 use super::{AppConfig, AppInfo, AppService};
@@ -19,8 +20,6 @@ pub struct AppState {
 
 impl AppState {
     pub async fn new(info: AppInfo, conf: AppConfig) -> anyhow::Result<Self> {
-        let system_clock = Arc::new(SystemClockUtc {});
-        let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
@@ -29,7 +28,24 @@ impl AppState {
                 .await?,
         );
 
-        let service = Arc::new(AppService::new(&info, &conf, db.clone(), system_clock, random_bytes_provider));
+        let system_clock = Arc::new(SystemClockUtc {});
+        let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
+
+        let sdk_config = aws_config::load_from_env().await;
+        let send_email_sqs_sender = Arc::new(SqsSenderImpl {
+            client: aws_sdk_sqs::Client::new(&sdk_config),
+            queue_url: "opxs-batch-email-send-sqs".to_string(),
+            delay_seconds: None,
+        });
+
+        let service = Arc::new(AppService::new(
+            &info,
+            &conf,
+            db.clone(),
+            system_clock,
+            random_bytes_provider,
+            send_email_sqs_sender,
+        ));
 
         Ok(Self {
             info,

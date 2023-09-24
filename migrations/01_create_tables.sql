@@ -60,11 +60,25 @@ CREATE TRIGGER update_users_tokens_updated_at_step1 BEFORE UPDATE ON users_token
 CREATE TRIGGER update_users_tokens_updated_at_step2 BEFORE UPDATE OF updated_at ON users_tokens FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
 CREATE TRIGGER update_users_tokens_updated_at_step3 BEFORE UPDATE ON users_tokens FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
 
+-- email_send_jobs
+
+CREATE TABLE email_send_jobs (
+    id BIGSERIAL PRIMARY KEY,
+    type VARCHAR(255) NOT NULL,
+    status VARCHAR(255) NOT NULL,
+    param VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TRIGGER email_send_jobs_updated_at_step1 BEFORE UPDATE ON email_send_jobs FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
+CREATE TRIGGER email_send_jobs_updated_at_step2 BEFORE UPDATE OF updated_at ON email_send_jobs FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
+CREATE TRIGGER email_send_jobs_updated_at_step3 BEFORE UPDATE ON email_send_jobs FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
+
 -- email_send_addresses
 
 CREATE TABLE email_send_addresses (
     id BIGSERIAL PRIMARY KEY,
-    address VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP

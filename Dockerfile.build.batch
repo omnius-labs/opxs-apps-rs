@@ -42,12 +42,12 @@ COPY ./refs ./refs
 COPY Cargo.* .
 
 # Build application
-RUN cargo build --release --bin opxs-batch-send-email --bin opxs-batch-send-email-feedback
+RUN cargo build --release --bin opxs-batch-email-send --bin opxs-batch-email-send-feedback
 
 # We do not need the Rust toolchain to run the binary!
 FROM chef AS runtime
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/opxs-batch-send-email ./opxs-batch-send-email
-COPY --from=builder /app/target/release/opxs-batch-send-email-feedback ./opxs-batch-send-email-feedback
+COPY --from=builder /app/target/release/opxs-batch-email-send ./opxs-batch-email-send
+COPY --from=builder /app/target/release/opxs-batch-email-send-feedback ./opxs-batch-email-send-feedback

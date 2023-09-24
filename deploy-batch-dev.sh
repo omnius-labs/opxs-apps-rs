@@ -2,12 +2,12 @@
 set -euo pipefail
 
 case $1 in
-"batch-send-email")
+"batch-email-send")
     ;;
-"batch-send-email-feedback")
+"batch-email-send-feedback")
     ;;
 *)
-    echo "Usage: $0 <batch-send-email|batch-send-email-feedback>"
+    echo "Usage: $0 <batch-email-send|batch-email-send-feedback>"
     exit 1
     ;;
 esac
