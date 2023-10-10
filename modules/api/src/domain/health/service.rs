@@ -2,14 +2,14 @@ use std::sync::Arc;
 
 use serde_json::{json, Value};
 
-use crate::shared::{AppError, AppInfo};
+use crate::common::{AppError, AppInfo};
 
 use super::repo::WorldRepo;
 
 #[derive(Clone)]
 pub struct HealthService {
     pub info: AppInfo,
-    pub world_repo: Arc<dyn WorldRepo + Send + Sync>,
+    pub world_repo: Arc<WorldRepo>,
 }
 
 impl HealthService {
@@ -34,8 +34,8 @@ mod tests {
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
     use crate::{
-        domain::health::repo::WorldRepoImpl,
-        shared::{AppInfo, WorldValidator},
+        common::{AppInfo, RunMode, WorldValidator},
+        domain::health::repo::WorldRepo,
     };
 
     use super::*;
@@ -45,15 +45,16 @@ mod tests {
         let docker = testcontainers::clients::Cli::default();
         let container = PostgresContainer::new(&docker, "15.1");
 
-        let world_verifier = WorldValidator {};
-        world_verifier.verify("aaa", &container.connection_string).await.unwrap();
-
         let info = AppInfo {
-            mode: "aaa".to_string(),
+            mode: RunMode::Local,
             git_semver: "bbb".to_string(),
             git_sha: "ccc".to_string(),
             build_timestamp: "ddd".to_string(),
         };
+
+        let world_verifier = WorldValidator {};
+        world_verifier.verify(&info.mode, &container.connection_string).await.unwrap();
+
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
@@ -62,7 +63,7 @@ mod tests {
                 .await
                 .unwrap(),
         );
-        let world_repo = Arc::new(WorldRepoImpl { db });
+        let world_repo = Arc::new(WorldRepo { db });
         let service = HealthService { info, world_repo };
 
         assert_eq!(

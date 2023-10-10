@@ -16,8 +16,8 @@ esac
 
 AWS_REGION="us-east-1"
 AWS_ACCOUNT_ID="464209738056"
-LAMBDA_ARN="arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:opxs-$1"
-DOCKER_IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/opxs-$1:latest"
+LAMBDA_ARN="arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:opxs-$1-lambda"
+DOCKER_IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/opxs-$1-lambda-ecr:latest"
 
 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
@@ -28,4 +28,4 @@ fi
 
 docker push "${DOCKER_IMAGE}"
 
-aws lambda update-function-code --function-name opxs-$1 --image-uri ${DOCKER_IMAGE}
+aws lambda update-function-code --function-name opxs-$1-lambda --image-uri ${DOCKER_IMAGE}

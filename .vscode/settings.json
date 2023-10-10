@@ -1,16 +1,17 @@
 {
     "rust-analyzer.showUnlinkedFileNotification": false,
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    },
     "files.watcherExclude": {
         "**/target": true
     },
     "cSpell.words": [
+        "chrono",
         "omnius",
         "opxs",
         "sesv",
+        "sqlx",
         "testcontainers",
-        "testkit"
+        "testkit",
+        "urlencoding",
+        "vergen"
     ],
 }

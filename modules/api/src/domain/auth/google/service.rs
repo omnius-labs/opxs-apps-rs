@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use crate::shared::{AppError, AuthConfig};
+use crate::common::{AppError, AuthConfig};
 
 use super::{GoogleOAuth2Provider, ProviderAuthRepo};
 
 #[derive(Clone)]
 pub struct GoogleAuthService {
-    pub oauth2_provider: Arc<dyn GoogleOAuth2Provider + Send + Sync>,
-    pub auth_repo: Arc<dyn ProviderAuthRepo + Send + Sync>,
+    pub oauth2_provider: Arc<GoogleOAuth2Provider>,
+    pub auth_repo: Arc<ProviderAuthRepo>,
     pub auth_conf: AuthConfig,
 }
 

@@ -5,9 +5,9 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::{
+    common::{AppError, AppState},
     domain,
     interface::routes::auth,
-    shared::{AppError, AppState},
 };
 
 pub struct WebServer;

@@ -6,16 +6,16 @@ use omnius_core_cloud::aws::sqs::SqsSender;
 use sqlx::PgPool;
 
 use crate::{
-    common::{Kdf, KdfAlgorithm},
     domain::{
         auth::{
-            email::{EmailAuthRepoImpl, EmailAuthService},
-            google::{GoogleAuthService, GoogleOAuth2ProviderImpl, ProviderAuthRepoImpl},
-            token::{TokenRepoImpl, TokenService},
-            user::{UserRepoImpl, UserService},
+            email::{EmailAuthRepo, EmailAuthService},
+            google::{GoogleAuthService, GoogleOAuth2Provider, ProviderAuthRepo},
+            token::{TokenRepo, TokenService},
+            user::{UserRepo, UserService},
         },
-        health::{repo::WorldRepoImpl, service::HealthService},
+        health::{repo::WorldRepo, service::HealthService},
     },
+    service::{Kdf, KdfAlgorithm},
 };
 
 use super::{AppConfig, AppInfo};
@@ -48,10 +48,10 @@ impl AppService {
 
             health: HealthService {
                 info: info.clone(),
-                world_repo: Arc::new(WorldRepoImpl { db: db.clone() }),
+                world_repo: Arc::new(WorldRepo { db: db.clone() }),
             },
             email_auth: EmailAuthService {
-                auth_repo: Arc::new(EmailAuthRepoImpl { db: db.clone() }),
+                auth_repo: Arc::new(EmailAuthRepo { db: db.clone() }),
                 system_clock: system_clock.clone(),
                 random_bytes_provider: random_bytes_provider.clone(),
                 jwt_conf: conf.jwt.clone(),
@@ -61,18 +61,18 @@ impl AppService {
                 },
             },
             google_auth: GoogleAuthService {
-                oauth2_provider: Arc::new(GoogleOAuth2ProviderImpl {}),
-                auth_repo: Arc::new(ProviderAuthRepoImpl { db: db.clone() }),
+                oauth2_provider: Arc::new(GoogleOAuth2Provider {}),
+                auth_repo: Arc::new(ProviderAuthRepo { db: db.clone() }),
                 auth_conf: conf.auth.clone(),
             },
             token: TokenService {
                 system_clock: system_clock.clone(),
                 random_bytes_provider: random_bytes_provider.clone(),
                 jwt_conf: conf.jwt.clone(),
-                token_repo: Arc::new(TokenRepoImpl { db: db.clone() }),
+                token_repo: Arc::new(TokenRepo { db: db.clone() }),
             },
             user: UserService {
-                user_repo: Arc::new(UserRepoImpl { db }),
+                user_repo: Arc::new(UserRepo { db }),
             },
         }
     }

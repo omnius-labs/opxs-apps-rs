@@ -1,13 +1,16 @@
 -- users
 
+CREATE TYPE user_authentication_type AS ENUM ('Email', 'Provider');
+CREATE TYPE user_role AS ENUM ('Admin', 'User');
+
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    authentication_type VARCHAR(255) NOT NULL,
+    authentication_type user_authentication_type NOT NULL,
+    role user_role NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON COLUMN users.authentication_type IS 'email or provider';
 CREATE TRIGGER update_users_updated_at_step1 BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
 CREATE TRIGGER update_users_updated_at_step2 BEFORE UPDATE OF updated_at ON users FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
 CREATE TRIGGER update_users_updated_at_step3 BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
@@ -62,11 +65,15 @@ CREATE TRIGGER update_users_tokens_updated_at_step3 BEFORE UPDATE ON users_token
 
 -- email_send_jobs
 
+CREATE TYPE email_send_job_type AS ENUM ('Unknown', 'EmailConfirm');
+CREATE TYPE email_send_job_status AS ENUM ('Unknown', 'Pending', 'Processing', 'Completed', 'Failed');
+
 CREATE TABLE email_send_jobs (
     id BIGSERIAL PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
-    status VARCHAR(255) NOT NULL,
-    param VARCHAR(255) NOT NULL,
+    type email_send_job_type NOT NULL,
+    status email_send_job_status NOT NULL,
+    param TEXT,
+    failed_reason TEXT,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

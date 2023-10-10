@@ -9,8 +9,8 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::{
+    common::{AppError, AppState},
     domain::auth::model::AuthToken,
-    shared::{AppError, AppState},
 };
 
 #[allow(unused)]

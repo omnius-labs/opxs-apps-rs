@@ -10,9 +10,9 @@ use serde::de::DeserializeOwned;
 use validator::Validate;
 
 use crate::{
-    common::jwt,
+    common::{AppError, AppState},
     domain::auth::model::User,
-    shared::{AppError, AppState},
+    service::jwt,
 };
 
 #[async_trait]

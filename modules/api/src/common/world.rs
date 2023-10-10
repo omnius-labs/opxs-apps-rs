@@ -2,12 +2,12 @@ use chrono::Duration;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::Row;
 
-use super::AppError;
+use super::{AppError, RunMode};
 
 pub struct WorldValidator;
 
 impl WorldValidator {
-    pub async fn verify(&self, mode: &str, postgres_url: &str) -> Result<WorldValidatedStatus, AppError> {
+    pub async fn verify(&self, mode: &RunMode, postgres_url: &str) -> Result<WorldValidatedStatus, AppError> {
         let db = PgPoolOptions::new()
             .max_connections(10)
             .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
@@ -42,14 +42,14 @@ CREATE TABLE IF NOT EXISTS _world (
         match row {
             Ok(row) => {
                 let got_mode: String = row.get(0);
-                if mode != got_mode {
+                if mode.to_string() != got_mode {
                     return Err(AppError::WorldMismatchError);
                 }
                 Ok(WorldValidatedStatus::Match)
             }
             Err(sqlx::Error::RowNotFound) => {
                 let sql = "INSERT INTO _world (key, value) VALUES ('mode', $1)";
-                sqlx::query(sql).bind(mode).execute(&db).await?;
+                sqlx::query(sql).bind(mode.to_string()).execute(&db).await?;
                 Ok(WorldValidatedStatus::Init)
             }
             Err(err) => Err(err.into()),
@@ -75,13 +75,13 @@ mod tests {
         let container = PostgresContainer::new(&docker, "15.1");
 
         let world_verifier = WorldValidator {};
-        let res = world_verifier.verify("aaa", &container.connection_string).await;
+        let res = world_verifier.verify(&RunMode::Local, &container.connection_string).await;
         assert_eq!(res.unwrap(), WorldValidatedStatus::Init);
 
-        let res = world_verifier.verify("aaa", &container.connection_string).await;
+        let res = world_verifier.verify(&RunMode::Local, &container.connection_string).await;
         assert_eq!(res.unwrap(), WorldValidatedStatus::Match);
 
-        let res = world_verifier.verify("bbb", &container.connection_string).await;
+        let res = world_verifier.verify(&RunMode::Dev, &container.connection_string).await;
         assert!(matches!(res, Err(AppError::WorldMismatchError)));
     }
 }

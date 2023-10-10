@@ -1,40 +1,32 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 
-use crate::{domain::auth::model::User, shared::AppError};
+use crate::{
+    common::AppError,
+    domain::auth::model::{User, UserAuthenticationType},
+};
 
-#[async_trait]
-pub trait ProviderAuthRepo {
-    async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<i64, AppError>;
-    async fn delete_user(&self, provider_type: &str, provider_user_id: &str) -> Result<(), AppError>;
-    async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AppError>;
-    async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AppError>;
-}
-
-pub struct ProviderAuthRepoImpl {
+pub struct ProviderAuthRepo {
     pub db: Arc<PgPool>,
 }
 
-#[async_trait]
-impl ProviderAuthRepo for ProviderAuthRepoImpl {
-    async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<i64, AppError> {
+impl ProviderAuthRepo {
+    pub async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<i64, AppError> {
         let mut tx = self.db.begin().await?;
 
-        let row = sqlx::query(
+        let (user_id,): (i64,) = sqlx::query_as(
             r#"
 INSERT INTO users (name, authentication_type)
-    VALUES ($1, 'provider')
+    VALUES ($1, $2)
     RETURNING id;
 "#,
         )
         .bind(name)
+        .bind(UserAuthenticationType::Provider)
         .fetch_one(&mut tx)
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
-
-        let user_id = row.try_get::<i64, _>(0)?;
 
         sqlx::query(
             r#"
@@ -55,7 +47,7 @@ INSERT INTO users_auth_provider (user_id, provider_type, provider_user_id)
         Ok(user_id)
     }
 
-    async fn delete_user(&self, provider_type: &str, provider_user_id: &str) -> Result<(), AppError> {
+    pub async fn delete_user(&self, provider_type: &str, provider_user_id: &str) -> Result<(), AppError> {
         sqlx::query(
             r#"
 DELETE FROM users
@@ -71,7 +63,7 @@ DELETE FROM users
         Ok(())
     }
 
-    async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AppError> {
+    pub async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AppError> {
         let (existed,): (bool,) = sqlx::query_as(
             r#"
 SELECT EXISTS (
@@ -92,7 +84,7 @@ SELECT EXISTS (
         Ok(existed)
     }
 
-    async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AppError> {
+    pub async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AppError> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT *

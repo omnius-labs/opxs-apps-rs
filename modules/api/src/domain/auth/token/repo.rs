@@ -1,26 +1,16 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
-use crate::{domain::auth::model::User, shared::AppError};
+use crate::{common::AppError, domain::auth::model::User};
 
-#[async_trait]
-pub trait TokenRepo {
-    async fn create_token(&self, user_id: &i64, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError>;
-    async fn delete_token(&self, refresh_token: &str) -> Result<(), AppError>;
-    async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError>;
-    async fn get_user_id(&self, refresh_token: &str, max_expires_at: &DateTime<Utc>) -> Result<i64, AppError>;
-}
-
-pub struct TokenRepoImpl {
+pub struct TokenRepo {
     pub db: Arc<PgPool>,
 }
 
-#[async_trait]
-impl TokenRepo for TokenRepoImpl {
-    async fn create_token(&self, user_id: &i64, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
+impl TokenRepo {
+    pub async fn create_token(&self, user_id: &i64, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
         sqlx::query(
             r#"
 INSERT INTO users_tokens (user_id, refresh_token, expires_at)
@@ -37,7 +27,7 @@ INSERT INTO users_tokens (user_id, refresh_token, expires_at)
         Ok(())
     }
 
-    async fn delete_token(&self, refresh_token: &str) -> Result<(), AppError> {
+    pub async fn delete_token(&self, refresh_token: &str) -> Result<(), AppError> {
         sqlx::query(
             r#"
 DELETE FROM users_tokens
@@ -52,7 +42,7 @@ DELETE FROM users_tokens
         Ok(())
     }
 
-    async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
+    pub async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
         sqlx::query(
             r#"
 UPDATE users_tokens
@@ -69,7 +59,7 @@ UPDATE users_tokens
         Ok(())
     }
 
-    async fn get_user_id(&self, refresh_token: &str, max_expires_at: &DateTime<Utc>) -> Result<i64, AppError> {
+    pub async fn get_user_id(&self, refresh_token: &str, max_expires_at: &DateTime<Utc>) -> Result<i64, AppError> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT u.*

@@ -15,7 +15,7 @@ omnius-core-image = { workspace = true }
 omnius-core-migration = { workspace = true }
 omnius-core-testkit = { workspace = true }
 
-opxs-message = { workspace = true }
+opxs-shared = { workspace = true }
 
 aws-config = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }

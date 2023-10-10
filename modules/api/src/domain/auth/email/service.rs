@@ -5,15 +5,15 @@ use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
 use crate::{
-    common::{jwt, Kdf},
-    shared::{AppError, JwtConfig},
+    common::{AppError, JwtConfig},
+    service::{jwt, Kdf},
 };
 
 use super::EmailAuthRepo;
 
 #[derive(Clone)]
 pub struct EmailAuthService {
-    pub auth_repo: Arc<dyn EmailAuthRepo + Send + Sync>,
+    pub auth_repo: Arc<EmailAuthRepo>,
     pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
     pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
     pub jwt_conf: JwtConfig,
@@ -86,7 +86,7 @@ mod tests {
     use omnius_core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
 
-    use crate::{common::KdfAlgorithm, domain::auth::email::repo::EmailAuthRepoImpl, shared::JwtSecretConfig};
+    use crate::{common::JwtSecretConfig, domain::auth::email::repo::EmailAuthRepo, service::KdfAlgorithm};
 
     use super::*;
 
@@ -112,7 +112,7 @@ mod tests {
 
         let system_clock = Arc::new(SystemClockUtc {});
         let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
-        let auth_repo = Arc::new(EmailAuthRepoImpl { db });
+        let auth_repo = Arc::new(EmailAuthRepo { db });
         let jwt_conf = JwtConfig {
             secret: JwtSecretConfig {
                 current: "a".to_string(),

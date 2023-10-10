@@ -1,22 +1,14 @@
-use async_trait::async_trait;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD as BASE64, Engine};
 use hyper::StatusCode;
 use serde::Deserialize;
 use serde_json::json;
 
-use crate::shared::AppError;
+use crate::common::AppError;
 
-#[async_trait]
-pub trait GoogleOAuth2Provider {
-    async fn get_oauth2_token(&self, code: &str, redirect_uri: &str, client_id: &str, client_secret: &str) -> Result<OAuth2Token, AppError>;
-    async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AppError>;
-}
+pub struct GoogleOAuth2Provider;
 
-pub struct GoogleOAuth2ProviderImpl;
-
-#[async_trait]
-impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
-    async fn get_oauth2_token(&self, code: &str, redirect_uri: &str, client_id: &str, client_secret: &str) -> Result<OAuth2Token, AppError> {
+impl GoogleOAuth2Provider {
+    pub async fn get_oauth2_token(&self, code: &str, redirect_uri: &str, client_id: &str, client_secret: &str) -> Result<OAuth2Token, AppError> {
         let client = reqwest::Client::new();
         let res = client
             .post("https://accounts.google.com/o/oauth2/token")
@@ -40,7 +32,7 @@ impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
         Ok(oauth2_token)
     }
 
-    async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AppError> {
+    pub async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AppError> {
         let client = reqwest::Client::new();
         let res = client
             .get("https://www.googleapis.com/oauth2/v1/userinfo")

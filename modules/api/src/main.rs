@@ -3,12 +3,12 @@ use tracing::info;
 use omnius_core_cloud::aws::secrets::SecretsReaderImpl;
 use omnius_core_migration::Migrator;
 
-use crate::shared::{AppConfig, AppInfo, AppState, WorldValidator};
+use crate::common::{AppConfig, AppInfo, AppState, WorldValidator};
 
 mod common;
 mod domain;
 mod interface;
-mod shared;
+mod service;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -25,13 +25,12 @@ async fn main() -> anyhow::Result<()> {
     info!("----- start -----");
 
     let info = AppInfo::new()?;
-    info!("{}", info);
+    info!("info: {}", info);
 
     let secret_reader = Box::new(SecretsReaderImpl {
         client: aws_sdk_secretsmanager::Client::new(&aws_config::load_from_env().await),
     });
-    let conf_path = format!("conf/{mode}.toml", mode = info.mode);
-    let conf = AppConfig::load(&conf_path, secret_reader).await?;
+    let conf = AppConfig::load(&info.mode, secret_reader).await?;
 
     let world_verifier = WorldValidator {};
     world_verifier.verify(&info.mode, &conf.postgres.url).await?;

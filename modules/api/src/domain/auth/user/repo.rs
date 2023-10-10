@@ -1,22 +1,15 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
 use sqlx::PgPool;
 
-use crate::{domain::auth::model::User, shared::AppError};
+use crate::{common::AppError, domain::auth::model::User};
 
-#[async_trait]
-pub trait UserRepo {
-    async fn get_user(&self, user_id: &i64) -> Result<User, AppError>;
-}
-
-pub struct UserRepoImpl {
+pub struct UserRepo {
     pub db: Arc<PgPool>,
 }
 
-#[async_trait]
-impl UserRepo for UserRepoImpl {
-    async fn get_user(&self, user_id: &i64) -> Result<User, AppError> {
+impl UserRepo {
+    pub async fn get_user(&self, user_id: &i64) -> Result<User, AppError> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT *

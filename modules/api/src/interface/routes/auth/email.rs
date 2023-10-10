@@ -4,15 +4,16 @@ use axum::{
     Json, Router,
 };
 use hyper::StatusCode;
-use opxs_message::batch::email_send::EmailConfirmRequest;
 use serde::Deserialize;
 use utoipa::ToSchema;
 use validator::Validate;
 
+use opxs_shared::message::batch::email_send::EmailConfirmRequestParam;
+
 use crate::{
+    common::{AppError, AppState},
     domain::auth::model::AuthToken,
     interface::extractors::ValidatedJson,
-    shared::{AppError, AppState},
 };
 
 #[allow(unused)]
@@ -35,9 +36,12 @@ pub fn gen_service(state: AppState) -> Router {
 pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<StatusCode, AppError> {
     let token = state.service.email_auth.register(&input.name, &input.email, &input.password).await?;
 
-    let email_confirm_request = EmailConfirmRequest {
-        to_address: input.email,
-        token,
+    let email_confirm_url = format!("{}/api/v1/auth/email/confirm?token={}", state.conf.web.origin, token);
+
+    let email_confirm_request = EmailConfirmRequestParam {
+        email: input.email,
+        user_name: input.name,
+        email_confirm_url,
     };
     state
         .service

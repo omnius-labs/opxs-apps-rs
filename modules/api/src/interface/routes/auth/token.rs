@@ -4,9 +4,9 @@ use utoipa::ToSchema;
 use validator::Validate;
 
 use crate::{
+    common::{AppError, AppState},
     domain::auth::model::AuthToken,
     interface::extractors::ValidatedJson,
-    shared::{AppError, AppState},
 };
 
 #[allow(unused)]

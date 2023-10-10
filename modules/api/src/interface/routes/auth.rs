@@ -5,8 +5,8 @@ pub mod token;
 use axum::{routing::get, Json, Router};
 
 use crate::{
+    common::{AppError, AppState},
     domain::auth::model::User,
-    shared::{AppError, AppState},
 };
 
 #[allow(unused)]

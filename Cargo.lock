@@ -2289,7 +2289,7 @@ dependencies = [
  "omnius-core-migration",
  "omnius-core-testkit",
  "once_cell",
- "opxs-message",
+ "opxs-shared",
  "reqwest",
  "ring",
  "serde",
@@ -2319,6 +2319,7 @@ dependencies = [
  "async-trait",
  "aws-config",
  "aws-sdk-secretsmanager",
+ "aws-sdk-sesv2",
  "aws_lambda_events",
  "axum",
  "axum-extra",
@@ -2338,6 +2339,7 @@ dependencies = [
  "omnius-core-migration",
  "omnius-core-testkit",
  "once_cell",
+ "opxs-shared",
  "reqwest",
  "ring",
  "serde",
@@ -2386,6 +2388,7 @@ dependencies = [
  "omnius-core-migration",
  "omnius-core-testkit",
  "once_cell",
+ "opxs-shared",
  "reqwest",
  "ring",
  "serde",
@@ -2408,7 +2411,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "opxs-message"
+name = "opxs-shared"
 version = "0.1.0"
 dependencies = [
  "anyhow",

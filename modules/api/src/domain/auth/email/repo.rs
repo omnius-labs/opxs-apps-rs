@@ -1,41 +1,32 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 
-use crate::{domain::auth::model::EmailUser, shared::AppError};
+use crate::{
+    common::AppError,
+    domain::auth::model::{EmailUser, UserAuthenticationType},
+};
 
-#[async_trait]
-pub trait EmailAuthRepo {
-    async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<i64, AppError>;
-    async fn delete_user(&self, email: &str) -> Result<(), AppError>;
-    async fn exist_user(&self, email: &str) -> Result<bool, AppError>;
-    async fn get_user(&self, email: &str) -> Result<EmailUser, AppError>;
-    async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError>;
-}
-
-pub struct EmailAuthRepoImpl {
+pub struct EmailAuthRepo {
     pub db: Arc<PgPool>,
 }
 
-#[async_trait]
-impl EmailAuthRepo for EmailAuthRepoImpl {
-    async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<i64, AppError> {
+impl EmailAuthRepo {
+    pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<i64, AppError> {
         let mut tx = self.db.begin().await?;
 
-        let row = sqlx::query(
+        let (user_id,): (i64,) = sqlx::query_as(
             r#"
 INSERT INTO users (name, authentication_type)
-    VALUES ($1, 'email')
+    VALUES ($1, $2)
     RETURNING id;
 "#,
         )
         .bind(name)
+        .bind(UserAuthenticationType::Email)
         .fetch_one(&mut tx)
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
-
-        let user_id = row.try_get::<i64, _>(0)?;
 
         sqlx::query(
             r#"
@@ -62,7 +53,7 @@ INSERT INTO users_auth_email (user_id, email, password_hash, salt)
         Ok(user_id)
     }
 
-    async fn delete_user(&self, email: &str) -> Result<(), AppError> {
+    pub async fn delete_user(&self, email: &str) -> Result<(), AppError> {
         sqlx::query(
             r#"
 DELETE FROM users
@@ -77,7 +68,7 @@ DELETE FROM users
         Ok(())
     }
 
-    async fn exist_user(&self, email: &str) -> Result<bool, AppError> {
+    pub async fn exist_user(&self, email: &str) -> Result<bool, AppError> {
         let (existed,): (bool,) = sqlx::query_as(
             r#"
 SELECT EXISTS (
@@ -97,7 +88,7 @@ SELECT EXISTS (
         Ok(existed)
     }
 
-    async fn get_user(&self, email: &str) -> Result<EmailUser, AppError> {
+    pub async fn get_user(&self, email: &str) -> Result<EmailUser, AppError> {
         let user: Option<EmailUser> = sqlx::query_as(
             r#"
 SELECT u.id, u.name, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
@@ -119,7 +110,7 @@ SELECT u.id, u.name, e.email, e.password_hash, e.salt, u.created_at, u.updated_a
         Ok(user.unwrap())
     }
 
-    async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError> {
+    pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError> {
         sqlx::query(
             r#"
 UPDATE users_auth_email

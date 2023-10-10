@@ -5,9 +5,9 @@ use chrono::{Duration, Utc};
 use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
 use crate::{
-    common::jwt,
+    common::{AppError, JwtConfig},
     domain::auth::model::AuthToken,
-    shared::{AppError, JwtConfig},
+    service::jwt,
 };
 
 use super::TokenRepo;
@@ -16,7 +16,7 @@ pub struct TokenService {
     pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
     pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
     pub jwt_conf: JwtConfig,
-    pub token_repo: Arc<dyn TokenRepo + Send + Sync>,
+    pub token_repo: Arc<TokenRepo>,
 }
 
 impl TokenService {

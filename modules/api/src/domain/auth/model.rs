@@ -10,10 +10,25 @@ pub struct AuthToken {
     pub refresh_token: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, sqlx::Type, ToSchema)]
+#[sqlx(type_name = "user_authentication_type")]
+pub enum UserAuthenticationType {
+    Email,
+    Provider,
+}
+
+#[derive(Debug, Serialize, Deserialize, sqlx::Type, ToSchema)]
+#[sqlx(type_name = "user_role")]
+pub enum UserRole {
+    Admin,
+    User,
+}
+
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
 pub struct User {
     pub id: i64,
     pub name: String,
+    pub user_role: UserRole,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -22,6 +37,7 @@ pub struct User {
 pub struct EmailUser {
     pub id: i64,
     pub name: String,
+    pub user_role: UserRole,
     pub email: String,
     #[serde(skip_serializing)]
     pub password_hash: String,
