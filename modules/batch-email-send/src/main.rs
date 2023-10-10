@@ -87,6 +87,5 @@ async fn main() -> Result<(), Error> {
     }
 
     info!("----- start -----");
-
     run(service_fn(handler)).await
 }

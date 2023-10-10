@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 use crate::{
     common::AppError,
-    domain::auth::model::{EmailUser, UserAuthenticationType},
+    domain::auth::model::{EmailUser, UserAuthenticationType, UserRole},
 };
 
 pub struct EmailAuthRepo {
@@ -17,13 +17,14 @@ impl EmailAuthRepo {
 
         let (user_id,): (i64,) = sqlx::query_as(
             r#"
-INSERT INTO users (name, authentication_type)
-    VALUES ($1, $2)
+INSERT INTO users (name, authentication_type, role)
+    VALUES ($1, $2, $3)
     RETURNING id;
 "#,
         )
         .bind(name)
         .bind(UserAuthenticationType::Email)
+        .bind(UserRole::User)
         .fetch_one(&mut tx)
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
@@ -91,7 +92,7 @@ SELECT EXISTS (
     pub async fn get_user(&self, email: &str) -> Result<EmailUser, AppError> {
         let user: Option<EmailUser> = sqlx::query_as(
             r#"
-SELECT u.id, u.name, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
+SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
     FROM users u
     JOIN users_auth_email e on u.id = e.user_id
     WHERE e.email = $1 AND e.email_verified = true

@@ -28,7 +28,7 @@ pub enum UserRole {
 pub struct User {
     pub id: i64,
     pub name: String,
-    pub user_role: UserRole,
+    pub role: UserRole,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -37,7 +37,7 @@ pub struct User {
 pub struct EmailUser {
     pub id: i64,
     pub name: String,
-    pub user_role: UserRole,
+    pub role: UserRole,
     pub email: String,
     #[serde(skip_serializing)]
     pub password_hash: String,

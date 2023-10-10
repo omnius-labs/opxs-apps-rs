@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 use crate::{
     common::AppError,
-    domain::auth::model::{User, UserAuthenticationType},
+    domain::auth::model::{User, UserAuthenticationType, UserRole},
 };
 
 pub struct ProviderAuthRepo {
@@ -17,13 +17,14 @@ impl ProviderAuthRepo {
 
         let (user_id,): (i64,) = sqlx::query_as(
             r#"
-INSERT INTO users (name, authentication_type)
+INSERT INTO users (name, authentication_type, role)
     VALUES ($1, $2)
     RETURNING id;
 "#,
         )
         .bind(name)
         .bind(UserAuthenticationType::Provider)
+        .bind(UserRole::User)
         .fetch_one(&mut tx)
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;

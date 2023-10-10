@@ -69,7 +69,7 @@ mod tests {
         assert_eq!(
             service.check().await.unwrap(),
             json!({
-                "mode": "aaa",
+                "mode": "local",
                 "git_semver": "bbb",
                 "git_sha": "ccc"
             })
