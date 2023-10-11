@@ -80,7 +80,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: aws-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and Push image to Amazon ECR (opxs-api)
         uses: docker/build-push-action@v5
