@@ -1,14 +1,15 @@
 [workspace]
 members = [
-    "./modules/api",
-    "./modules/batch-email-send",
-    "./modules/batch-email-send-feedback",
-    "./modules/shared",
     "./refs/core-rs/modules/base",
     "./refs/core-rs/modules/cloud",
     "./refs/core-rs/modules/image",
     "./refs/core-rs/modules/migration",
     "./refs/core-rs/modules/testkit",
+
+    "./modules/api",
+    "./modules/batch-email-send",
+    "./modules/batch-email-send-feedback",
+    "./modules/shared",
 ]
 exclude = ["refs/core-rs"]
 resolver = "2"
