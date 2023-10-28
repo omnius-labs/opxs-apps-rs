@@ -9,11 +9,11 @@ build = "build.rs"
 stable-test = []
 
 [dependencies]
-omnius-core-base = { workspace = true }
-omnius-core-cloud = { workspace = true }
-omnius-core-image = { workspace = true }
-omnius-core-migration = { workspace = true }
-omnius-core-testkit = { workspace = true }
+core-base = { workspace = true }
+core-cloud = { workspace = true }
+core-image = { workspace = true }
+core-migration = { workspace = true }
+core-testkit = { workspace = true }
 
 sqlx = { workspace = true }
 chrono = { workspace = true }

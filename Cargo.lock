@@ -885,6 +885,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "core-base"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "hex",
+ "rand",
+ "rand_chacha",
+ "testcontainers",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "core-cloud"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "aws-config",
+ "aws-sdk-s3",
+ "aws-sdk-secretsmanager",
+ "aws-sdk-sesv2",
+ "aws-sdk-sqs",
+ "chrono",
+ "serde",
+ "serde_json",
+ "testcontainers",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -899,6 +937,49 @@ name = "core-foundation-sys"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
+
+[[package]]
+name = "core-image"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "kamadak-exif",
+ "testcontainers",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "core-migration"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "core-testkit",
+ "serial_test",
+ "testcontainers",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "core-testkit"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "kamadak-exif",
+ "testcontainers",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "tracing-subscriber",
+]
 
 [[package]]
 name = "cpufeatures"
@@ -2125,87 +2206,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "core-base"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "hex",
- "rand",
- "rand_chacha",
- "testcontainers",
- "tokio",
- "tokio-postgres",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
-name = "core-cloud"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "aws-config",
- "aws-sdk-s3",
- "aws-sdk-secretsmanager",
- "aws-sdk-sesv2",
- "aws-sdk-sqs",
- "chrono",
- "serde",
- "serde_json",
- "testcontainers",
- "tokio",
- "tokio-postgres",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "core-image"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "kamadak-exif",
- "testcontainers",
- "tokio",
- "tokio-postgres",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "core-migration"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "core-testkit",
- "serial_test",
- "testcontainers",
- "tokio",
- "tokio-postgres",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "core-testkit"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "kamadak-exif",
- "testcontainers",
- "tokio",
- "tokio-postgres",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2277,17 +2277,17 @@ dependencies = [
  "base64 0.21.2",
  "chrono",
  "config",
+ "core-base",
+ "core-cloud",
+ "core-image",
+ "core-migration",
+ "core-testkit",
  "futures",
  "futures-util",
  "headers",
  "hex",
  "hyper",
  "jsonwebtoken",
- "core-base",
- "core-cloud",
- "core-image",
- "core-migration",
- "core-testkit",
  "once_cell",
  "opxs-shared",
  "reqwest",
@@ -2326,6 +2326,11 @@ dependencies = [
  "base64 0.21.2",
  "chrono",
  "config",
+ "core-base",
+ "core-cloud",
+ "core-image",
+ "core-migration",
+ "core-testkit",
  "futures",
  "futures-util",
  "headers",
@@ -2333,11 +2338,6 @@ dependencies = [
  "hyper",
  "jsonwebtoken",
  "lambda_runtime",
- "core-base",
- "core-cloud",
- "core-image",
- "core-migration",
- "core-testkit",
  "once_cell",
  "opxs-shared",
  "reqwest",
@@ -2375,6 +2375,11 @@ dependencies = [
  "base64 0.21.2",
  "chrono",
  "config",
+ "core-base",
+ "core-cloud",
+ "core-image",
+ "core-migration",
+ "core-testkit",
  "futures",
  "futures-util",
  "headers",
@@ -2382,11 +2387,6 @@ dependencies = [
  "hyper",
  "jsonwebtoken",
  "lambda_runtime",
- "core-base",
- "core-cloud",
- "core-image",
- "core-migration",
- "core-testkit",
  "once_cell",
  "opxs-shared",
  "reqwest",
