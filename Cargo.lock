@@ -2125,7 +2125,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnius-core-base"
+name = "core-base"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2142,7 +2142,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnius-core-cloud"
+name = "core-cloud"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2163,7 +2163,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnius-core-image"
+name = "core-image"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2177,12 +2177,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnius-core-migration"
+name = "core-migration"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
- "omnius-core-testkit",
+ "core-testkit",
  "serial_test",
  "testcontainers",
  "tokio",
@@ -2192,7 +2192,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnius-core-testkit"
+name = "core-testkit"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2283,11 +2283,11 @@ dependencies = [
  "hex",
  "hyper",
  "jsonwebtoken",
- "omnius-core-base",
- "omnius-core-cloud",
- "omnius-core-image",
- "omnius-core-migration",
- "omnius-core-testkit",
+ "core-base",
+ "core-cloud",
+ "core-image",
+ "core-migration",
+ "core-testkit",
  "once_cell",
  "opxs-shared",
  "reqwest",
@@ -2333,11 +2333,11 @@ dependencies = [
  "hyper",
  "jsonwebtoken",
  "lambda_runtime",
- "omnius-core-base",
- "omnius-core-cloud",
- "omnius-core-image",
- "omnius-core-migration",
- "omnius-core-testkit",
+ "core-base",
+ "core-cloud",
+ "core-image",
+ "core-migration",
+ "core-testkit",
  "once_cell",
  "opxs-shared",
  "reqwest",
@@ -2382,11 +2382,11 @@ dependencies = [
  "hyper",
  "jsonwebtoken",
  "lambda_runtime",
- "omnius-core-base",
- "omnius-core-cloud",
- "omnius-core-image",
- "omnius-core-migration",
- "omnius-core-testkit",
+ "core-base",
+ "core-cloud",
+ "core-image",
+ "core-migration",
+ "core-testkit",
  "once_cell",
  "opxs-shared",
  "reqwest",
@@ -2416,11 +2416,11 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
- "omnius-core-base",
- "omnius-core-cloud",
- "omnius-core-image",
- "omnius-core-migration",
- "omnius-core-testkit",
+ "core-base",
+ "core-cloud",
+ "core-image",
+ "core-migration",
+ "core-testkit",
  "serde",
  "serde_json",
  "serial_test",

@@ -1,7 +1,7 @@
 use tracing::info;
 
-use omnius_core_cloud::aws::secrets::SecretsReaderImpl;
-use omnius_core_migration::Migrator;
+use core_cloud::aws::secrets::SecretsReaderImpl;
+use core_migration::Migrator;
 
 use crate::common::{AppConfig, AppInfo, AppState, WorldValidator};
 

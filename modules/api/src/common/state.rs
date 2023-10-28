@@ -3,8 +3,8 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 use axum_extra::extract::cookie;
 use chrono::Duration;
-use omnius_core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
-use omnius_core_cloud::aws::sqs::SqsSenderImpl;
+use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
+use core_cloud::aws::sqs::SqsSenderImpl;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
 use super::{AppConfig, AppInfo, AppService};

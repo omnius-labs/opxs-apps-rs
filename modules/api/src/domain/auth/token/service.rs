@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use chrono::{Duration, Utc};
 
-use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
+use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
 use crate::{
     common::{AppError, JwtConfig},

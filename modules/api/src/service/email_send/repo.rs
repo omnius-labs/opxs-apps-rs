@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use omnius_core_base::clock::SystemClock;
+use core_base::clock::SystemClock;
 use opxs_shared::message::batch::email_send::{EmailConfirmRequestParam, EmailSendJobStatus, EmailSendJobType};
 use sqlx::PgPool;
 

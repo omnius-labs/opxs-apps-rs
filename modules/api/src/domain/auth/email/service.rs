@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 
-use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
+use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
 use crate::{
     common::{AppError, JwtConfig},
@@ -81,9 +81,9 @@ impl EmailAuthService {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
-    use omnius_core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
-    use omnius_core_migration::Migrator;
-    use omnius_core_testkit::containers::postgres::PostgresContainer;
+    use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
+    use core_migration::Migrator;
+    use core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
 
     use crate::{common::JwtSecretConfig, domain::auth::email::repo::EmailAuthRepo, service::KdfAlgorithm};

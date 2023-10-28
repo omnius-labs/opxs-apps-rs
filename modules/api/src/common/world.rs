@@ -65,7 +65,7 @@ pub enum WorldValidatedStatus {
 
 #[cfg(test)]
 mod tests {
-    use omnius_core_testkit::containers::postgres::PostgresContainer;
+    use core_testkit::containers::postgres::PostgresContainer;
 
     use super::*;
 

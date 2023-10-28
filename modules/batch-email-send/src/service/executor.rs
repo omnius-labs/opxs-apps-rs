@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use omnius_core_cloud::aws::ses::SesSender;
+use core_cloud::aws::ses::SesSender;
 
 use opxs_shared::message::batch::email_send::{EmailConfirmRequestParam, EmailSendJobMessage, EmailSendJobType};
 
@@ -71,10 +71,10 @@ opxs サポートチーム",
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
-    use omnius_core_base::clock::SystemClockUtc;
-    use omnius_core_cloud::aws::ses::SesSenderImpl;
-    use omnius_core_migration::Migrator;
-    use omnius_core_testkit::containers::postgres::PostgresContainer;
+    use core_base::clock::SystemClockUtc;
+    use core_cloud::aws::ses::SesSenderImpl;
+    use core_migration::Migrator;
+    use core_testkit::containers::postgres::PostgresContainer;
     use opxs_shared::message::batch::email_send::EmailSendJobStatus;
     use sqlx::postgres::PgPoolOptions;
 

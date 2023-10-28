@@ -31,7 +31,7 @@ mod tests {
     use serde_json::json;
     use sqlx::postgres::PgPoolOptions;
 
-    use omnius_core_testkit::containers::postgres::PostgresContainer;
+    use core_testkit::containers::postgres::PostgresContainer;
 
     use crate::{
         common::{AppInfo, RunMode, WorldValidator},

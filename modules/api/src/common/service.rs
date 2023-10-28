@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use omnius_core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
-use omnius_core_cloud::aws::sqs::SqsSender;
+use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
+use core_cloud::aws::sqs::SqsSender;
 use sqlx::PgPool;
 
 use crate::{

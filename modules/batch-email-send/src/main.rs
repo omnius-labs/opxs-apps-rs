@@ -6,8 +6,8 @@ use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;
 
-use omnius_core_base::clock::SystemClockUtc;
-use omnius_core_cloud::aws::{secrets::SecretsReaderImpl, ses::SesSenderImpl};
+use core_base::clock::SystemClockUtc;
+use core_cloud::aws::{secrets::SecretsReaderImpl, ses::SesSenderImpl};
 
 use opxs_shared::message::batch::email_send::EmailSendJobMessage;
 

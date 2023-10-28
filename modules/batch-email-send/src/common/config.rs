@@ -1,4 +1,4 @@
-use omnius_core_cloud::aws::secrets::SecretsReader;
+use core_cloud::aws::secrets::SecretsReader;
 
 use super::RunMode;
 
@@ -86,7 +86,7 @@ impl ValueExt for serde_json::Value {
 
 #[cfg(test)]
 mod tests {
-    use omnius_core_cloud::aws::secrets::SecretsReaderImpl;
+    use core_cloud::aws::secrets::SecretsReaderImpl;
 
     use super::*;
 
