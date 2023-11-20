@@ -6,10 +6,12 @@ members = [
     "./refs/core-rs/modules/migration",
     "./refs/core-rs/modules/testkit",
 
-    "./modules/api",
-    "./modules/batch-email-send",
-    "./modules/batch-email-send-feedback",
-    "./modules/shared",
+    "./modules/auth",
+    "./modules/email-send",
+
+    "./entrypoints/api",
+    "./entrypoints/batch-email-send",
+    "./entrypoints/batch-email-send-feedback",
 ]
 exclude = ["refs/core-rs"]
 resolver = "2"
@@ -26,7 +28,8 @@ core-image = { path = "./refs/core-rs/modules/image" }
 core-migration = { path = "./refs/core-rs/modules/migration" }
 core-testkit = { path = "./refs/core-rs/modules/testkit" }
 
-opxs-shared = { path = "./modules/shared" }
+opxs-auth = { path = "./modules/auth" }
+opxs-email-send = { path = "./modules/email-send" }
 
 lambda_runtime = "0.8.1"
 aws_lambda_events = { version = "0.10.0", default-features = false, features = [

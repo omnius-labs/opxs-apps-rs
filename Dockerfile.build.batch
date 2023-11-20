@@ -22,6 +22,7 @@ RUN cargo install cargo-chef --locked
 FROM chef AS planner
 
 # Copy
+COPY ./entrypoints ./entrypoints
 COPY ./modules ./modules
 COPY ./refs ./refs
 COPY Cargo.* .
@@ -37,6 +38,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 
 # Copy
 COPY ./.git ./.git
+COPY ./entrypoints ./entrypoints
 COPY ./modules ./modules
 COPY ./refs ./refs
 COPY Cargo.* .
