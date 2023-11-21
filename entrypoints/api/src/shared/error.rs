@@ -1,12 +1,16 @@
-use axum::{http::StatusCode, response::IntoResponse};
-use opxs_auth::shared::error::AuthError;
+use std::fmt;
+
+use axum::{http::StatusCode, response::IntoResponse, Json};
+use serde::Serialize;
+use serde_json::json;
 use thiserror::Error;
 use tracing::error;
 use utoipa::ToSchema;
 
+use opxs_auth::shared::error::AuthError;
+
 #[derive(Debug, Error, ToSchema)]
 pub enum AppError {
-    // Library
     #[error(transparent)]
     SqlxError(#[from] sqlx::Error),
     #[error(transparent)]
@@ -24,8 +28,6 @@ pub enum AppError {
     #[error(transparent)]
     ValidationError(#[from] validator::ValidationErrors),
 
-    #[error("world mismatch")]
-    WorldMismatch,
     #[error("invalid request")]
     InvalidRequest(anyhow::Error),
 
@@ -38,36 +40,55 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
-        let status = match self {
-            AppError::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::JwtError(_) => StatusCode::BAD_REQUEST,
-            AppError::TokioRecvError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::AxumError(_) => StatusCode::BAD_REQUEST,
-            AppError::AxumTypedHeaderError(_) => StatusCode::BAD_REQUEST,
-            AppError::AxumExtensionError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::AxumJsonRejection(_) => StatusCode::BAD_REQUEST,
-            AppError::ValidationError(_) => StatusCode::BAD_REQUEST,
+        let (status_code, error_code) = match self {
+            AppError::SqlxError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::JwtError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
+            AppError::TokioRecvError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::AxumError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::AxumTypedHeaderError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
+            AppError::AxumExtensionError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::AxumJsonRejection(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
+            AppError::ValidationError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
 
-            AppError::WorldMismatch => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::InvalidRequest(_) => StatusCode::BAD_REQUEST,
+            AppError::InvalidRequest(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
 
-            AppError::AuthError(AuthError::RegisterRejection(_)) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::AuthError(AuthError::LoginRejection(_)) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::AuthError(AuthError::AccessTokenExpired) => StatusCode::UNAUTHORIZED,
-            AppError::AuthError(AuthError::RefreshTokenNotFound) => StatusCode::UNAUTHORIZED,
-            AppError::AuthError(AuthError::UserNotFound) => StatusCode::NOT_FOUND,
-            AppError::AuthError(AuthError::WrongPassword) => StatusCode::NOT_FOUND,
-            AppError::AuthError(AuthError::DuplicateEmail) => StatusCode::CONFLICT,
-            AppError::AuthError(AuthError::EmailVerifyTokenExpired) => StatusCode::UNAUTHORIZED,
-            AppError::AuthError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::AuthError(AuthError::RegisterRejection(_)) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::AuthError(AuthError::LoginRejection(_)) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::AuthError(AuthError::AccessTokenExpired) => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
+            AppError::AuthError(AuthError::RefreshTokenNotFound) => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
+            AppError::AuthError(AuthError::UserNotFound) => (StatusCode::NOT_FOUND, ErrorCode::UserNotFound),
+            AppError::AuthError(AuthError::WrongPassword) => (StatusCode::NOT_FOUND, ErrorCode::UserNotFound),
+            AppError::AuthError(AuthError::DuplicateEmail) => (StatusCode::CONFLICT, ErrorCode::DuplicateEmail),
+            AppError::AuthError(AuthError::EmailVerifyTokenExpired) => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
+            AppError::AuthError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
 
-            AppError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::UnexpectedError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
         };
 
-        if status == StatusCode::INTERNAL_SERVER_ERROR {
-            error!("{:?}", self);
-        }
+        error!("{:?}", self);
 
-        status.into_response()
+        let payload = json!({"error_code": error_code.to_string()});
+        (status_code, Json(payload)).into_response()
+    }
+}
+
+#[derive(Debug, Serialize)]
+enum ErrorCode {
+    InternalServerError,
+    BadRequest,
+    Unauthorized,
+    UserNotFound,
+    DuplicateEmail,
+}
+
+impl fmt::Display for ErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ErrorCode::InternalServerError => write!(f, "InternalServerError"),
+            ErrorCode::BadRequest => write!(f, "BadRequest"),
+            ErrorCode::Unauthorized => write!(f, "Unauthorized"),
+            ErrorCode::UserNotFound => write!(f, "UserNotFound"),
+            ErrorCode::DuplicateEmail => write!(f, "DuplicateEmail"),
+        }
     }
 }

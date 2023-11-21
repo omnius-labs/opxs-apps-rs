@@ -2,13 +2,12 @@ use chrono::Duration;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::Row;
 
-use super::error::AppError;
 use super::info::RunMode;
 
 pub struct WorldValidator;
 
 impl WorldValidator {
-    pub async fn verify(&self, mode: &RunMode, postgres_url: &str) -> Result<WorldValidatedStatus, AppError> {
+    pub async fn verify(&self, mode: &RunMode, postgres_url: &str) -> anyhow::Result<WorldValidatedStatus> {
         let db = PgPoolOptions::new()
             .max_connections(10)
             .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
@@ -44,7 +43,7 @@ CREATE TABLE IF NOT EXISTS _world (
             Ok(row) => {
                 let got_mode: String = row.get(0);
                 if mode.to_string() != got_mode {
-                    return Err(AppError::WorldMismatch);
+                    return Err(anyhow::anyhow!("World mismatch"));
                 }
                 Ok(WorldValidatedStatus::Match)
             }
@@ -83,6 +82,6 @@ mod tests {
         assert_eq!(res.unwrap(), WorldValidatedStatus::Match);
 
         let res = world_verifier.verify(&RunMode::Dev, &container.connection_string).await;
-        assert!(matches!(res, Err(AppError::WorldMismatch)));
+        assert!(res.is_err());
     }
 }

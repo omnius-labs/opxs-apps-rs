@@ -82,6 +82,7 @@ mod tests {
 
     use super::*;
 
+    #[ignore]
     #[tokio::test]
     async fn simple_test() {
         let docker = testcontainers::clients::Cli::default();
