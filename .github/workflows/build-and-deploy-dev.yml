@@ -94,7 +94,7 @@ jobs:
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api,mode=max
       - name: Update ECS
         run: |
-          aws ecs update-service --cluster opxs-api-cluster --service opxs-api --force-new-deployment
+          aws ecs update-service --cluster opxs-api-ecs-cluster --service opxs-api --force-new-deployment
 
       - name: Build and Push image to Amazon ECR (opxs-batch-email-send)
         uses: docker/build-push-action@v5
