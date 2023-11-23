@@ -82,7 +82,7 @@ jobs:
         id: aws-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and Push image to Amazon ECR (opxs-api)
+      - name: Build and Push image to Amazon ECR (opxs-api-ecs-service)
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -94,9 +94,9 @@ jobs:
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api,mode=max
       - name: Update ECS
         run: |
-          aws ecs update-service --cluster opxs-api-ecs-cluster --service opxs-api --force-new-deployment
+          aws ecs update-service --cluster opxs-api-ecs-cluster --service opxs-api-ecs-service --force-new-deployment
 
-      - name: Build and Push image to Amazon ECR (opxs-batch-email-send)
+      - name: Build and Push image to Amazon ECR (opxs-batch-email-send-lambda)
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -108,9 +108,9 @@ jobs:
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send,mode=max
       - name: Update Lambda
         run: |
-          aws lambda update-function-code --function-name opxs-batch-email-send --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-lambda-ecr:latest
+          aws lambda update-function-code --function-name opxs-batch-email-send-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-lambda-ecr:latest
 
-      - name: Build and Push image to Amazon ECR (opxs-batch-email-send-feedback)
+      - name: Build and Push image to Amazon ECR (opxs-batch-email-send-feedback-lambda)
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -122,4 +122,4 @@ jobs:
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback,mode=max
       - name: Update Lambda
         run: |
-          aws lambda update-function-code --function-name opxs-batch-email-send-feedback --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-feedback-lambda-ecr:latest
+          aws lambda update-function-code --function-name opxs-batch-email-send-feedback-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-feedback-lambda-ecr:latest
