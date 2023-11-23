@@ -9,7 +9,7 @@ RUN yum install -y \
     && rm -rf /var/cache/yum/* \
     && yum clean all
 
-COPY ./rust-toolchain ./rust-toolchain
+COPY ./rust-toolchain.toml ./rust-toolchain.toml
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
