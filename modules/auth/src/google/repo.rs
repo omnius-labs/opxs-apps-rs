@@ -18,7 +18,7 @@ impl ProviderAuthRepo {
         let (user_id,): (i64,) = sqlx::query_as(
             r#"
 INSERT INTO users (name, authentication_type, role)
-    VALUES ($1, $2)
+    VALUES ($1, $2, $3)
     RETURNING id;
 "#,
         )
