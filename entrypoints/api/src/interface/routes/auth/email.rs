@@ -4,11 +4,13 @@ use axum::{
     Json, Router,
 };
 use hyper::StatusCode;
-use opxs_auth::shared::model::AuthToken;
-use opxs_email_send::EmailConfirmRequestParam;
 use serde::Deserialize;
+use url::Url;
 use utoipa::ToSchema;
 use validator::Validate;
+
+use opxs_auth::shared::model::AuthToken;
+use opxs_email_send::EmailConfirmRequestParam;
 
 use crate::{
     interface::extractors::ValidatedJson,
@@ -35,7 +37,12 @@ pub fn gen_service(state: AppState) -> Router {
 pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<StatusCode, AppError> {
     let token = state.service.email_auth.register(&input.name, &input.email, &input.password).await?;
 
-    let email_confirm_url = format!("{}/auth/register/email/confirm?token={}", state.conf.web.origin, token);
+    let email_confirm_url = Url::parse_with_params(
+        format!("{}auth/register/email/confirm", state.conf.web.origin.as_str()).as_str(),
+        &[("token", token)],
+    )
+    .unwrap()
+    .to_string();
 
     let param = EmailConfirmRequestParam {
         email: input.email,
@@ -65,10 +72,11 @@ pub struct RegisterInput {
         (status = 200)
     )
 )]
-pub async fn confirm(State(state): State<AppState>, input: Query<EmailVerificationInput>) -> Result<StatusCode, AppError> {
-    state.service.email_auth.confirm(&input.token).await?;
+pub async fn confirm(State(state): State<AppState>, input: Query<EmailVerificationInput>) -> Result<Json<AuthToken>, AppError> {
+    let user_id = state.service.email_auth.confirm(&input.token).await?;
+    let auth_token = state.service.token.create(&user_id).await?;
 
-    Ok(StatusCode::OK)
+    Ok(Json(auth_token))
 }
 
 #[derive(Deserialize, ToSchema, Validate)]
@@ -86,7 +94,6 @@ pub struct EmailVerificationInput {
 )]
 async fn login(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<LoginInput>) -> Result<Json<AuthToken>, AppError> {
     let user_id = state.service.email_auth.login(&input.email, &input.password).await?;
-
     let auth_token = state.service.token.create(&user_id).await?;
 
     Ok(Json(auth_token))

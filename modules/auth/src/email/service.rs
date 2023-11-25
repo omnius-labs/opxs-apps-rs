@@ -55,14 +55,16 @@ impl EmailAuthService {
         Ok(user.id)
     }
 
-    pub async fn confirm(&self, token: &str) -> Result<(), AuthError> {
+    pub async fn confirm(&self, token: &str) -> Result<i64, AuthError> {
         let now = self.system_clock.now();
         let claims = jwt::verify(&self.jwt_conf.secret.current, token, now)?;
 
         let email = claims.sub;
         self.auth_repo.update_email_verified(&email, true).await?;
 
-        Ok(())
+        let user = self.auth_repo.get_user(&email).await?;
+
+        Ok(user.id)
     }
 
     // pub async fn unregister(&self, refresh_token: &str) -> Result<(), AuthError> {
