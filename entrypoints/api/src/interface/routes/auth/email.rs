@@ -1,8 +1,4 @@
-use axum::{
-    extract::{Query, State},
-    routing::post,
-    Json, Router,
-};
+use axum::{extract::State, routing::post, Json, Router};
 use hyper::StatusCode;
 use serde::Deserialize;
 use url::Url;
