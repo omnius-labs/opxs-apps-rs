@@ -72,7 +72,7 @@ pub struct RegisterInput {
         (status = 200)
     )
 )]
-pub async fn confirm(State(state): State<AppState>, input: Query<EmailVerificationInput>) -> Result<Json<AuthToken>, AppError> {
+pub async fn confirm(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<ConfirmInput>) -> Result<Json<AuthToken>, AppError> {
     let user_id = state.service.email_auth.confirm(&input.token).await?;
     let auth_token = state.service.token.create(&user_id).await?;
 
@@ -80,7 +80,7 @@ pub async fn confirm(State(state): State<AppState>, input: Query<EmailVerificati
 }
 
 #[derive(Deserialize, ToSchema, Validate)]
-pub struct EmailVerificationInput {
+pub struct ConfirmInput {
     pub token: String,
 }
 
