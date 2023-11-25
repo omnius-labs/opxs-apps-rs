@@ -1,6 +1,6 @@
 use axum::{
     extract::{Query, State},
-    routing::{get, post},
+    routing::post,
     Json, Router,
 };
 use hyper::StatusCode;
@@ -21,7 +21,7 @@ use crate::{
 pub fn gen_service(state: AppState) -> Router {
     Router::new()
         .route("/register", post(register))
-        .route("/confirm", get(confirm))
+        .route("/confirm", post(confirm))
         .route("/login", post(login))
         .with_state(state)
 }

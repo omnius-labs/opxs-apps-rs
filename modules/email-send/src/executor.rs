@@ -37,7 +37,7 @@ impl Executor {
             "\
 こんにちは、{user_name}様。
 
-opxs へのご登録ありがとうございます。
+Opxs へのご登録ありがとうございます。
 
 以下のリンクをクリックして、メールアドレスの確認を完了してください。
 
@@ -49,7 +49,7 @@ opxs へのご登録ありがとうございます。
 
 ありがとうございます。
 
-opxs サポートチーム",
+Opxs サポートチーム",
             user_name = param.user_name,
             email_confirm_url = param.email_confirm_url,
         );
