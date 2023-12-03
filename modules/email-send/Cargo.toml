@@ -54,7 +54,3 @@ serial_test = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
-
-[build-dependencies]
-anyhow = { workspace = true }
-vergen = { workspace = true }
