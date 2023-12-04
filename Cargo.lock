@@ -1573,12 +1573,11 @@ dependencies = [
 
 [[package]]
 name = "headers"
-version = "0.3.8"
+version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3e372db8e5c0d213e0cd0b9be18be2aca3d44cf2fe30a9d46a65581cd454584"
+checksum = "06683b93020a07e3dbcf5f8c0f6d40080d725bea7936fc01ad345c01b97dc270"
 dependencies = [
- "base64 0.13.1",
- "bitflags",
+ "base64 0.21.5",
  "bytes",
  "headers-core",
  "http",
@@ -2359,7 +2358,6 @@ dependencies = [
  "utoipa-swagger-ui",
  "uuid",
  "validator",
- "vergen",
 ]
 
 [[package]]
@@ -2507,7 +2505,6 @@ dependencies = [
  "utoipa-swagger-ui",
  "uuid",
  "validator",
- "vergen",
 ]
 
 [[package]]
