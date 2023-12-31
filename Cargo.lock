@@ -978,7 +978,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
- "kamadak-exif",
  "testcontainers",
  "tokio",
  "tokio-postgres",
@@ -2359,7 +2358,6 @@ dependencies = [
  "utoipa-swagger-ui",
  "uuid",
  "validator",
- "vergen",
 ]
 
 [[package]]
@@ -2507,7 +2505,6 @@ dependencies = [
  "utoipa-swagger-ui",
  "uuid",
  "validator",
- "vergen",
 ]
 
 [[package]]
