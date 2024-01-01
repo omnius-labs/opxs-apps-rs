@@ -13,7 +13,7 @@ impl TokenRepo {
     pub async fn create_token(&self, user_id: &i64, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AuthError> {
         sqlx::query(
             r#"
-INSERT INTO users_tokens (user_id, refresh_token, expires_at)
+INSERT INTO refresh_tokens (user_id, refresh_token, expires_at)
     VALUES ($1, $2, $3);
 "#,
         )
@@ -30,7 +30,7 @@ INSERT INTO users_tokens (user_id, refresh_token, expires_at)
     pub async fn delete_token(&self, refresh_token: &str) -> Result<(), AuthError> {
         sqlx::query(
             r#"
-DELETE FROM users_tokens
+DELETE FROM refresh_tokens
     WHERE refresh_token = $1;
 "#,
         )
@@ -45,7 +45,7 @@ DELETE FROM users_tokens
     pub async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AuthError> {
         sqlx::query(
             r#"
-UPDATE users_tokens
+UPDATE refresh_tokens
     SET expires_at = $2
     WHERE refresh_token = $1;
 "#,
@@ -64,7 +64,7 @@ UPDATE users_tokens
             r#"
 SELECT u.*
     FROM users u
-    JOIN users_tokens t on t.user_id = u.id
+    JOIN refresh_tokens t on t.user_id = u.id
     WHERE t.refresh_token = $1 AND expires_at > $2;
 "#,
         )

@@ -31,7 +31,7 @@ INSERT INTO users (name, authentication_type, role)
 
         sqlx::query(
             r#"
-INSERT INTO users_auth_provider (user_id, provider_type, provider_user_id)
+INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id)
     VALUES ($1, $2, $3)
     RETURNING id;
 "#,
@@ -52,7 +52,7 @@ INSERT INTO users_auth_provider (user_id, provider_type, provider_user_id)
         sqlx::query(
             r#"
 DELETE FROM users
-    WHERE id = (SELECT user_id FROM users_auth_provider WHERE provider_type = $1 AND provider_user_id = $2);
+    WHERE id = (SELECT user_id FROM user_auth_providers WHERE provider_type = $1 AND provider_user_id = $2);
 "#,
         )
         .bind(provider_type)
@@ -70,7 +70,7 @@ DELETE FROM users
 SELECT EXISTS (
     SELECT u.id
         FROM users u
-        JOIN users_auth_provider p on u.id = p.user_id
+        JOIN user_auth_providers p on u.id = p.user_id
         WHERE p.provider_type = $1 AND p.provider_user_id = $2
         LIMIT 1
 );
@@ -90,7 +90,7 @@ SELECT EXISTS (
             r#"
 SELECT *
     FROM users u
-    JOIN users_auth_provider p on u.id = p.user_id
+    JOIN user_auth_providers p on u.id = p.user_id
     WHERE p.provider_type = $1 AND p.provider_user_id = $2
     LIMIT 1;
 "#,

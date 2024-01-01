@@ -98,9 +98,9 @@ CREATE TABLE email_send_job_batch_details (
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TRIGGER email_send_job_batches_updated_at_step1 BEFORE UPDATE ON email_send_job_batches FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
-CREATE TRIGGER email_send_job_batches_updated_at_step2 BEFORE UPDATE OF updated_at ON email_send_job_batches FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
-CREATE TRIGGER email_send_job_batches_updated_at_step3 BEFORE UPDATE ON email_send_job_batches FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
+CREATE TRIGGER email_send_job_batch_details_updated_at_step1 BEFORE UPDATE ON email_send_job_batch_details FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
+CREATE TRIGGER email_send_job_batch_details_updated_at_step2 BEFORE UPDATE OF updated_at ON email_send_job_batch_details FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
+CREATE TRIGGER email_send_job_batch_details_updated_at_step3 BEFORE UPDATE ON email_send_job_batch_details FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
 CREATE INDEX email_send_job_batch_details_job_id_batch_id_index ON email_send_job_batch_details(job_id, batch_id);
 CREATE INDEX email_send_job_batch_details_message_id_index ON email_send_job_batch_details(message_id);
 

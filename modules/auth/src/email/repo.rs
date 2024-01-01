@@ -31,7 +31,7 @@ INSERT INTO users (name, authentication_type, role)
 
         sqlx::query(
             r#"
-INSERT INTO users_auth_email (user_id, email, password_hash, salt)
+INSERT INTO user_auth_emails (user_id, email, password_hash, salt)
     VALUES ($1, $2, $3, $4)
     ON CONFLICT (email)
     DO UPDATE SET
@@ -58,7 +58,7 @@ INSERT INTO users_auth_email (user_id, email, password_hash, salt)
         sqlx::query(
             r#"
 DELETE FROM users
-    WHERE id = (SELECT user_id FROM users_auth_email WHERE email = $1);
+    WHERE id = (SELECT user_id FROM user_auth_emails WHERE email = $1);
 "#,
         )
         .bind(email)
@@ -75,7 +75,7 @@ DELETE FROM users
 SELECT EXISTS (
     SELECT u.id
         FROM users u
-        JOIN users_auth_email e on u.id = e.user_id
+        JOIN user_auth_emails e on u.id = e.user_id
         WHERE e.email = $1 AND e.email_verified = true
         LIMIT 1
 );
@@ -94,7 +94,7 @@ SELECT EXISTS (
             r#"
 SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
     FROM users u
-    JOIN users_auth_email e on u.id = e.user_id
+    JOIN user_auth_emails e on u.id = e.user_id
     WHERE e.email = $1 AND e.email_verified = true
     LIMIT 1;
 "#,
@@ -114,7 +114,7 @@ SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.u
     pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AuthError> {
         sqlx::query(
             r#"
-UPDATE users_auth_email
+UPDATE user_auth_emails
     SET email_verified = $2
     WHERE email = $1;
 "#,
