@@ -2359,7 +2359,6 @@ dependencies = [
  "utoipa-swagger-ui",
  "uuid",
  "validator",
- "vergen",
 ]
 
 [[package]]
@@ -2507,7 +2506,6 @@ dependencies = [
  "utoipa-swagger-ui",
  "uuid",
  "validator",
- "vergen",
 ]
 
 [[package]]
