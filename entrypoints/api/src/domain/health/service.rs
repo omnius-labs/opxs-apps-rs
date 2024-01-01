@@ -49,7 +49,6 @@ mod tests {
             mode: RunMode::Local,
             git_semver: "bbb".to_string(),
             git_sha: "ccc".to_string(),
-            build_timestamp: "ddd".to_string(),
         };
 
         let world_verifier = WorldValidator {};
