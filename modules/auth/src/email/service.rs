@@ -39,7 +39,7 @@ impl EmailAuthService {
         Ok(token)
     }
 
-    pub async fn login(&self, email: &str, password: &str) -> Result<i64, AuthError> {
+    pub async fn login(&self, email: &str, password: &str) -> Result<String, AuthError> {
         if !self.auth_repo.exist_user(email).await? {
             return Err(AuthError::UserNotFound);
         }
@@ -55,7 +55,7 @@ impl EmailAuthService {
         Ok(user.id)
     }
 
-    pub async fn confirm(&self, token: &str) -> Result<i64, AuthError> {
+    pub async fn confirm(&self, token: &str) -> Result<String, AuthError> {
         let now = self.system_clock.now();
         let claims = jwt::verify(&self.jwt_conf.secret.current, token, now)?;
 
@@ -75,7 +75,7 @@ impl EmailAuthService {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
-    use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
+    use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use core_migration::Migrator;
     use core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
@@ -107,7 +107,8 @@ mod tests {
 
         let system_clock = Arc::new(SystemClockUtc {});
         let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
-        let auth_repo = Arc::new(EmailAuthRepo { db });
+        let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
+        let auth_repo = Arc::new(EmailAuthRepo { db, tsid_provider });
         let jwt_conf = JwtConfig {
             secret: JwtSecretConfig {
                 current: "a".to_string(),

@@ -16,7 +16,7 @@ pub struct TokenService {
 }
 
 impl TokenService {
-    pub async fn create(&self, user_id: &i64) -> Result<AuthToken, AuthError> {
+    pub async fn create(&self, user_id: &str) -> Result<AuthToken, AuthError> {
         let now = self.system_clock.now();
 
         let sub = user_id.to_string();

@@ -18,7 +18,6 @@ pub struct PostgresConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SesConfig {
     pub configuration_set_name: String,
-    pub from_address: String,
 }
 
 impl AppConfig {
@@ -43,7 +42,6 @@ impl AppConfig {
                     postgres: PostgresConfig { url: postgres_url },
                     ses: SesConfig {
                         configuration_set_name: "opxs-email-send".to_string(),
-                        from_address: "no-reply@opxs-dev.omnius-labs.com".to_string(),
                     },
                 })
             }
@@ -62,7 +60,6 @@ impl AppConfig {
                     postgres: PostgresConfig { url: postgres_url },
                     ses: SesConfig {
                         configuration_set_name: "opxs-email-send".to_string(),
-                        from_address: "no-reply@opxs-dev.omnius-labs.com".to_string(),
                     },
                 })
             }

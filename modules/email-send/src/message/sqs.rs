@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct EmailSendJobSqsMessage {
-    pub id: i64,
+pub struct EmailSendJobBatchSqsMessage {
+    pub job_id: String,
+    pub batch_id: i32,
 }

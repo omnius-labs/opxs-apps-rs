@@ -12,6 +12,7 @@
         "sqlx",
         "testcontainers",
         "testkit",
+        "Tsid",
         "urlencoding",
         "vergen"
     ],

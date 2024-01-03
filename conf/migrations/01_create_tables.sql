@@ -48,8 +48,8 @@ CREATE UNIQUE INDEX user_auth_providers_provider_type_provider_user_id_unique_in
 CREATE TABLE refresh_tokens (
     refresh_token VARCHAR(255) NOT NULL PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
-    ip_address VARCHAR(255) NOT NULL,
-    user_agent VARCHAR(1024) NOT NULL,
+    ip_address VARCHAR(255),
+    user_agent VARCHAR(1024),
     expires_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -62,7 +62,7 @@ CREATE TRIGGER refresh_tokens_updated_at_step3 BEFORE UPDATE ON refresh_tokens F
 -- email_send_jobs
 
 CREATE TABLE email_send_jobs (
-    job_id VARCHAR(255) NOT NULL PRIMARY KEY,
+    id VARCHAR(255) NOT NULL PRIMARY KEY,
     batch_count INTEGER NOT NULL,
     email_address_count INTEGER NOT NULL,
     type VARCHAR(32) NOT NULL,
@@ -91,18 +91,18 @@ CREATE TABLE email_send_job_batch_details (
     batch_id INTEGER NOT NULL,
     email_address VARCHAR(255) NOT NULL,
     retry_count INTEGER NOT NULL,
-    message_id VARCHAR(255),
     status VARCHAR(32) NOT NULL,
-    PRIMARY KEY(job_id, email_address, retry_count),
+    message_id VARCHAR(255),
     failed_reason TEXT,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(job_id, email_address, retry_count)
 );
-CREATE TRIGGER email_send_job_batches_updated_at_step1 BEFORE UPDATE ON email_send_job_batches FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
-CREATE TRIGGER email_send_job_batches_updated_at_step2 BEFORE UPDATE OF updated_at ON email_send_job_batches FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
-CREATE TRIGGER email_send_job_batches_updated_at_step3 BEFORE UPDATE ON email_send_job_batches FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
+CREATE TRIGGER email_send_job_batch_details_updated_at_step1 BEFORE UPDATE ON email_send_job_batch_details FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_none();
+CREATE TRIGGER email_send_job_batch_details_updated_at_step2 BEFORE UPDATE OF updated_at ON email_send_job_batch_details FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_same();
+CREATE TRIGGER email_send_job_batch_details_updated_at_step3 BEFORE UPDATE ON email_send_job_batch_details FOR EACH ROW EXECUTE PROCEDURE refresh_updated_at_current();
 CREATE INDEX email_send_job_batch_details_job_id_batch_id_index ON email_send_job_batch_details(job_id, batch_id);
-CREATE INDEX email_send_job_batch_details_message_id_index ON email_send_job_batch_details(message_id);
+CREATE UNIQUE INDEX email_send_job_batch_details_message_id_unique_index ON email_send_job_batch_details(message_id);
 
 -- email_send_blocked_addresses
 

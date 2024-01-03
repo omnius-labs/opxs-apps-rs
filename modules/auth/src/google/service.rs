@@ -12,7 +12,7 @@ pub struct GoogleAuthService {
 }
 
 impl GoogleAuthService {
-    pub async fn register(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<i64, AuthError> {
+    pub async fn register(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AuthError> {
         let oauth2_token = self
             .oauth2_provider
             .get_oauth2_token(
@@ -40,7 +40,7 @@ impl GoogleAuthService {
         Ok(user_id)
     }
 
-    pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<i64, AuthError> {
+    pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AuthError> {
         let oauth2_token = self
             .oauth2_provider
             .get_oauth2_token(

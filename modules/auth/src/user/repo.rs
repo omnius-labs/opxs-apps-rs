@@ -9,7 +9,7 @@ pub struct UserRepo {
 }
 
 impl UserRepo {
-    pub async fn get_user(&self, user_id: &i64) -> Result<User, AuthError> {
+    pub async fn get_user(&self, user_id: &str) -> Result<User, AuthError> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT *

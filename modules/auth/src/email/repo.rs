@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use core_base::tsid::TsidProvider;
 use sqlx::PgPool;
 
 use crate::shared::{
@@ -9,39 +10,41 @@ use crate::shared::{
 
 pub struct EmailAuthRepo {
     pub db: Arc<PgPool>,
+    pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
 }
 
 impl EmailAuthRepo {
-    pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<i64, AuthError> {
+    pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<String, AuthError> {
+        let user_id = self.tsid_provider.gen().to_string();
+
         let mut tx = self.db.begin().await?;
 
-        let (user_id,): (i64,) = sqlx::query_as(
+        sqlx::query(
             r#"
-INSERT INTO users (name, authentication_type, role)
-    VALUES ($1, $2, $3)
-    RETURNING id;
+INSERT INTO users (id, name, authentication_type, role)
+    VALUES ($1, $2, $3, $4)
 "#,
         )
+        .bind(&user_id)
         .bind(name)
         .bind(UserAuthenticationType::Email)
         .bind(UserRole::User)
-        .fetch_one(&mut tx)
+        .execute(&mut tx)
         .await
         .map_err(|e| AuthError::UnexpectedError(e.into()))?;
 
         sqlx::query(
             r#"
-INSERT INTO users_auth_email (user_id, email, password_hash, salt)
+INSERT INTO user_auth_emails (user_id, email, password_hash, salt)
     VALUES ($1, $2, $3, $4)
     ON CONFLICT (email)
     DO UPDATE SET
         user_id = $1,
         password_hash = $3,
         salt = $4
-    RETURNING id;
 "#,
         )
-        .bind(user_id)
+        .bind(&user_id)
         .bind(email)
         .bind(password_hash)
         .bind(salt)
@@ -58,7 +61,7 @@ INSERT INTO users_auth_email (user_id, email, password_hash, salt)
         sqlx::query(
             r#"
 DELETE FROM users
-    WHERE id = (SELECT user_id FROM users_auth_email WHERE email = $1);
+    WHERE id = (SELECT user_id FROM user_auth_emails WHERE email = $1);
 "#,
         )
         .bind(email)
@@ -75,7 +78,7 @@ DELETE FROM users
 SELECT EXISTS (
     SELECT u.id
         FROM users u
-        JOIN users_auth_email e on u.id = e.user_id
+        JOIN user_auth_emails e on u.id = e.user_id
         WHERE e.email = $1 AND e.email_verified = true
         LIMIT 1
 );
@@ -94,7 +97,7 @@ SELECT EXISTS (
             r#"
 SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
     FROM users u
-    JOIN users_auth_email e on u.id = e.user_id
+    JOIN user_auth_emails e on u.id = e.user_id
     WHERE e.email = $1 AND e.email_verified = true
     LIMIT 1;
 "#,
@@ -114,7 +117,7 @@ SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.u
     pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AuthError> {
         sqlx::query(
             r#"
-UPDATE users_auth_email
+UPDATE user_auth_emails
     SET email_verified = $2
     WHERE email = $1;
 "#,
