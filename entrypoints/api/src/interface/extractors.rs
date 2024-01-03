@@ -26,7 +26,7 @@ where
         let now = state.service.system_clock.now();
         let claims = jwt::verify(&state.conf.jwt.secret.current, access_token, now)?;
 
-        let user_id = claims.sub.parse::<i64>().map_err(|e| AppError::UnexpectedError(e.into()))?;
+        let user_id = claims.sub;
         let user = state.service.user.get_user(&user_id).await?;
 
         Ok(user)

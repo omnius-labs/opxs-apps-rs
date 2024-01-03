@@ -10,15 +10,15 @@ pub struct TokenRepo {
 }
 
 impl TokenRepo {
-    pub async fn create_token(&self, user_id: &i64, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AuthError> {
+    pub async fn create_token(&self, user_id: &str, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AuthError> {
         sqlx::query(
             r#"
-INSERT INTO refresh_tokens (user_id, refresh_token, expires_at)
+INSERT INTO refresh_tokens (refresh_token, user_id, expires_at)
     VALUES ($1, $2, $3);
 "#,
         )
-        .bind(user_id)
         .bind(refresh_token)
+        .bind(user_id)
         .bind(expires_at)
         .execute(self.db.as_ref())
         .await
@@ -59,7 +59,7 @@ UPDATE refresh_tokens
         Ok(())
     }
 
-    pub async fn get_user_id(&self, refresh_token: &str, max_expires_at: &DateTime<Utc>) -> Result<i64, AuthError> {
+    pub async fn get_user_id(&self, refresh_token: &str, max_expires_at: &DateTime<Utc>) -> Result<String, AuthError> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT u.*

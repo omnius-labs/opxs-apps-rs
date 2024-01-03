@@ -41,8 +41,9 @@ pub async fn register(State(state): State<AppState>, ValidatedJson(input): Valid
     .to_string();
 
     let param = EmailConfirmRequestParam {
-        email: input.email,
         user_name: input.name,
+        to_email_address: input.email,
+        from_email_address: state.conf.email.from_email_address,
         email_confirm_url,
     };
     state.service.email_send_job_creator.create_email_confirm_job(&param).await?;

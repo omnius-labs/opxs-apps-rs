@@ -9,7 +9,7 @@ pub struct UserService {
 }
 
 impl UserService {
-    pub async fn get_user(&self, user_id: &i64) -> Result<User, AuthError> {
+    pub async fn get_user(&self, user_id: &str) -> Result<User, AuthError> {
         let user = self.user_repo.get_user(user_id).await?;
         Ok(user)
     }

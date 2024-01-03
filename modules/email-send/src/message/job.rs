@@ -23,13 +23,22 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobType {
     }
 }
 
+impl sqlx::Decode<'_, sqlx::Postgres> for EmailSendJobType {
+    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+        match value.as_str() {
+            Ok("EmailConfirm") => Ok(EmailSendJobType::EmailConfirm),
+            _ => Ok(EmailSendJobType::Unknown),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct EmailSendJob {
-    pub job_id: String,
-    pub batch_count: u32,
-    pub email_address_count: u32,
+    pub id: String,
+    pub batch_count: i32,
+    pub email_address_count: i32,
     #[sqlx(rename = "type")]
-    pub job_type: EmailSendJobType,
+    pub typ: EmailSendJobType,
     pub param: Option<String>,
     pub created_at: NaiveDateTime,
 }
@@ -37,7 +46,7 @@ pub struct EmailSendJob {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum EmailSendJobBatchStatus {
     Unknown,
-    Pending,
+    Waiting,
     Processing,
     Completed,
     Failed,
@@ -52,7 +61,7 @@ impl sqlx::Type<sqlx::Postgres> for EmailSendJobBatchStatus {
 impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchStatus {
     fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> sqlx::encode::IsNull {
         match self {
-            EmailSendJobBatchStatus::Pending => buf.extend_from_slice(b"Pending"),
+            EmailSendJobBatchStatus::Waiting => buf.extend_from_slice(b"Waiting"),
             EmailSendJobBatchStatus::Processing => buf.extend_from_slice(b"Processing"),
             EmailSendJobBatchStatus::Completed => buf.extend_from_slice(b"Completed"),
             EmailSendJobBatchStatus::Failed => buf.extend_from_slice(b"Failed"),
@@ -62,8 +71,20 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchStatus {
     }
 }
 
+impl sqlx::Decode<'_, sqlx::Postgres> for EmailSendJobBatchStatus {
+    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+        match value.as_str() {
+            Ok("Waiting") => Ok(EmailSendJobBatchStatus::Waiting),
+            Ok("Processing") => Ok(EmailSendJobBatchStatus::Processing),
+            Ok("Completed") => Ok(EmailSendJobBatchStatus::Completed),
+            Ok("Failed") => Ok(EmailSendJobBatchStatus::Failed),
+            _ => Ok(EmailSendJobBatchStatus::Unknown),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
-pub struct EmailSendJobBatches {
+pub struct EmailSendJobBatch {
     pub job_id: String,
     pub batch_id: i32,
     pub status: EmailSendJobBatchStatus,
@@ -74,7 +95,7 @@ pub struct EmailSendJobBatches {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum EmailSendJobBatchDetailStatus {
     Unknown,
-    Pending,
+    Waiting,
     Processing,
     Completed,
     Failed,
@@ -89,7 +110,7 @@ impl sqlx::Type<sqlx::Postgres> for EmailSendJobBatchDetailStatus {
 impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
     fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> sqlx::encode::IsNull {
         match self {
-            EmailSendJobBatchDetailStatus::Pending => buf.extend_from_slice(b"Pending"),
+            EmailSendJobBatchDetailStatus::Waiting => buf.extend_from_slice(b"Waiting"),
             EmailSendJobBatchDetailStatus::Processing => buf.extend_from_slice(b"Processing"),
             EmailSendJobBatchDetailStatus::Completed => buf.extend_from_slice(b"Completed"),
             EmailSendJobBatchDetailStatus::Failed => buf.extend_from_slice(b"Failed"),
@@ -99,8 +120,20 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
     }
 }
 
+impl sqlx::Decode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
+    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+        match value.as_str() {
+            Ok("Waiting") => Ok(EmailSendJobBatchDetailStatus::Waiting),
+            Ok("Processing") => Ok(EmailSendJobBatchDetailStatus::Processing),
+            Ok("Completed") => Ok(EmailSendJobBatchDetailStatus::Completed),
+            Ok("Failed") => Ok(EmailSendJobBatchDetailStatus::Failed),
+            _ => Ok(EmailSendJobBatchDetailStatus::Unknown),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
-pub struct EmailSendJobBatchDetails {
+pub struct EmailSendJobBatchDetail {
     pub job_id: String,
     pub batch_id: i32,
     pub email_address: String,

@@ -2,18 +2,19 @@ use std::sync::Arc;
 
 use aws_lambda_events::event::sqs::SqsEvent;
 use chrono::Duration;
+use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;
 
 use core_cloud::aws::{secrets::SecretsReaderImpl, ses::SesSenderImpl};
-use opxs_email_send::{EmailSendJobRepository, EmailSendJobSqsMessage, Executor};
+use opxs_email_send::{EmailSendJobBatchSqsMessage, EmailSendJobRepository, Executor};
 
 mod shared;
 
 use shared::*;
 
-async fn handler_sub(ms: &[EmailSendJobSqsMessage]) -> Result<(), Error> {
+async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
     let info = AppInfo::new()?;
     info!("info: {}", info);
 
@@ -29,14 +30,17 @@ async fn handler_sub(ms: &[EmailSendJobSqsMessage]) -> Result<(), Error> {
             .connect(&conf.postgres.url)
             .await?,
     );
+    let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
 
     let executor = Executor {
-        email_send_job_repository: Arc::new(EmailSendJobRepository { db: db.clone() }),
+        email_send_job_repository: Arc::new(EmailSendJobRepository {
+            db: db.clone(),
+            tsid_provider,
+        }),
         ses_sender: Arc::new(SesSenderImpl {
             client: aws_sdk_sesv2::Client::new(&aws_config::load_from_env().await),
             configuration_set_name: Some(conf.ses.configuration_set_name),
         }),
-        from_address: conf.ses.from_address,
     };
     executor.execute(ms).await?;
 
@@ -46,17 +50,17 @@ async fn handler_sub(ms: &[EmailSendJobSqsMessage]) -> Result<(), Error> {
 async fn handler(event: LambdaEvent<serde_json::Value>) -> Result<(), Error> {
     let (event, _context) = event.into_parts();
 
-    let mut ms: Vec<EmailSendJobSqsMessage> = Vec::new();
+    let mut ms: Vec<EmailSendJobBatchSqsMessage> = Vec::new();
 
     if let Ok(event) = serde_json::from_value::<SqsEvent>(event.clone()) {
         info!("sqs event");
         for v in event.records.into_iter().flat_map(|n| n.body).collect::<Vec<_>>() {
-            let m = serde_json::from_str::<EmailSendJobSqsMessage>(&v)?;
+            let m = serde_json::from_str::<EmailSendJobBatchSqsMessage>(&v)?;
             ms.push(m);
         }
     } else {
         info!("raw event");
-        let m = serde_json::from_value::<EmailSendJobSqsMessage>(event)?;
+        let m = serde_json::from_value::<EmailSendJobBatchSqsMessage>(event)?;
         ms.push(m);
     }
 

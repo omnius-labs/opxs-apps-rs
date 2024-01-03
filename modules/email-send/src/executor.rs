@@ -2,36 +2,37 @@ use std::sync::Arc;
 
 use core_cloud::aws::ses::SesSender;
 
-use super::{EmailConfirmRequestParam, EmailSendJobRepository, EmailSendJobSqsMessage, EmailSendJobType};
+use crate::EmailSendJobBatchStatus;
+
+use super::{EmailConfirmRequestParam, EmailSendJobBatchSqsMessage, EmailSendJobRepository, EmailSendJobType};
 
 pub struct Executor {
     pub email_send_job_repository: Arc<EmailSendJobRepository>,
     pub ses_sender: Arc<dyn SesSender + Send + Sync>,
-    pub from_address: String,
 }
 
 impl Executor {
-    pub async fn execute(&self, ms: &[EmailSendJobSqsMessage]) -> anyhow::Result<()> {
+    pub async fn execute(&self, ms: &[EmailSendJobBatchSqsMessage]) -> anyhow::Result<()> {
         for m in ms.iter() {
             self.execute_one(m).await?;
         }
         Ok(())
     }
 
-    async fn execute_one(&self, m: &EmailSendJobSqsMessage) -> anyhow::Result<()> {
-        let job = self.email_send_job_repository.get_job(&m.id).await?;
+    async fn execute_one(&self, m: &EmailSendJobBatchSqsMessage) -> anyhow::Result<()> {
+        let job = self.email_send_job_repository.get_job(&m.job_id).await?;
 
-        match job.job_type {
+        match job.typ {
             EmailSendJobType::EmailConfirm => {
                 let param = job.param.ok_or(anyhow::anyhow!("param is not found"))?;
                 let param = serde_json::from_str::<EmailConfirmRequestParam>(&param)?;
-                self.execute_email_confirm(&param).await
+                self.execute_email_confirm(&m.job_id, m.batch_id, &param).await
             }
             _ => anyhow::bail!("invalid job type"),
         }
     }
 
-    async fn execute_email_confirm(&self, param: &EmailConfirmRequestParam) -> anyhow::Result<()> {
+    async fn execute_email_confirm(&self, job_id: &str, batch_id: i32, param: &EmailConfirmRequestParam) -> anyhow::Result<()> {
         let subject = "Opxs: メールアドレスの確認をお願いします";
         let body = &format!(
             "\
@@ -54,8 +55,12 @@ Opxs サポートチーム",
             email_confirm_url = param.email_confirm_url,
         );
 
+        self.email_send_job_repository
+            .update_batch_job(job_id, batch_id, EmailSendJobBatchStatus::Processing)
+            .await?;
+
         self.ses_sender
-            .send_mail_simple_text(&param.email, &self.from_address, subject, body)
+            .send_mail_simple_text(&param.to_email_address, &param.from_email_address, subject, body)
             .await?;
 
         Ok(())
@@ -68,6 +73,7 @@ mod tests {
 
     use async_trait::async_trait;
     use chrono::Duration;
+    use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use core_migration::Migrator;
     use core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
@@ -91,6 +97,7 @@ mod tests {
                 .await
                 .unwrap(),
         );
+        let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
         let migrator = Migrator::new(&container.connection_string, migrations_path, "opxs-api", "")
@@ -98,12 +105,13 @@ mod tests {
             .unwrap();
         migrator.migrate().await.unwrap();
 
-        let email_send_job_repository = Arc::new(EmailSendJobRepository { db });
+        let email_send_job_repository = Arc::new(EmailSendJobRepository { db, tsid_provider });
 
         let send_email_sqs_sender = Arc::new(SqsSenderMock::new());
         let param = EmailConfirmRequestParam {
-            email: "lyrise1984@gmail.com".to_string(),
             user_name: "test_name".to_string(),
+            to_email_address: "lyrise1984@gmail.com".to_string(),
+            from_email_address: "no-reply@opxs-dev.omnius-labs.com".to_string(),
             email_confirm_url: "https://example.com".to_string(),
         };
 
@@ -111,15 +119,20 @@ mod tests {
             email_send_job_repository: email_send_job_repository.clone(),
             send_email_sqs_sender,
         };
-        let job_id = job_creator.create_email_confirm_job(&param).await.unwrap();
+        let batches = job_creator.create_email_confirm_job(&param).await.unwrap();
 
         let ses_sender = Arc::new(SesSenderMock::new());
-        let ms = vec![EmailSendJobSqsMessage { id: job_id }];
+        let ms: Vec<EmailSendJobBatchSqsMessage> = batches
+            .iter()
+            .map(|n| EmailSendJobBatchSqsMessage {
+                job_id: n.job_id.clone(),
+                batch_id: n.batch_id,
+            })
+            .collect();
 
         let executor = Executor {
             email_send_job_repository,
             ses_sender: ses_sender.clone(),
-            from_address: "no-reply@opxs-dev.omnius-labs.com".to_string(),
         };
         executor.execute(&ms).await.unwrap();
 

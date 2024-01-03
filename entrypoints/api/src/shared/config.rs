@@ -11,6 +11,7 @@ pub struct AppConfig {
     pub jwt: JwtConfig,
     pub auth: AuthConfig,
     pub web: WebConfig,
+    pub email: EmailConfig,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -21,6 +22,11 @@ pub struct PostgresConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WebConfig {
     pub origin: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EmailConfig {
+    pub from_email_address: String,
 }
 
 impl AppConfig {
@@ -62,6 +68,9 @@ impl AppConfig {
                     web: WebConfig {
                         origin: "https://localhost.omnius-labs.com/".to_string(),
                     },
+                    email: EmailConfig {
+                        from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
+                    },
                 })
             }
             RunMode::Dev => {
@@ -91,6 +100,9 @@ impl AppConfig {
                     },
                     web: WebConfig {
                         origin: "https://opxs-dev.omnius-labs.com/".to_string(),
+                    },
+                    email: EmailConfig {
+                        from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
                     },
                 })
             }
