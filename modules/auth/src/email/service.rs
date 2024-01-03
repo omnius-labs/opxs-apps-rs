@@ -76,7 +76,7 @@ impl EmailAuthService {
 mod tests {
     use chrono::Duration;
     use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
-    use core_migration::Migrator;
+    use core_migration::postgres::Migrator;
     use core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
 

@@ -1,7 +1,7 @@
 use tracing::info;
 
 use core_cloud::aws::secrets::SecretsReaderImpl;
-use core_migration::Migrator;
+use core_migration::postgres::Migrator;
 
 use crate::shared::{config::AppConfig, info::AppInfo, state::AppState, world::WorldValidator};
 
