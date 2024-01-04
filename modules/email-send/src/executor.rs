@@ -74,7 +74,7 @@ mod tests {
     use async_trait::async_trait;
     use chrono::Duration;
     use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
-    use core_migration::postgres::Migrator;
+    use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
 
@@ -100,7 +100,7 @@ mod tests {
         let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
-        let migrator = Migrator::new(&container.connection_string, migrations_path, "opxs-api", "")
+        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
             .await
             .unwrap();
         migrator.migrate().await.unwrap();

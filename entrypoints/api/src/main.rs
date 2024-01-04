@@ -1,7 +1,7 @@
 use tracing::info;
 
 use core_cloud::aws::secrets::SecretsReaderImpl;
-use core_migration::postgres::Migrator;
+use core_migration::postgres::PostgresMigrator;
 
 use crate::shared::{config::AppConfig, info::AppInfo, state::AppState, world::WorldValidator};
 
@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
     let world_verifier = WorldValidator {};
     world_verifier.verify(&info.mode, &conf.postgres.url).await?;
 
-    let migrator = Migrator::new(&conf.postgres.url, "./conf/migrations", "opxs-api", "").await?;
+    let migrator = PostgresMigrator::new(&conf.postgres.url, "./conf/migrations", "opxs-api", "").await?;
     migrator.migrate().await?;
 
     let state = AppState::new(info, conf).await?;
