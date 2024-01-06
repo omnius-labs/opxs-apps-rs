@@ -1,6 +1,7 @@
 [workspace]
 members = ["./refs/core-rs/modules/*", "./modules/*", "./entrypoints/*"]
 exclude = ["refs/core-rs"]
+resolver = "2"
 
 [workspace.package]
 edition = "2021"
