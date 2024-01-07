@@ -1,5 +1,18 @@
 [workspace]
-members = ["./refs/core-rs/modules/*", "./modules/*", "./entrypoints/*"]
+members = [
+    "./refs/core-rs/modules/base",
+    "./refs/core-rs/modules/cloud",
+    "./refs/core-rs/modules/image",
+    "./refs/core-rs/modules/migration",
+    "./refs/core-rs/modules/testkit",
+
+    "./modules/auth",
+    "./modules/email-send",
+
+    "./entrypoints/api",
+    "./entrypoints/batch-email-send",
+    "./entrypoints/batch-email-send-feedback",
+]
 exclude = ["refs/core-rs"]
 resolver = "2"
 
