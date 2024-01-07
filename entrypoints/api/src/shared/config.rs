@@ -1,4 +1,4 @@
-use core_cloud::aws::secrets::SecretsReader;
+use core_cloud::aws::secrets::{SecretsReader, SecretsReaderImpl};
 use opxs_auth::shared::config::{AuthConfig, GoogleAuthConfig, JwtConfig, JwtSecretConfig};
 
 use super::info::RunMode;
@@ -30,7 +30,11 @@ pub struct EmailConfig {
 }
 
 impl AppConfig {
-    pub async fn load(mode: &RunMode, secret_reader: Box<dyn SecretsReader>) -> anyhow::Result<Self> {
+    pub async fn load(mode: &RunMode) -> anyhow::Result<Self> {
+        let secret_reader = Box::new(SecretsReaderImpl {
+            client: aws_sdk_secretsmanager::Client::new(&aws_config::load_from_env().await),
+        });
+
         let secret_value = serde_json::from_str::<serde_json::Value>(&secret_reader.read_value("opxs-api").await?)?;
         let postgres_user = secret_value.get_str("postgres_user")?;
         let postgres_password = secret_value.get_str("postgres_password")?;
@@ -126,18 +130,12 @@ impl ValueExt for serde_json::Value {
 
 #[cfg(test)]
 mod tests {
-    use core_cloud::aws::secrets::SecretsReaderImpl;
-
     use super::*;
 
     #[ignore]
     #[tokio::test]
     async fn secret_reader_test() {
-        let sdk_config = aws_config::load_from_env().await;
-        let secret_reader = Box::new(SecretsReaderImpl {
-            client: aws_sdk_secretsmanager::Client::new(&sdk_config),
-        });
-        let app_config = AppConfig::load(&RunMode::Dev, secret_reader).await.unwrap();
+        let app_config = AppConfig::load(&RunMode::Dev).await.unwrap();
         println!("{:?}", app_config);
     }
 }

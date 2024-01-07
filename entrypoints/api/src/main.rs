@@ -1,6 +1,5 @@
 use tracing::info;
 
-use core_cloud::aws::secrets::SecretsReaderImpl;
 use core_migration::postgres::PostgresMigrator;
 
 use crate::shared::{config::AppConfig, info::AppInfo, state::AppState, world::WorldValidator};
@@ -26,10 +25,7 @@ async fn main() -> anyhow::Result<()> {
     let info = AppInfo::new()?;
     info!("info: {}", info);
 
-    let secret_reader = Box::new(SecretsReaderImpl {
-        client: aws_sdk_secretsmanager::Client::new(&aws_config::load_from_env().await),
-    });
-    let conf = AppConfig::load(&info.mode, secret_reader).await?;
+    let conf = AppConfig::load(&info.mode).await?;
 
     let world_verifier = WorldValidator {};
     world_verifier.verify(&info.mode, &conf.postgres.url).await?;
