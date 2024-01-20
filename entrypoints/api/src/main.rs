@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use core_base::clock::SystemClockUtc;
 use tracing::info;
 
 use core_migration::postgres::PostgresMigrator;
@@ -27,7 +30,8 @@ async fn main() -> anyhow::Result<()> {
 
     let conf = AppConfig::load(&info.mode).await?;
 
-    let world_verifier = WorldValidator {};
+    let system_clock = Arc::new(SystemClockUtc {});
+    let world_verifier = WorldValidator { system_clock };
     world_verifier.verify(&info.mode, &conf.postgres.url).await?;
 
     let migrator = PostgresMigrator::new(&conf.postgres.url, "./conf/migrations", "opxs-api", "").await?;
