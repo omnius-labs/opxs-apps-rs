@@ -80,15 +80,14 @@ mod tests {
     use core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
 
-    use crate::shared::{config::JwtSecretConfig, kdf::KdfAlgorithm};
+    use crate::shared::{self, config::JwtSecretConfig, kdf::KdfAlgorithm};
 
     use super::*;
 
-    #[ignore]
     #[tokio::test]
     async fn simple_test() {
         let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, "15.1");
+        let container = PostgresContainer::new(&docker, shared::POSTGRES_VERSION);
 
         let db = Arc::new(
             PgPoolOptions::new()
@@ -99,7 +98,7 @@ mod tests {
                 .unwrap(),
         );
 
-        let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../migrations");
+        let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
         let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
             .await
             .unwrap();
@@ -108,7 +107,11 @@ mod tests {
         let system_clock = Arc::new(SystemClockUtc {});
         let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
         let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
-        let auth_repo = Arc::new(EmailAuthRepo { db, tsid_provider });
+        let auth_repo = Arc::new(EmailAuthRepo {
+            db,
+            system_clock: system_clock.clone(),
+            tsid_provider,
+        });
         let jwt_conf = JwtConfig {
             secret: JwtSecretConfig {
                 current: "a".to_string(),
@@ -128,12 +131,15 @@ mod tests {
             kdf,
         };
 
+        // register
         let token = auth_service.register("name", "test@example.com", "password").await.unwrap();
         assert!(matches!(
             auth_service.login("test@example.com", "password").await,
             Err(AuthError::UserNotFound)
         ));
         auth_service.confirm(&token).await.unwrap();
+
+        // login
         assert!(auth_service.login("test@example.com", "password").await.is_ok());
     }
 }

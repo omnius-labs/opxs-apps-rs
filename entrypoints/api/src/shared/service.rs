@@ -7,7 +7,7 @@ use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider, tsid::Tsi
 use core_cloud::aws::sqs::SqsSender;
 use opxs_auth::{
     email::{EmailAuthRepo, EmailAuthService},
-    google::{GoogleAuthService, GoogleOAuth2Provider, ProviderAuthRepo},
+    provider::{GoogleAuthService, GoogleOAuth2ProviderImpl, ProviderAuthRepo},
     shared::kdf::{Kdf, KdfAlgorithm},
     token::{TokenRepo, TokenService},
     user::{UserRepo, UserService},
@@ -50,6 +50,7 @@ impl AppService {
             email_send_job_creator: EmailSendJobCreator {
                 email_send_job_repository: Arc::new(EmailSendJobRepository {
                     db: db.clone(),
+                    system_clock: system_clock.clone(),
                     tsid_provider: tsid_provider.clone(),
                 }),
                 send_email_sqs_sender: send_email_sqs_sender.clone(),
@@ -62,6 +63,7 @@ impl AppService {
             email_auth: EmailAuthService {
                 auth_repo: Arc::new(EmailAuthRepo {
                     db: db.clone(),
+                    system_clock: system_clock.clone(),
                     tsid_provider: tsid_provider.clone(),
                 }),
                 system_clock: system_clock.clone(),
@@ -73,9 +75,10 @@ impl AppService {
                 },
             },
             google_auth: GoogleAuthService {
-                oauth2_provider: Arc::new(GoogleOAuth2Provider {}),
+                oauth2_provider: Arc::new(GoogleOAuth2ProviderImpl {}),
                 auth_repo: Arc::new(ProviderAuthRepo {
                     db: db.clone(),
+                    system_clock: system_clock.clone(),
                     tsid_provider: tsid_provider.clone(),
                 }),
                 auth_conf: conf.auth.clone(),

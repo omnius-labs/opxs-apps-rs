@@ -98,6 +98,7 @@ pub enum EmailSendJobBatchDetailStatus {
     Waiting,
     Processing,
     Completed,
+    Rejected,
     Failed,
 }
 
@@ -113,6 +114,7 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
             EmailSendJobBatchDetailStatus::Waiting => buf.extend_from_slice(b"Waiting"),
             EmailSendJobBatchDetailStatus::Processing => buf.extend_from_slice(b"Processing"),
             EmailSendJobBatchDetailStatus::Completed => buf.extend_from_slice(b"Completed"),
+            EmailSendJobBatchDetailStatus::Rejected => buf.extend_from_slice(b"Rejected"),
             EmailSendJobBatchDetailStatus::Failed => buf.extend_from_slice(b"Failed"),
             _ => buf.extend_from_slice(b"Unknown"),
         }
@@ -126,6 +128,7 @@ impl sqlx::Decode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
             Ok("Waiting") => Ok(EmailSendJobBatchDetailStatus::Waiting),
             Ok("Processing") => Ok(EmailSendJobBatchDetailStatus::Processing),
             Ok("Completed") => Ok(EmailSendJobBatchDetailStatus::Completed),
+            Ok("Rejected") => Ok(EmailSendJobBatchDetailStatus::Rejected),
             Ok("Failed") => Ok(EmailSendJobBatchDetailStatus::Failed),
             _ => Ok(EmailSendJobBatchDetailStatus::Unknown),
         }

@@ -30,11 +30,13 @@ async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
             .connect(&conf.postgres.url)
             .await?,
     );
+    let system_clock = Arc::new(SystemClockUtc {});
     let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
 
     let executor = Executor {
         email_send_job_repository: Arc::new(EmailSendJobRepository {
             db: db.clone(),
+            system_clock,
             tsid_provider,
         }),
         ses_sender: Arc::new(SesSenderImpl {

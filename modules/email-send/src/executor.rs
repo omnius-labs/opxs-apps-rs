@@ -2,8 +2,6 @@ use std::sync::Arc;
 
 use core_cloud::aws::ses::SesSender;
 
-use crate::EmailSendJobBatchStatus;
-
 use super::{EmailConfirmRequestParam, EmailSendJobBatchSqsMessage, EmailSendJobRepository, EmailSendJobType};
 
 pub struct Executor {
@@ -56,7 +54,7 @@ Opxs サポートチーム",
         );
 
         self.email_send_job_repository
-            .update_batch_job(job_id, batch_id, EmailSendJobBatchStatus::Processing)
+            .update_status_to_processing(job_id, batch_id, &param.to_email_address)
             .await?;
 
         self.ses_sender
@@ -97,6 +95,7 @@ mod tests {
                 .await
                 .unwrap(),
         );
+        let system_clock = Arc::new(SystemClockUtc {});
         let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
@@ -105,7 +104,11 @@ mod tests {
             .unwrap();
         migrator.migrate().await.unwrap();
 
-        let email_send_job_repository = Arc::new(EmailSendJobRepository { db, tsid_provider });
+        let email_send_job_repository = Arc::new(EmailSendJobRepository {
+            db,
+            system_clock,
+            tsid_provider,
+        });
 
         let send_email_sqs_sender = Arc::new(SqsSenderMock::new());
         let param = EmailConfirmRequestParam {
