@@ -918,6 +918,7 @@ dependencies = [
  "aws-sdk-sesv2",
  "aws-sdk-sqs",
  "chrono",
+ "reqwest",
  "serde",
  "serde_json",
  "testcontainers",
