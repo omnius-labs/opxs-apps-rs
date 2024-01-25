@@ -1,25 +1,30 @@
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
+use core_base::clock::SystemClock;
 use sqlx::PgPool;
 
 use crate::shared::{error::AuthError, model::User};
 
 pub struct TokenRepo {
     pub db: Arc<PgPool>,
+    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
 }
 
 impl TokenRepo {
     pub async fn create_token(&self, user_id: &str, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AuthError> {
+        let now = self.system_clock.now();
         sqlx::query(
             r#"
-INSERT INTO refresh_tokens (refresh_token, user_id, expires_at)
-    VALUES ($1, $2, $3);
+INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5);
 "#,
         )
         .bind(refresh_token)
         .bind(user_id)
         .bind(expires_at)
+        .bind(now)
+        .bind(now)
         .execute(self.db.as_ref())
         .await
         .map_err(|e| AuthError::UnexpectedError(e.into()))?;
@@ -43,15 +48,17 @@ DELETE FROM refresh_tokens
     }
 
     pub async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AuthError> {
+        let now = self.system_clock.now();
         sqlx::query(
             r#"
 UPDATE refresh_tokens
-    SET expires_at = $2
+    SET expires_at = $2, updated_at = $3
     WHERE refresh_token = $1;
 "#,
         )
         .bind(refresh_token)
         .bind(expires_at)
+        .bind(now)
         .execute(self.db.as_ref())
         .await
         .map_err(|e| AuthError::UnexpectedError(e.into()))?;
@@ -59,7 +66,8 @@ UPDATE refresh_tokens
         Ok(())
     }
 
-    pub async fn get_user_id(&self, refresh_token: &str, max_expires_at: &DateTime<Utc>) -> Result<String, AuthError> {
+    pub async fn get_user_id(&self, refresh_token: &str) -> Result<String, AuthError> {
+        let now = self.system_clock.now();
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT u.*
@@ -69,7 +77,7 @@ SELECT u.*
 "#,
         )
         .bind(refresh_token)
-        .bind(max_expires_at)
+        .bind(now)
         .fetch_optional(self.db.as_ref())
         .await
         .map_err(|e| AuthError::UnexpectedError(e.into()))?;

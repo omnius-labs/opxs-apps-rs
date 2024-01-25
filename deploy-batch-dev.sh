@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+export AWS_PROFILE=opxs-dev
+
 case $1 in
 "batch-email-send")
     ;;
@@ -28,4 +30,4 @@ fi
 
 docker push "${DOCKER_IMAGE}"
 
-aws lambda update-function-code --function-name opxs-$1-lambda --image-uri ${DOCKER_IMAGE}
+aws lambda --region ${AWS_REGION} update-function-code --function-name opxs-$1-lambda --image-uri ${DOCKER_IMAGE}

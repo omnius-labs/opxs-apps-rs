@@ -115,7 +115,7 @@ mod tests {
         let jwt_conf = JwtConfig {
             secret: JwtSecretConfig {
                 current: "a".to_string(),
-                retired: "b".to_string(),
+                previous: "b".to_string(),
             },
         };
         let kdf = Kdf {

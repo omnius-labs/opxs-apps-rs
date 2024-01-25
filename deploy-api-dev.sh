@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+export AWS_PROFILE=opxs-dev
+
 ./build-api.sh
 
 AWS_REGION="us-east-1"
@@ -15,4 +17,4 @@ if ! docker buildx build --platform linux/amd64 -f "./Dockerfile.run.api" -t "${
 fi
 
 docker push "${DOCKER_IMAGE}"
-aws ecs update-service --cluster opxs-api-ecs-cluster --service opxs-api-ecs-service --force-new-deployment
+aws ecs update-service --region ${AWS_REGION} --cluster opxs-api-ecs-cluster --service opxs-api-ecs-service --force-new-deployment

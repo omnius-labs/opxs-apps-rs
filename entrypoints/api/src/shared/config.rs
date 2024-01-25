@@ -60,7 +60,7 @@ impl AppConfig {
                     jwt: JwtConfig {
                         secret: JwtSecretConfig {
                             current: "current".to_string(),
-                            retired: "refired".to_string(),
+                            previous: "refired".to_string(),
                         },
                     },
                     auth: AuthConfig {
@@ -93,7 +93,7 @@ impl AppConfig {
                     jwt: JwtConfig {
                         secret: JwtSecretConfig {
                             current: jwt_secret_current,
-                            retired: jwt_secret_retired,
+                            previous: jwt_secret_retired,
                         },
                     },
                     auth: AuthConfig {

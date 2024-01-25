@@ -46,7 +46,8 @@ INSERT INTO user_auth_emails (user_id, email, password_hash, salt, created_at, u
     DO UPDATE SET
         user_id = $1,
         password_hash = $3,
-        salt = $4
+        salt = $4,
+        updated_at = $6;
 "#,
         )
         .bind(&user_id)
@@ -122,15 +123,18 @@ SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.u
     }
 
     pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AuthError> {
+        let now = self.system_clock.now();
+
         sqlx::query(
             r#"
 UPDATE user_auth_emails
-    SET email_verified = $2
+    SET email_verified = $2, updated_at = $3
     WHERE email = $1;
 "#,
         )
         .bind(email)
         .bind(email_verified)
+        .bind(now)
         .execute(self.db.as_ref())
         .await
         .map_err(|e| AuthError::UnexpectedError(e.into()))?;

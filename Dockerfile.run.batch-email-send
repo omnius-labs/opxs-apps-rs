@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/provided:al2 AS runtime
+FROM public.ecr.aws/lambda/provided:al2023 AS runtime
 
 WORKDIR /app
 

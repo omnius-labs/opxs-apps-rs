@@ -87,7 +87,10 @@ impl AppService {
                 system_clock: system_clock.clone(),
                 random_bytes_provider: random_bytes_provider.clone(),
                 jwt_conf: conf.jwt.clone(),
-                token_repo: Arc::new(TokenRepo { db: db.clone() }),
+                token_repo: Arc::new(TokenRepo {
+                    db: db.clone(),
+                    system_clock: system_clock.clone(),
+                }),
             },
             user: UserService {
                 user_repo: Arc::new(UserRepo { db }),

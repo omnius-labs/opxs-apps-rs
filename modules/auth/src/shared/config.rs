@@ -6,7 +6,7 @@ pub struct JwtConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JwtSecretConfig {
     pub current: String,
-    pub retired: String,
+    pub previous: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

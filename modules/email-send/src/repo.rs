@@ -23,8 +23,8 @@ impl EmailSendJobRepository {
 
         sqlx::query(
             r#"
-        INSERT INTO email_send_jobs (id, batch_count, email_address_count, type, param, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6);
+INSERT INTO email_send_jobs (id, batch_count, email_address_count, type, param, created_at)
+    VALUES ($1, $2, $3, $4, $5, $6);
         "#,
         )
         .bind(job_id.as_str())
@@ -38,8 +38,8 @@ impl EmailSendJobRepository {
 
         sqlx::query(
             r#"
-        INSERT INTO email_send_job_batches (job_id, batch_id, status, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5);
+INSERT INTO email_send_job_batches (job_id, batch_id, status, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5);
         "#,
         )
         .bind(job_id.as_str())
@@ -52,8 +52,8 @@ impl EmailSendJobRepository {
 
         sqlx::query(
             r#"
-        INSERT INTO email_send_job_batch_details (job_id, batch_id, email_address, retry_count, status, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7);
+INSERT INTO email_send_job_batch_details (job_id, batch_id, email_address, retry_count, status, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7);
         "#,
         )
         .bind(job_id.as_str())

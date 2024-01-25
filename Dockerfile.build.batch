@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/provided:al2 AS chef
+FROM public.ecr.aws/lambda/provided:al2023 AS chef
 
 WORKDIR /app
 
