@@ -7,6 +7,7 @@ members = [
     "./refs/core-rs/modules/testkit",
 
     "./modules/auth",
+    "./modules/convert-file",
     "./modules/email-send",
 
     "./entrypoints/api",
@@ -30,6 +31,7 @@ core-migration = { path = "./refs/core-rs/modules/migration", features = [
 ] }
 core-testkit = { path = "./refs/core-rs/modules/testkit" }
 
+opxs-convert-file = { path = "./modules/convert-file" }
 opxs-auth = { path = "./modules/auth" }
 opxs-email-send = { path = "./modules/email-send" }
 

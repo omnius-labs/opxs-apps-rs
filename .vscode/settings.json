@@ -8,6 +8,7 @@
         "datetime",
         "omnius",
         "opxs",
+        "presigning",
         "sesv",
         "sqlx",
         "testcontainers",

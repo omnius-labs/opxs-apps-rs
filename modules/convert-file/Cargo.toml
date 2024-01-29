@@ -1,9 +1,8 @@
 [package]
-name = "opxs-api"
+name = "opxs-convert-file"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
-build = "build.rs"
 
 [features]
 stable-test = []
@@ -14,10 +13,6 @@ core-cloud = { workspace = true }
 core-image = { workspace = true }
 core-migration = { workspace = true }
 core-testkit = { workspace = true }
-
-opxs-auth = { workspace = true }
-opxs-convert-file = { workspace = true }
-opxs-email-send = { workspace = true }
 
 aws-config = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }
@@ -56,11 +51,6 @@ base64 = { workspace = true }
 futures = { workspace = true }
 futures-util = { workspace = true }
 serial_test = { workspace = true }
-url = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
-
-[build-dependencies]
-anyhow = { workspace = true }
-vergen = { workspace = true }
