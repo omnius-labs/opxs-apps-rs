@@ -2,27 +2,23 @@ use std::sync::Arc;
 
 use aws_lambda_events::event::sqs::SqsEvent;
 use chrono::Duration;
-use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;
 
-use core_cloud::aws::{secrets::SecretsReaderImpl, ses::SesSenderImpl};
+use core_base::clock::SystemClockUtc;
+use core_cloud::aws::ses::SesSenderImpl;
+
+use opxs_base::{AppConfig, AppInfo};
 use opxs_email_send::{EmailSendJobBatchSqsMessage, EmailSendJobRepository, Executor};
 
-mod shared;
-
-use shared::*;
+const APPLICATION_NAME: &str = "opxs-batch-email-send";
 
 async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
     let info = AppInfo::new()?;
     info!("info: {}", info);
 
-    let sdk_config = aws_config::load_from_env().await;
-    let secret_reader = Box::new(SecretsReaderImpl {
-        client: aws_sdk_secretsmanager::Client::new(&sdk_config),
-    });
-    let conf = AppConfig::load(&info.mode, secret_reader).await?;
+    let conf = AppConfig::load(APPLICATION_NAME, &info.mode).await?;
     let db = Arc::new(
         PgPoolOptions::new()
             .max_connections(100)
@@ -31,17 +27,15 @@ async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
             .await?,
     );
     let system_clock = Arc::new(SystemClockUtc {});
-    let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
 
     let executor = Executor {
         email_send_job_repository: Arc::new(EmailSendJobRepository {
             db: db.clone(),
             system_clock,
-            tsid_provider,
         }),
         ses_sender: Arc::new(SesSenderImpl {
             client: aws_sdk_sesv2::Client::new(&aws_config::load_from_env().await),
-            configuration_set_name: Some(conf.ses.configuration_set_name),
+            configuration_set_name: Some(conf.email.ses.configuration_set_name),
         }),
     };
     executor.execute(ms).await?;

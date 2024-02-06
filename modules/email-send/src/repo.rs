@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use core_base::{clock::SystemClock, tsid::TsidProvider};
+use core_base::clock::SystemClock;
 use sqlx::PgPool;
 
 use crate::EmailSendJobBatchDetail;
@@ -11,12 +11,10 @@ use super::{EmailConfirmRequestParam, EmailSendJob, EmailSendJobBatch, EmailSend
 pub struct EmailSendJobRepository {
     pub db: Arc<PgPool>,
     pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
-    pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
 }
 
 impl EmailSendJobRepository {
-    pub async fn create_email_confirm_job(&self, param: &EmailConfirmRequestParam) -> anyhow::Result<String> {
-        let job_id = self.tsid_provider.gen().to_string();
+    pub async fn create_email_confirm_job(&self, job_id: &str, param: &EmailConfirmRequestParam) -> anyhow::Result<()> {
         let now = self.system_clock.now();
 
         let mut tx = self.db.begin().await?;
@@ -27,7 +25,7 @@ INSERT INTO email_send_jobs (id, batch_count, email_address_count, type, param, 
     VALUES ($1, $2, $3, $4, $5, $6);
         "#,
         )
-        .bind(job_id.as_str())
+        .bind(job_id)
         .bind(1)
         .bind(1)
         .bind(EmailSendJobType::EmailConfirm)
@@ -42,9 +40,9 @@ INSERT INTO email_send_job_batches (job_id, batch_id, status, created_at, update
     VALUES ($1, $2, $3, $4, $5);
         "#,
         )
-        .bind(job_id.as_str())
+        .bind(job_id)
         .bind(0)
-        .bind(EmailSendJobBatchStatus::Waiting)
+        .bind(EmailSendJobBatchStatus::Preparing)
         .bind(now)
         .bind(now)
         .execute(&mut tx)
@@ -56,11 +54,11 @@ INSERT INTO email_send_job_batch_details (job_id, batch_id, email_address, retry
     VALUES ($1, $2, $3, $4, $5, $6, $7);
         "#,
         )
-        .bind(job_id.as_str())
+        .bind(job_id)
         .bind(0)
         .bind(param.to_email_address.as_str())
         .bind(0)
-        .bind(EmailSendJobBatchDetailStatus::Waiting)
+        .bind(EmailSendJobBatchDetailStatus::Preparing)
         .bind(now)
         .bind(now)
         .execute(&mut tx)
@@ -68,7 +66,7 @@ INSERT INTO email_send_job_batch_details (job_id, batch_id, email_address, retry
 
         tx.commit().await?;
 
-        Ok(job_id)
+        Ok(())
     }
 
     pub async fn get_job(&self, id: &str) -> anyhow::Result<EmailSendJob> {
@@ -117,6 +115,47 @@ SELECT *
         Ok(res)
     }
 
+    pub async fn update_status_to_waiting(&self, job_id: &str) -> anyhow::Result<()> {
+        let mut tx = self.db.begin().await?;
+        let now = self.system_clock.now();
+
+        let res = sqlx::query(
+            r#"
+UPDATE email_send_job_batches
+    SET status = 'Waiting', updated_at = $2
+    WHERE job_id = $1 AND status = 'Preparing'
+"#,
+        )
+        .bind(job_id)
+        .bind(now)
+        .execute(&mut tx)
+        .await?;
+
+        if res.rows_affected() < 1 {
+            anyhow::bail!("no rows affected");
+        }
+
+        let res = sqlx::query(
+            r#"
+UPDATE email_send_job_batch_details
+    SET status = 'Waiting', updated_at = $2
+    WHERE job_id = $1 AND status = 'Preparing'
+"#,
+        )
+        .bind(job_id)
+        .bind(now)
+        .execute(&mut tx)
+        .await?;
+
+        if res.rows_affected() < 1 {
+            anyhow::bail!("no rows affected");
+        }
+
+        tx.commit().await?;
+
+        Ok(())
+    }
+
     pub async fn update_status_to_processing(&self, job_id: &str, batch_id: i32, email_address: &str) -> anyhow::Result<()> {
         let mut tx = self.db.begin().await?;
         let now = self.system_clock.now();
@@ -152,8 +191,10 @@ UPDATE email_send_job_batches
         .bind(job_id)
         .bind(batch_id)
         .bind(now)
-        .execute(self.db.as_ref())
+        .execute(&mut tx)
         .await?;
+
+        tx.commit().await?;
 
         Ok(())
     }

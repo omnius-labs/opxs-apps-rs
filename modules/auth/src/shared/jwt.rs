@@ -2,7 +2,7 @@ use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
-use super::error::AuthError;
+use opxs_base::AppError;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
@@ -21,7 +21,7 @@ impl Claims {
     }
 }
 
-pub fn sign(secret: &str, sub: &str, expires_in: Duration, iat: DateTime<Utc>) -> Result<String, AuthError> {
+pub fn sign(secret: &str, sub: &str, expires_in: Duration, iat: DateTime<Utc>) -> Result<String, AppError> {
     let exp = iat + expires_in;
     Ok(jsonwebtoken::encode(
         &Header::default(),
@@ -30,7 +30,7 @@ pub fn sign(secret: &str, sub: &str, expires_in: Duration, iat: DateTime<Utc>) -
     )?)
 }
 
-pub fn verify(secret: &str, token: &str, now: DateTime<Utc>) -> Result<Claims, AuthError> {
+pub fn verify(secret: &str, token: &str, now: DateTime<Utc>) -> Result<Claims, AppError> {
     let key = DecodingKey::from_secret(secret.as_bytes());
     let validation = Validation::default();
     let claims: Claims = jsonwebtoken::decode(token, &key, &validation).map(|token| token.claims)?;
@@ -38,7 +38,7 @@ pub fn verify(secret: &str, token: &str, now: DateTime<Utc>) -> Result<Claims, A
     let expired_at = NaiveDateTime::from_timestamp_opt(claims.exp, 0).unwrap_or(NaiveDateTime::MIN);
     let expired_at: DateTime<Utc> = Utc.from_utc_datetime(&expired_at);
     if expired_at < now {
-        return Err(AuthError::AccessTokenExpired);
+        return Err(AppError::AccessTokenExpired);
     }
 
     Ok(claims)

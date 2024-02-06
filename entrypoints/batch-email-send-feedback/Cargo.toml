@@ -3,7 +3,6 @@ name = "opxs-batch-email-send-feedback"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
-build = "build.rs"
 
 [features]
 stable-test = []
@@ -15,6 +14,7 @@ core-image = { workspace = true }
 core-migration = { workspace = true }
 core-testkit = { workspace = true }
 
+opxs-base = { workspace = true }
 opxs-email-send = { workspace = true }
 
 lambda_runtime = { workspace = true }
@@ -56,7 +56,3 @@ serial_test = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
-
-[build-dependencies]
-anyhow = { workspace = true }
-vergen = { workspace = true }

@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
+use opxs_base::{AppError, AppInfo};
 use serde_json::{json, Value};
-
-use crate::shared::{error::AppError, info::AppInfo};
 
 use super::repo::WorldRepo;
 
@@ -29,15 +28,13 @@ mod tests {
 
     use chrono::Duration;
     use core_base::clock::SystemClockUtc;
+    use opxs_base::{RunMode, WorldValidator};
     use serde_json::json;
     use sqlx::postgres::PgPoolOptions;
 
     use core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{
-        domain::health::repo::WorldRepo,
-        shared::{info::RunMode, world::WorldValidator},
-    };
+    use crate::domain::health::repo::WorldRepo;
 
     use super::*;
 

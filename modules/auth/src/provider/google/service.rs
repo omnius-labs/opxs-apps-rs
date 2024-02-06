@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
-use crate::{
-    provider::ProviderAuthRepo,
-    shared::{config::AuthConfig, error::AuthError},
-};
+use opxs_base::{AppError, AuthConfig};
+
+use crate::provider::ProviderAuthRepo;
 
 use super::GoogleOAuth2Provider;
 
@@ -15,7 +14,7 @@ pub struct GoogleAuthService {
 }
 
 impl GoogleAuthService {
-    pub async fn register(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AuthError> {
+    pub async fn register(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AppError> {
         let oauth2_token_result = self
             .oauth2_provider
             .get_oauth2_token(
@@ -29,7 +28,7 @@ impl GoogleAuthService {
         let id_token_claims = oauth2_token_result.id_token_claims;
 
         if auth_nonce != id_token_claims.nonce {
-            return Err(AuthError::RegisterRejection(anyhow::anyhow!("Nonce mismatch error")));
+            return Err(AppError::RegisterRejection(anyhow::anyhow!("Nonce mismatch error")));
         }
 
         if let Ok(user) = self.auth_repo.get_user("google", &id_token_claims.sub).await {
@@ -43,7 +42,7 @@ impl GoogleAuthService {
         Ok(user_id)
     }
 
-    pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AuthError> {
+    pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AppError> {
         let oauth2_token_result = self
             .oauth2_provider
             .get_oauth2_token(
@@ -56,7 +55,7 @@ impl GoogleAuthService {
         let id_token_claims = oauth2_token_result.id_token_claims;
 
         if auth_nonce != id_token_claims.nonce {
-            return Err(AuthError::LoginRejection(anyhow::anyhow!("Nonce mismatch error")));
+            return Err(AppError::LoginRejection(anyhow::anyhow!("Nonce mismatch error")));
         }
 
         let user = self.auth_repo.get_user("google", &id_token_claims.sub).await?;
@@ -64,7 +63,7 @@ impl GoogleAuthService {
         Ok(user.id)
     }
 
-    // pub async fn unregister(&self, refresh_token: &str) -> Result<(), AuthError> {
+    // pub async fn unregister(&self, refresh_token: &str) -> Result<(), AppError> {
     //     todo!()
     // }
 }
@@ -78,11 +77,12 @@ mod tests {
     use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
+    use opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
     use sqlx::postgres::PgPoolOptions;
 
     use crate::{
         provider::{IdTokenClaims, OAuth2TokenResult, UserInfo},
-        shared::{self, config::GoogleAuthConfig},
+        shared,
     };
 
     use super::*;
@@ -141,6 +141,12 @@ mod tests {
             tsid_provider,
         });
         let auth_conf = AuthConfig {
+            jwt: JwtConfig {
+                secret: JwtSecretConfig {
+                    current: "current".to_string(),
+                    previous: "previous".to_string(),
+                },
+            },
             google: GoogleAuthConfig {
                 client_id: client_id.to_string(),
                 client_secret: client_secret.to_string(),
@@ -218,7 +224,7 @@ mod tests {
             redirect_uri: &str,
             client_id: &str,
             client_secret: &str,
-        ) -> Result<OAuth2TokenResult, AuthError> {
+        ) -> Result<OAuth2TokenResult, AppError> {
             *self.get_oauth2_token_param.borrow_mut() = GetOauth2TokenParam {
                 code: code.to_string(),
                 redirect_uri: redirect_uri.to_string(),
@@ -228,7 +234,7 @@ mod tests {
             return Ok(self.get_oauth2_token_result.clone());
         }
 
-        async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AuthError> {
+        async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AppError> {
             *self.get_user_info_param.borrow_mut() = access_token.to_string();
             return Ok(self.get_user_info_result.clone());
         }

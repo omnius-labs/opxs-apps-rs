@@ -7,8 +7,6 @@ use thiserror::Error;
 use tracing::error;
 use utoipa::ToSchema;
 
-use opxs_auth::shared::error::AuthError;
-
 #[derive(Debug, Error, ToSchema)]
 pub enum AppError {
     #[error(transparent)]
@@ -31,8 +29,22 @@ pub enum AppError {
     #[error("invalid request")]
     InvalidRequest(anyhow::Error),
 
-    #[error(transparent)]
-    AuthError(#[from] AuthError),
+    #[error("register error")]
+    RegisterRejection(anyhow::Error),
+    #[error("login error")]
+    LoginRejection(anyhow::Error),
+    #[error("access token expired")]
+    AccessTokenExpired,
+    #[error("refresh token not found")]
+    RefreshTokenNotFound,
+    #[error("user not found")]
+    UserNotFound,
+    #[error("password doesn't match")]
+    WrongPassword,
+    #[error("duplicate email")]
+    DuplicateEmail,
+    #[error("email verify token expired")]
+    EmailVerifyTokenExpired,
 
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
@@ -52,15 +64,14 @@ impl IntoResponse for AppError {
 
             AppError::InvalidRequest(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
 
-            AppError::AuthError(AuthError::RegisterRejection(_)) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
-            AppError::AuthError(AuthError::LoginRejection(_)) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
-            AppError::AuthError(AuthError::AccessTokenExpired) => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
-            AppError::AuthError(AuthError::RefreshTokenNotFound) => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
-            AppError::AuthError(AuthError::UserNotFound) => (StatusCode::NOT_FOUND, ErrorCode::UserNotFound),
-            AppError::AuthError(AuthError::WrongPassword) => (StatusCode::NOT_FOUND, ErrorCode::UserNotFound),
-            AppError::AuthError(AuthError::DuplicateEmail) => (StatusCode::CONFLICT, ErrorCode::DuplicateEmail),
-            AppError::AuthError(AuthError::EmailVerifyTokenExpired) => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
-            AppError::AuthError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::RegisterRejection(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::LoginRejection(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::AccessTokenExpired => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
+            AppError::RefreshTokenNotFound => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
+            AppError::UserNotFound => (StatusCode::NOT_FOUND, ErrorCode::UserNotFound),
+            AppError::WrongPassword => (StatusCode::NOT_FOUND, ErrorCode::UserNotFound),
+            AppError::DuplicateEmail => (StatusCode::CONFLICT, ErrorCode::DuplicateEmail),
+            AppError::EmailVerifyTokenExpired => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
 
             AppError::UnexpectedError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
         };

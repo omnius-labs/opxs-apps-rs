@@ -1,0 +1,54 @@
+FROM public.ecr.aws/lambda/provided:al2023 AS chef
+
+WORKDIR /app
+
+RUN dnf install -y \
+    gcc \
+    openssl-devel \
+    pkg-config \
+    && rm -rf /var/cache/dnf/* \
+    && dnf clean all
+
+COPY ./rust-toolchain.toml ./rust-toolchain.toml
+
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
+
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y --default-toolchain "1.72.1"
+
+RUN cargo install cargo-chef --locked
+
+FROM chef AS planner
+
+# Copy
+COPY ./entrypoints ./entrypoints
+COPY ./modules ./modules
+COPY ./refs ./refs
+COPY Cargo.* .
+
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+
+COPY --from=planner /app/recipe.json recipe.json
+
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# Copy
+COPY ./.git ./.git
+COPY ./entrypoints ./entrypoints
+COPY ./modules ./modules
+COPY ./refs ./refs
+COPY Cargo.* .
+
+# Build application
+RUN cargo build --release --bin opxs-batch-email-send-feedback
+
+# We do not need the Rust toolchain to run the binary!
+FROM chef AS runtime
+
+WORKDIR /app
+
+COPY --from=builder /app/target/release/opxs-batch-email-send-feedback ./opxs-batch-email-send-feedback

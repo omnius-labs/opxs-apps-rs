@@ -4,12 +4,14 @@ use axum::{
     Json, Router,
 };
 use axum_extra::extract::cookie::{Cookie, SignedCookieJar};
-use opxs_auth::shared::model::AuthToken;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::shared::{error::AppError, state::AppState};
+use opxs_auth::shared::model::AuthToken;
+use opxs_base::AppError;
+
+use crate::shared::state::AppState;
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {

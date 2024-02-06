@@ -3,11 +3,14 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 use axum_extra::extract::cookie;
 use chrono::Duration;
-use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
-use core_cloud::aws::sqs::SqsSenderImpl;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
-use super::{config::AppConfig, info::AppInfo, service::AppService};
+use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+use core_cloud::aws::{s3::S3ClientImpl, sqs::SqsSenderImpl};
+
+use opxs_base::{AppConfig, AppInfo};
+
+use super::service::AppService;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -38,6 +41,10 @@ impl AppState {
             queue_url: "opxs-batch-email-send-sqs".to_string(),
             delay_seconds: None,
         });
+        let image_convert_s3_client = Arc::new(S3ClientImpl {
+            client: aws_sdk_s3::Client::new(&aws_config::load_from_env().await),
+            bucket: conf.image_convert.s3.bucket.clone(),
+        });
 
         let service = Arc::new(AppService::new(
             &info,
@@ -47,6 +54,7 @@ impl AppState {
             random_bytes_provider,
             tsid_provider,
             send_email_sqs_sender,
+            image_convert_s3_client,
         ));
 
         Ok(Self {

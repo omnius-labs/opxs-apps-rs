@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use core_base::{clock::SystemClock, tsid::TsidProvider};
 use sqlx::PgPool;
 
-use crate::shared::{
-    error::AuthError,
-    model::{User, UserAuthenticationType, UserRole},
-};
+use core_base::{clock::SystemClock, tsid::TsidProvider};
+
+use opxs_base::AppError;
+
+use crate::shared::model::{User, UserAuthenticationType, UserRole};
 
 pub struct ProviderAuthRepo {
     pub db: Arc<PgPool>,
@@ -16,7 +16,7 @@ pub struct ProviderAuthRepo {
 }
 
 impl ProviderAuthRepo {
-    pub async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<String, AuthError> {
+    pub async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<String, AppError> {
         let user_id = self.tsid_provider.gen().to_string();
         let now = self.system_clock.now();
 
@@ -36,7 +36,7 @@ INSERT INTO users (id, name, authentication_type, role, created_at, updated_at)
         .bind(now)
         .execute(&mut tx)
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         sqlx::query(
             r#"
@@ -50,14 +50,14 @@ INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id, creat
         .bind(now)
         .execute(&mut tx)
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         tx.commit().await?;
 
         Ok(user_id)
     }
 
-    pub async fn delete_user(&self, provider_type: &str, provider_user_id: &str) -> Result<(), AuthError> {
+    pub async fn delete_user(&self, provider_type: &str, provider_user_id: &str) -> Result<(), AppError> {
         sqlx::query(
             r#"
 DELETE FROM users
@@ -68,12 +68,12 @@ DELETE FROM users
         .bind(provider_user_id)
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         Ok(())
     }
 
-    pub async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AuthError> {
+    pub async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AppError> {
         let (existed,): (bool,) = sqlx::query_as(
             r#"
 SELECT EXISTS (
@@ -89,12 +89,12 @@ SELECT EXISTS (
         .bind(provider_user_id)
         .fetch_one(self.db.as_ref())
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         Ok(existed)
     }
 
-    pub async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AuthError> {
+    pub async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AppError> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT *
@@ -108,10 +108,10 @@ SELECT *
         .bind(provider_user_id)
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         if user.is_none() {
-            return Err(AuthError::UserNotFound);
+            return Err(AppError::UserNotFound);
         }
 
         Ok(user.unwrap())

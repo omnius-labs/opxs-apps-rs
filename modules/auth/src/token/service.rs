@@ -4,7 +4,9 @@ use chrono::{Duration, Utc};
 
 use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
-use crate::shared::{config::JwtConfig, error::AuthError, jwt, model::AuthToken};
+use opxs_base::{AppError, JwtConfig};
+
+use crate::shared::{jwt, model::AuthToken};
 
 use super::TokenRepo;
 
@@ -16,7 +18,7 @@ pub struct TokenService {
 }
 
 impl TokenService {
-    pub async fn create(&self, user_id: &str) -> Result<AuthToken, AuthError> {
+    pub async fn create(&self, user_id: &str) -> Result<AuthToken, AppError> {
         let now = self.system_clock.now();
 
         let sub = user_id.to_string();
@@ -34,11 +36,11 @@ impl TokenService {
         })
     }
 
-    pub async fn delete(&self, refresh_token: &str) -> Result<(), AuthError> {
+    pub async fn delete(&self, refresh_token: &str) -> Result<(), AppError> {
         self.token_repo.delete_token(refresh_token).await
     }
 
-    pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken, AuthError> {
+    pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken, AppError> {
         let now = self.system_clock.now();
         let user_id = self.token_repo.get_user_id(refresh_token).await?;
 
@@ -61,14 +63,16 @@ impl TokenService {
 #[cfg(test)]
 mod tests {
     use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
+    use sqlx::postgres::PgPoolOptions;
+
     use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
     use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
-    use sqlx::postgres::PgPoolOptions;
+
+    use opxs_base::JwtSecretConfig;
 
     use crate::shared::{
         self,
-        config::JwtSecretConfig,
         model::{UserAuthenticationType, UserRole},
     };
 

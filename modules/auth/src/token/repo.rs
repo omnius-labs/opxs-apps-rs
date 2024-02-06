@@ -1,10 +1,13 @@
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
-use core_base::clock::SystemClock;
 use sqlx::PgPool;
 
-use crate::shared::{error::AuthError, model::User};
+use core_base::clock::SystemClock;
+
+use opxs_base::AppError;
+
+use crate::shared::model::User;
 
 pub struct TokenRepo {
     pub db: Arc<PgPool>,
@@ -12,7 +15,7 @@ pub struct TokenRepo {
 }
 
 impl TokenRepo {
-    pub async fn create_token(&self, user_id: &str, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AuthError> {
+    pub async fn create_token(&self, user_id: &str, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
         let now = self.system_clock.now();
         sqlx::query(
             r#"
@@ -27,12 +30,12 @@ INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, upda
         .bind(now)
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         Ok(())
     }
 
-    pub async fn delete_token(&self, refresh_token: &str) -> Result<(), AuthError> {
+    pub async fn delete_token(&self, refresh_token: &str) -> Result<(), AppError> {
         sqlx::query(
             r#"
 DELETE FROM refresh_tokens
@@ -42,12 +45,12 @@ DELETE FROM refresh_tokens
         .bind(refresh_token)
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         Ok(())
     }
 
-    pub async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AuthError> {
+    pub async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
         let now = self.system_clock.now();
         sqlx::query(
             r#"
@@ -61,12 +64,12 @@ UPDATE refresh_tokens
         .bind(now)
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         Ok(())
     }
 
-    pub async fn get_user_id(&self, refresh_token: &str) -> Result<String, AuthError> {
+    pub async fn get_user_id(&self, refresh_token: &str) -> Result<String, AppError> {
         let now = self.system_clock.now();
         let user: Option<User> = sqlx::query_as(
             r#"
@@ -80,10 +83,10 @@ SELECT u.*
         .bind(now)
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         if user.is_none() {
-            return Err(AuthError::RefreshTokenNotFound);
+            return Err(AppError::RefreshTokenNotFound);
         }
 
         Ok(user.unwrap().id)

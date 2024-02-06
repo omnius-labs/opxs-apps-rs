@@ -31,6 +31,10 @@ impl Executor {
     }
 
     async fn execute_email_confirm(&self, job_id: &str, batch_id: i32, param: &EmailConfirmRequestParam) -> anyhow::Result<()> {
+        self.email_send_job_repository
+            .update_status_to_processing(job_id, batch_id, &param.to_email_address)
+            .await?;
+
         let subject = "Opxs: メールアドレスの確認をお願いします";
         let body = &format!(
             "\
@@ -53,10 +57,6 @@ Opxs サポートチーム",
             email_confirm_url = param.email_confirm_url,
         );
 
-        self.email_send_job_repository
-            .update_status_to_processing(job_id, batch_id, &param.to_email_address)
-            .await?;
-
         self.ses_sender
             .send_mail_simple_text(&param.to_email_address, &param.from_email_address, subject, body)
             .await?;
@@ -67,16 +67,17 @@ Opxs サポートチーム",
 
 #[cfg(test)]
 mod tests {
-    use std::cell::RefCell;
-
-    use async_trait::async_trait;
     use chrono::Duration;
-    use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use core_base::{
+        clock::SystemClockUtc,
+        random_bytes::RandomBytesProviderImpl,
+        tsid::{TsidProvider, TsidProviderImpl},
+    };
     use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
 
-    use core_cloud::aws::sqs::SqsSender;
+    use core_cloud::aws::{ses::SesSenderMock, sqs::SqsSenderMock};
 
     use crate::EmailSendJobCreator;
 
@@ -104,99 +105,44 @@ mod tests {
             .unwrap();
         migrator.migrate().await.unwrap();
 
-        let email_send_job_repository = Arc::new(EmailSendJobRepository {
-            db,
-            system_clock,
-            tsid_provider,
-        });
+        let email_send_job_repository = Arc::new(EmailSendJobRepository { db, system_clock });
 
         let send_email_sqs_sender = Arc::new(SqsSenderMock::new());
-        let param = EmailConfirmRequestParam {
-            user_name: "test_name".to_string(),
-            to_email_address: "lyrise1984@gmail.com".to_string(),
-            from_email_address: "no-reply@opxs-dev.omnius-labs.com".to_string(),
-            email_confirm_url: "https://example.com".to_string(),
-        };
 
+        let job_id = tsid_provider.gen().to_string();
         let job_creator = EmailSendJobCreator {
             email_send_job_repository: email_send_job_repository.clone(),
-            send_email_sqs_sender,
+            send_email_sqs_sender: send_email_sqs_sender.clone(),
         };
-        let batches = job_creator.create_email_confirm_job(&param).await.unwrap();
+        job_creator
+            .create_email_confirm_job(
+                &job_id,
+                "test_name",
+                "lyrise1984@gmail.com",
+                "no-reply@opxs-dev.omnius-labs.com",
+                "https://example.com",
+            )
+            .await
+            .unwrap();
 
         let ses_sender = Arc::new(SesSenderMock::new());
-        let ms: Vec<EmailSendJobBatchSqsMessage> = batches
-            .iter()
-            .map(|n| EmailSendJobBatchSqsMessage {
-                job_id: n.job_id.clone(),
-                batch_id: n.batch_id,
-            })
-            .collect();
+        let sqs_send_message_input = send_email_sqs_sender.send_message_inputs.borrow().first().cloned().unwrap();
+        let sqs_message = serde_json::from_str::<EmailSendJobBatchSqsMessage>(sqs_send_message_input.message_body.as_str()).unwrap();
 
         let executor = Executor {
             email_send_job_repository,
             ses_sender: ses_sender.clone(),
         };
-        executor.execute(&ms).await.unwrap();
+        executor.execute(&[sqs_message]).await.unwrap();
 
-        assert_eq!(*ses_sender.clone().to_address.borrow(), "lyrise1984@gmail.com".to_string());
-        assert_eq!(*ses_sender.clone().from_address.borrow(), "no-reply@opxs-dev.omnius-labs.com".to_string());
-        println!("{}", *ses_sender.clone().subject.borrow());
-        println!("{}", *ses_sender.text_body.borrow());
-    }
+        let ses_send_mail_simple_text_input = ses_sender.send_mail_simple_text_inputs.borrow().first().cloned().unwrap();
 
-    struct SqsSenderMock {
-        message_body: RefCell<String>,
-    }
-
-    unsafe impl Sync for SqsSenderMock {}
-    unsafe impl Send for SqsSenderMock {}
-
-    #[async_trait]
-    impl SqsSender for SqsSenderMock {
-        async fn send_message(&self, message_body: &str) -> anyhow::Result<()> {
-            *self.message_body.borrow_mut() = message_body.to_string();
-            Ok(())
-        }
-    }
-
-    impl SqsSenderMock {
-        pub fn new() -> Self {
-            Self {
-                message_body: RefCell::new("".to_string()),
-            }
-        }
-    }
-
-    struct SesSenderMock {
-        to_address: RefCell<String>,
-        from_address: RefCell<String>,
-        subject: RefCell<String>,
-        text_body: RefCell<String>,
-    }
-
-    unsafe impl Sync for SesSenderMock {}
-    unsafe impl Send for SesSenderMock {}
-
-    #[async_trait]
-    impl SesSender for SesSenderMock {
-        async fn send_mail_simple_text(&self, to_address: &str, from_address: &str, subject: &str, text_body: &str) -> anyhow::Result<()> {
-            *self.to_address.borrow_mut() = to_address.to_string();
-            *self.from_address.borrow_mut() = from_address.to_string();
-            *self.subject.borrow_mut() = subject.to_string();
-            *self.text_body.borrow_mut() = text_body.to_string();
-            Ok(())
-        }
-    }
-
-    impl SesSenderMock {
-        pub fn new() -> Self {
-            Self {
-                to_address: RefCell::new("".to_string()),
-                from_address: RefCell::new("".to_string()),
-                subject: RefCell::new("".to_string()),
-                text_body: RefCell::new("".to_string()),
-            }
-        }
+        assert_eq!(ses_send_mail_simple_text_input.to_address, "lyrise1984@gmail.com".to_string());
+        assert_eq!(
+            ses_send_mail_simple_text_input.from_address,
+            "no-reply@opxs-dev.omnius-labs.com".to_string()
+        );
+        println!("{}", ses_send_mail_simple_text_input.subject);
+        println!("{}", ses_send_mail_simple_text_input.text_body);
     }
 }

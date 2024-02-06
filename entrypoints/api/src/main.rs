@@ -1,15 +1,19 @@
 use std::sync::Arc;
 
-use core_base::clock::SystemClockUtc;
 use tracing::info;
 
+use core_base::clock::SystemClockUtc;
 use core_migration::postgres::PostgresMigrator;
 
-use crate::shared::{config::AppConfig, info::AppInfo, state::AppState, world::WorldValidator};
+use opxs_base::{AppConfig, AppInfo, WorldValidator};
+
+use crate::shared::state::AppState;
 
 mod domain;
 mod interface;
 mod shared;
+
+const APPLICATION_NAME: &str = "opxs-api";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -28,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
     let info = AppInfo::new()?;
     info!("info: {}", info);
 
-    let conf = AppConfig::load(&info.mode).await?;
+    let conf = AppConfig::load(APPLICATION_NAME, &info.mode).await?;
 
     let system_clock = Arc::new(SystemClockUtc {});
     let world_verifier = WorldValidator { system_clock };

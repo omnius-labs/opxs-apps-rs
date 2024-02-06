@@ -1,13 +1,12 @@
 use axum::{extract::State, routing::post, Json, Router};
-use opxs_auth::shared::model::AuthToken;
 use serde::Deserialize;
 use utoipa::ToSchema;
 use validator::Validate;
 
-use crate::{
-    interface::extractors::ValidatedJson,
-    shared::{error::AppError, state::AppState},
-};
+use opxs_auth::shared::model::AuthToken;
+use opxs_base::AppError;
+
+use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {
