@@ -6,12 +6,9 @@ use utoipa::ToSchema;
 use validator::Validate;
 
 use opxs_auth::shared::model::AuthToken;
-use opxs_email_send::EmailConfirmRequestParam;
+use opxs_base::AppError;
 
-use crate::{
-    interface::extractors::ValidatedJson,
-    shared::{error::AppError, state::AppState},
-};
+use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {
@@ -40,13 +37,18 @@ pub async fn register(State(state): State<AppState>, ValidatedJson(input): Valid
     .unwrap()
     .to_string();
 
-    let param = EmailConfirmRequestParam {
-        user_name: input.name,
-        to_email_address: input.email,
-        from_email_address: state.conf.email.from_email_address,
-        email_confirm_url,
-    };
-    state.service.email_send_job_creator.create_email_confirm_job(&param).await?;
+    let job_id = state.service.tsid_provider.gen().to_string();
+    state
+        .service
+        .email_send_job_creator
+        .create_email_confirm_job(
+            &job_id,
+            &input.name,
+            &input.email,
+            &state.conf.email.from_email_address,
+            &email_confirm_url,
+        )
+        .await?;
 
     Ok(StatusCode::OK)
 }

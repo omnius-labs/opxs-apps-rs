@@ -7,6 +7,6 @@ RUN dnf install -y \
     && rm -rf /var/cache/dnf/* \
     && dnf clean all
 
-COPY ./bin/batch/opxs-batch-email-send-feedback ${LAMBDA_RUNTIME_DIR}/bootstrap
+COPY ./bin/opxs-batch-email-send-feedback ${LAMBDA_RUNTIME_DIR}/bootstrap
 
 CMD [ "lambda-handler" ]

@@ -4,7 +4,9 @@ use chrono::{Duration, Utc};
 
 use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
 
-use crate::shared::{config::JwtConfig, error::AuthError, jwt, kdf::Kdf};
+use opxs_base::{AppError, JwtConfig};
+
+use crate::shared::{jwt, kdf::Kdf};
 
 use super::EmailAuthRepo;
 
@@ -18,9 +20,9 @@ pub struct EmailAuthService {
 }
 
 impl EmailAuthService {
-    pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<String, AuthError> {
+    pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<String, AppError> {
         if self.auth_repo.exist_user(email).await? {
-            return Err(AuthError::DuplicateEmail);
+            return Err(AppError::DuplicateEmail);
         }
 
         let salt = self.kdf.gen_salt()?;
@@ -39,23 +41,23 @@ impl EmailAuthService {
         Ok(token)
     }
 
-    pub async fn login(&self, email: &str, password: &str) -> Result<String, AuthError> {
+    pub async fn login(&self, email: &str, password: &str) -> Result<String, AppError> {
         if !self.auth_repo.exist_user(email).await? {
-            return Err(AuthError::UserNotFound);
+            return Err(AppError::UserNotFound);
         }
 
         let user = self.auth_repo.get_user(email).await?;
-        let salt = hex::decode(user.salt).map_err(|e| AuthError::UnexpectedError(e.into()))?;
-        let password_hash = hex::decode(user.password_hash).map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        let salt = hex::decode(user.salt).map_err(|e| AppError::UnexpectedError(e.into()))?;
+        let password_hash = hex::decode(user.password_hash).map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         if !self.kdf.verify(password, &salt, &password_hash)? {
-            return Err(AuthError::WrongPassword);
+            return Err(AppError::WrongPassword);
         }
 
         Ok(user.id)
     }
 
-    pub async fn confirm(&self, token: &str) -> Result<String, AuthError> {
+    pub async fn confirm(&self, token: &str) -> Result<String, AppError> {
         let now = self.system_clock.now();
         let claims = jwt::verify(&self.jwt_conf.secret.current, token, now)?;
 
@@ -67,7 +69,7 @@ impl EmailAuthService {
         Ok(user.id)
     }
 
-    // pub async fn unregister(&self, refresh_token: &str) -> Result<(), AuthError> {
+    // pub async fn unregister(&self, refresh_token: &str) -> Result<(), AppError> {
     //     todo!()
     // }
 }
@@ -75,12 +77,15 @@ impl EmailAuthService {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
+    use sqlx::postgres::PgPoolOptions;
+
     use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
-    use sqlx::postgres::PgPoolOptions;
 
-    use crate::shared::{self, config::JwtSecretConfig, kdf::KdfAlgorithm};
+    use opxs_base::JwtSecretConfig;
+
+    use crate::shared::{self, kdf::KdfAlgorithm};
 
     use super::*;
 
@@ -135,7 +140,7 @@ mod tests {
         let token = auth_service.register("name", "test@example.com", "password").await.unwrap();
         assert!(matches!(
             auth_service.login("test@example.com", "password").await,
-            Err(AuthError::UserNotFound)
+            Err(AppError::UserNotFound)
         ));
         auth_service.confirm(&token).await.unwrap();
 

@@ -1,5 +1,5 @@
 [package]
-name = "opxs-convert-file"
+name = "opxs-base"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
@@ -54,3 +54,7 @@ serial_test = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+vergen = { workspace = true }

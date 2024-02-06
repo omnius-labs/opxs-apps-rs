@@ -67,9 +67,9 @@ CREATE TABLE email_send_job_batches (
     job_id VARCHAR(255) NOT NULL,
     batch_id INTEGER NOT NULL,
     status VARCHAR(32) NOT NULL,
-    PRIMARY KEY(job_id, batch_id),
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    PRIMARY KEY(job_id, batch_id)
 );
 
 -- email_send_job_batch_details
@@ -107,4 +107,16 @@ CREATE TABLE email_send_logs (
     event_detail TEXT,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     PRIMARY KEY(message_id, created_at)
+);
+
+-- image_convert_jobs
+
+CREATE TABLE image_convert_jobs (
+    id VARCHAR(255) NOT NULL PRIMARY KEY,
+    type VARCHAR(32) NOT NULL,
+    param TEXT,
+    status VARCHAR(32) NOT NULL,
+    failed_reason TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );

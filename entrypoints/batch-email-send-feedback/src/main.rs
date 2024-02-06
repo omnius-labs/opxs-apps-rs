@@ -2,11 +2,11 @@ use aws_lambda_events::event::sns::SnsEvent;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use tracing::info;
 
+use opxs_base::AppInfo;
+
 mod message;
-mod shared;
 
 use message::*;
-use shared::*;
 
 async fn handler_sub(_ms: &[SesNotification]) -> Result<(), Error> {
     let info = AppInfo::new()?;

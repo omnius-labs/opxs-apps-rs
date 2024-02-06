@@ -9,8 +9,9 @@ use serde::de::DeserializeOwned;
 use validator::Validate;
 
 use opxs_auth::shared::{jwt, model::User};
+use opxs_base::AppError;
 
-use crate::shared::{error::AppError, state::AppState};
+use crate::shared::state::AppState;
 
 #[async_trait]
 impl<B> FromRequest<AppState, B> for User
@@ -24,7 +25,7 @@ where
 
         let access_token = bearer.token();
         let now = state.service.system_clock.now();
-        let claims = jwt::verify(&state.conf.jwt.secret.current, access_token, now)?;
+        let claims = jwt::verify(&state.conf.auth.jwt.secret.current, access_token, now)?;
 
         let user_id = claims.sub;
         let user = state.service.user.get_user(&user_id).await?;
