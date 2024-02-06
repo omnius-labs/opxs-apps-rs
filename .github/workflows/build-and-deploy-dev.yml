@@ -62,9 +62,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.build.batch
+          file: Dockerfile.build.batch-email-send
           push: false
-          tags: opxs-build-batch-image
+          tags: opxs-build-batch-email-send-image
           provenance: false
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-builder
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-builder,mode=max
@@ -81,9 +81,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.build.batch
+          file: Dockerfile.build.batch-email-send-feedback
           push: false
-          tags: opxs-build-batch-image
+          tags: opxs-build-batch-email-send-feedback-image
           provenance: false
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback-builder
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback-builder,mode=max
@@ -100,9 +100,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.build.batch
+          file: Dockerfile.build.batch-image-convert
           push: false
-          tags: opxs-build-batch-image
+          tags: opxs-build-batch-image-convert-image
           provenance: false
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert-builder
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert-builder,mode=max
