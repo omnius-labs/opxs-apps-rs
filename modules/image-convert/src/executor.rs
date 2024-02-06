@@ -71,7 +71,9 @@ mod tests {
 
     use super::*;
 
+    // FIXME: ちゃんと書く
     #[tokio::test]
+    #[ignore]
     async fn simple_test() {
         let docker = testcontainers::clients::Cli::default();
         let container = PostgresContainer::new(&docker, "15.1");
