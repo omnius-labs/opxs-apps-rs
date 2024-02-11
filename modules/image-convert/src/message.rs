@@ -1,6 +1,6 @@
-pub mod job;
-pub mod param;
-pub mod sqs;
+mod job;
+mod param;
+mod sqs;
 
 pub use job::*;
 pub use param::*;

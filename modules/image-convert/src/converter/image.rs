@@ -1,17 +1,23 @@
 use std::path::Path;
 
+use async_trait::async_trait;
 use tokio::process::Command;
 use tracing::error;
 
-pub struct ImageConverter;
+#[async_trait]
+pub trait ImageConverter {
+    async fn convert(&self, source: &str, target: &str) -> anyhow::Result<()>;
+}
 
-#[allow(dead_code)]
-impl ImageConverter {
-    pub async fn convert(input: &str, output: &str) -> anyhow::Result<()> {
-        let base_path = std::env::var("IMAGE_CONVERTER_DIR").map_err(|_| anyhow::anyhow!("IMAGE_CONVERTER is not set"))?;
-        let converter = Path::new(&base_path).join("ImageConverter");
+pub struct ImageConverterImpl;
 
-        let output = Command::new(converter).arg(input).arg(output).output().await?;
+#[async_trait]
+impl ImageConverter for ImageConverterImpl {
+    async fn convert(&self, source: &str, target: &str) -> anyhow::Result<()> {
+        let image_converter_dir = std::env::var("IMAGE_CONVERTER_DIR").map_err(|_| anyhow::anyhow!("IMAGE_CONVERTER is not set"))?;
+        let image_converter = Path::new(&image_converter_dir).join("ImageConverter");
+
+        let output = Command::new(image_converter).arg(source).arg(target).output().await?;
 
         if !output.status.success() {
             let stdout_message = String::from_utf8_lossy(&output.stdout).to_string();
@@ -20,7 +26,7 @@ impl ImageConverter {
             let stderr_message = String::from_utf8_lossy(&output.stderr).to_string();
             error!("stderr: {}", stderr_message);
 
-            anyhow::bail!(format!("failed to convert image: stdout:{} stderr:{}", stdout_message, stderr_message));
+            anyhow::bail!(format!("failed to convert image: {}", stderr_message));
         }
 
         Ok(())
@@ -41,6 +47,8 @@ mod tests {
         let input = base_path.join("test.avif").display().to_string();
         let output = base_path.join("test.png").display().to_string();
 
-        ImageConverter::convert(input.as_str(), output.as_str()).await.unwrap();
+        let image_converter = crate::converter::ImageConverterImpl;
+
+        image_converter.convert(input.as_str(), output.as_str()).await.unwrap();
     }
 }

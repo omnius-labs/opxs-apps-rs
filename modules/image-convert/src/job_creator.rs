@@ -16,23 +16,21 @@ pub struct ImageConvertJobCreator {
 }
 
 impl ImageConvertJobCreator {
-    pub async fn create_image_convert_job(&self, job_id: &str, original_filename: &str, out_format: &ImageFormat) -> Result<String, AppError> {
-        let original_filename_without_extension = Path::new(original_filename)
+    pub async fn create_image_convert_job(&self, job_id: &str, source_filename: &str, target_image_format: &ImageFormat) -> Result<String, AppError> {
+        let original_filename_without_extension = Path::new(source_filename)
             .file_stem()
             .ok_or(anyhow::anyhow!("invalid filename"))?
             .to_str()
             .ok_or(anyhow::anyhow!("invalid filename"))?;
-        let in_format = ImageFormat::from_filename(original_filename);
+        let in_format = ImageFormat::from_filename(source_filename);
 
         let input = ImageConvertFile {
-            s3_key: format!("in/{}", job_id),
-            filename: original_filename.to_string(),
+            filename: source_filename.to_string(),
             format: in_format,
         };
         let output = ImageConvertFile {
-            s3_key: format!("out/{}", job_id),
-            filename: format!("{}.{}", original_filename_without_extension, out_format.get_extension()),
-            format: out_format.clone(),
+            filename: format!("{}.{}", original_filename_without_extension, target_image_format.get_extension()),
+            format: target_image_format.clone(),
         };
 
         let param = ImageConvertRequestParam {
@@ -43,7 +41,10 @@ impl ImageConvertJobCreator {
 
         let now = self.system_clock.now();
         let expires_in = Duration::minutes(10);
-        let upload_uri = self.s3_client.gen_put_presigned_uri(&input.s3_key, now, expires_in).await?;
+        let upload_uri = self
+            .s3_client
+            .gen_put_presigned_uri(format!("in/{}", job_id).as_str(), now, expires_in)
+            .await?;
 
         self.image_convert_job_repository.update_status_to_waiting(job_id).await?;
 
@@ -61,7 +62,7 @@ impl ImageConvertJobCreator {
             let expires_in = Duration::minutes(10);
             let download_uri = self
                 .s3_client
-                .gen_get_presigned_uri(&param.output.s3_key, now, expires_in, &param.output.filename)
+                .gen_get_presigned_uri(format!("out/{}", job_id).as_str(), now, expires_in, &param.output.filename)
                 .await?;
 
             Ok((job.status, Some(download_uri)))

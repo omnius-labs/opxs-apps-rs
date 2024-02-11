@@ -4,7 +4,7 @@ use chrono::Utc;
 use core_base::{clock::SystemClock, tsid::TsidProvider};
 use sqlx::PgPool;
 
-use crate::{ImageConvertJob, ImageConvertJobStatus, ImageConvertJobType, ImageConvertRequestParam};
+use crate::{ImageConvertJob, ImageConvertJobStatus, ImageConvertRequestParam};
 
 pub struct ImageConvertJobRepository {
     pub db: Arc<PgPool>,
@@ -18,12 +18,11 @@ impl ImageConvertJobRepository {
 
         sqlx::query(
             r#"
-INSERT INTO image_convert_jobs (id, type, param, status, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6);
+INSERT INTO image_convert_jobs (id, param, status, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5);
         "#,
         )
         .bind(job_id)
-        .bind(ImageConvertJobType::ImageConvert)
         .bind(&serde_json::to_string(param).unwrap())
         .bind(ImageConvertJobStatus::Preparing)
         .bind(now)
@@ -77,6 +76,29 @@ UPDATE image_convert_jobs
         .bind(job_id)
         .bind(old_status)
         .bind(new_status)
+        .bind(now)
+        .execute(self.db.as_ref())
+        .await?;
+
+        if res.rows_affected() < 1 {
+            anyhow::bail!("no rows affected");
+        }
+
+        Ok(())
+    }
+
+    pub async fn update_status_to_failed(&self, job_id: &str, failed_reason: &str) -> anyhow::Result<()> {
+        let now = self.system_clock.now();
+
+        let res = sqlx::query(
+            r#"
+UPDATE image_convert_jobs
+    SET status = 'Failed', failed_reason = $2, updated_at = $3
+    WHERE id = $1 AND status = 'Processing'
+"#,
+        )
+        .bind(job_id)
+        .bind(failed_reason)
         .bind(now)
         .execute(self.db.as_ref())
         .await?;

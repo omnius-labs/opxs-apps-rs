@@ -113,7 +113,6 @@ CREATE TABLE email_send_logs (
 
 CREATE TABLE image_convert_jobs (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
-    type VARCHAR(32) NOT NULL,
     param TEXT,
     status VARCHAR(32) NOT NULL,
     failed_reason TEXT,

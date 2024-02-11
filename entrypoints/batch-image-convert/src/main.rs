@@ -10,7 +10,7 @@ use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, ts
 use core_cloud::aws::s3::S3ClientImpl;
 
 use opxs_base::{AppConfig, AppInfo};
-use opxs_image_convert::{Executor, ImageConvertJobRepository, ImageConvertJobSqsMessage};
+use opxs_image_convert::{Executor, ImageConvertJobRepository, ImageConvertJobSqsMessage, ImageConverterImpl};
 
 const APPLICATION_NAME: &str = "opxs-batch-image-convert";
 
@@ -30,6 +30,7 @@ async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
     let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
 
     let executor = Executor {
+        image_converter: Arc::new(ImageConverterImpl),
         image_convert_job_repository: Arc::new(ImageConvertJobRepository {
             db: db.clone(),
             system_clock,

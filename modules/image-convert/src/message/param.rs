@@ -9,12 +9,12 @@ pub struct ImageConvertRequestParam {
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct ImageConvertFile {
-    pub s3_key: String,
     pub filename: String,
     pub format: ImageFormat,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum ImageFormat {
     #[default]
     Unknown,

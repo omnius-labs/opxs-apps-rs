@@ -2,37 +2,6 @@ use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub enum ImageConvertJobType {
-    Unknown,
-    ImageConvert,
-}
-
-impl sqlx::Type<sqlx::Postgres> for ImageConvertJobType {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        sqlx::postgres::PgTypeInfo::with_name("VARCHAR")
-    }
-}
-
-impl sqlx::Encode<'_, sqlx::Postgres> for ImageConvertJobType {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> sqlx::encode::IsNull {
-        match self {
-            ImageConvertJobType::ImageConvert => buf.extend_from_slice(b"FormatConvert"),
-            _ => buf.extend_from_slice(b"Unknown"),
-        }
-        sqlx::encode::IsNull::No
-    }
-}
-
-impl sqlx::Decode<'_, sqlx::Postgres> for ImageConvertJobType {
-    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
-        match value.as_str() {
-            Ok("FormatConvert") => Ok(ImageConvertJobType::ImageConvert),
-            _ => Ok(ImageConvertJobType::Unknown),
-        }
-    }
-}
-
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub enum ImageConvertJobStatus {
     Unknown,
@@ -82,8 +51,6 @@ impl sqlx::Decode<'_, sqlx::Postgres> for ImageConvertJobStatus {
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct ImageConvertJob {
     pub id: String,
-    #[sqlx(rename = "type")]
-    pub typ: ImageConvertJobType,
     pub param: Option<String>,
     pub status: ImageConvertJobStatus,
     pub failed_reason: Option<String>,
