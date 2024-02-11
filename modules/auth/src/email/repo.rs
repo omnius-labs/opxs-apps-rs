@@ -65,17 +65,20 @@ INSERT INTO user_auth_emails (user_id, email, password_hash, salt, created_at, u
         Ok(user_id)
     }
 
-    pub async fn delete_user(&self, email: &str) -> Result<(), AppError> {
-        sqlx::query(
-            r#"
-DELETE FROM users
-    WHERE id = (SELECT user_id FROM user_auth_emails WHERE email = $1);
-"#,
-        )
-        .bind(email)
-        .execute(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+    pub async fn delete_user(&self, id: &str) -> Result<(), AppError> {
+        let mut tx = self.db.begin().await?;
+
+        let queries = vec![
+            sqlx::query("DELETE FROM users WHERE id = $1").bind(id),
+            sqlx::query("DELETE FROM user_auth_emails WHERE user_id = $1").bind(id),
+            sqlx::query("DELETE FROM refresh_tokens WHERE user_id = $1").bind(id),
+        ];
+
+        for query in queries {
+            query.execute(&mut tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
+        }
+
+        tx.commit().await?;
 
         Ok(())
     }

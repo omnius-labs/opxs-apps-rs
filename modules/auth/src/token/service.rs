@@ -36,8 +36,8 @@ impl TokenService {
         })
     }
 
-    pub async fn delete(&self, refresh_token: &str) -> Result<(), AppError> {
-        self.token_repo.delete_token(refresh_token).await
+    pub async fn delete(&self, user_id: &str) -> Result<(), AppError> {
+        self.token_repo.delete_token(user_id).await
     }
 
     pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken, AppError> {
@@ -140,10 +140,10 @@ INSERT INTO users (id, name, authentication_type, role, created_at, updated_at)
 
         let token = token_service.refresh(&token.refresh_token).await.unwrap();
 
-        token_service.delete(&token.refresh_token).await.unwrap();
+        token_service.delete(user_id).await.unwrap();
 
         assert!(token_service.refresh(&token.refresh_token).await.is_err());
 
-        token_service.delete(&token.refresh_token).await.unwrap();
+        token_service.delete(user_id).await.unwrap();
     }
 }

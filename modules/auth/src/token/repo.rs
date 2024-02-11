@@ -35,14 +35,14 @@ INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, upda
         Ok(())
     }
 
-    pub async fn delete_token(&self, refresh_token: &str) -> Result<(), AppError> {
+    pub async fn delete_token(&self, user_id: &str) -> Result<(), AppError> {
         sqlx::query(
             r#"
 DELETE FROM refresh_tokens
-    WHERE refresh_token = $1;
+    WHERE user_id = $1;
 "#,
         )
-        .bind(refresh_token)
+        .bind(user_id)
         .execute(self.db.as_ref())
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;

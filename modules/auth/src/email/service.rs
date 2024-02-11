@@ -41,6 +41,11 @@ impl EmailAuthService {
         Ok(token)
     }
 
+    pub async fn unregister(&self, id: &str) -> Result<(), AppError> {
+        self.auth_repo.delete_user(id).await?;
+        Ok(())
+    }
+
     pub async fn login(&self, email: &str, password: &str) -> Result<String, AppError> {
         if !self.auth_repo.exist_user(email).await? {
             return Err(AppError::UserNotFound);
@@ -68,10 +73,6 @@ impl EmailAuthService {
 
         Ok(user.id)
     }
-
-    // pub async fn unregister(&self, refresh_token: &str) -> Result<(), AppError> {
-    //     todo!()
-    // }
 }
 
 #[cfg(test)]
@@ -109,6 +110,10 @@ mod tests {
             .unwrap();
         migrator.migrate().await.unwrap();
 
+        let user_name = "user_name";
+        let user_email = "user_email";
+        let password = "password";
+
         let system_clock = Arc::new(SystemClockUtc {});
         let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
         let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
@@ -129,7 +134,7 @@ mod tests {
         };
 
         let auth_service = EmailAuthService {
-            auth_repo,
+            auth_repo: auth_repo.clone(),
             system_clock,
             random_bytes_provider,
             jwt_conf,
@@ -137,14 +142,21 @@ mod tests {
         };
 
         // register
-        let token = auth_service.register("name", "test@example.com", "password").await.unwrap();
-        assert!(matches!(
-            auth_service.login("test@example.com", "password").await,
-            Err(AppError::UserNotFound)
-        ));
+        let token = auth_service.register(user_name, user_email, password).await.unwrap();
+        assert!(matches!(auth_service.login(user_email, password).await, Err(AppError::UserNotFound)));
         auth_service.confirm(&token).await.unwrap();
 
         // login
-        assert!(auth_service.login("test@example.com", "password").await.is_ok());
+        assert!(auth_service.login(user_email, password).await.is_ok());
+
+        // get user
+        let user = auth_repo.get_user(user_email).await.unwrap();
+        assert_eq!(user.name, user_name.to_string());
+
+        // unregister
+        assert!(auth_service.unregister(user.id.as_str()).await.is_ok());
+
+        // login
+        assert!(matches!(auth_service.login(user_email, password).await, Err(AppError::UserNotFound)));
     }
 }

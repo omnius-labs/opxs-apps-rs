@@ -5,7 +5,7 @@ use url::Url;
 use utoipa::ToSchema;
 use validator::Validate;
 
-use opxs_auth::shared::model::AuthToken;
+use opxs_auth::shared::model::{AuthToken, User};
 use opxs_base::AppError;
 
 use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
@@ -15,6 +15,7 @@ pub fn gen_service(state: AppState) -> Router {
     Router::new()
         .route("/register", post(register))
         .route("/confirm", post(confirm))
+        .route("/unregister", post(unregister))
         .route("/login", post(login))
         .with_state(state)
 }
@@ -81,6 +82,18 @@ pub async fn confirm(State(state): State<AppState>, ValidatedJson(input): Valida
 #[derive(Deserialize, ToSchema, Validate)]
 pub struct ConfirmInput {
     pub token: String,
+}
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/email/unregister",
+    request_body = RegisterInput,
+    responses(
+        (status = 200)
+    )
+)]
+pub async fn unregister(State(state): State<AppState>, user: User) -> Result<StatusCode, AppError> {
+    state.service.email_auth.unregister(user.id.as_str()).await?;
+    Ok(StatusCode::OK)
 }
 
 #[utoipa::path(

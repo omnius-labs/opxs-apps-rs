@@ -42,6 +42,11 @@ impl GoogleAuthService {
         Ok(user_id)
     }
 
+    pub async fn unregister(&self, id: &str) -> Result<(), AppError> {
+        self.auth_repo.delete_user(id).await?;
+        Ok(())
+    }
+
     pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AppError> {
         let oauth2_token_result = self
             .oauth2_provider
@@ -62,10 +67,6 @@ impl GoogleAuthService {
 
         Ok(user.id)
     }
-
-    // pub async fn unregister(&self, refresh_token: &str) -> Result<(), AppError> {
-    //     todo!()
-    // }
 }
 
 #[cfg(test)]
@@ -179,6 +180,12 @@ mod tests {
         // get user
         let user = auth_repo.get_user("google", provider_user_id).await.unwrap();
         assert_eq!(user.name, user_name.to_string());
+
+        // unregister
+        assert!(auth_service.unregister(&user_id).await.is_ok());
+
+        // get user
+        assert!(auth_repo.get_user("google", provider_user_id).await.is_err());
     }
 
     #[derive(Debug, Clone)]
