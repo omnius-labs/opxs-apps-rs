@@ -65,6 +65,8 @@ pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppErr
         auth::google::nonce,
         auth::google::register,
         auth::google::login,
+        image::convert::upload,
+        image::convert::status,
     ),
     components(
         schemas(
@@ -73,6 +75,10 @@ pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppErr
             auth::google::NonceOutput,
             auth::google::RegisterInput,
             auth::google::LoginInput,
+            image::convert::UploadInput,
+            image::convert::UploadOutput,
+            image::convert::StatusInput,
+            image::convert::StatusOutput,
         )
     ),
     modifiers(&SecurityAddon),
