@@ -26,7 +26,7 @@ pub enum UserRole {
 
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
 pub struct User {
-    pub id: i64,
+    pub id: String,
     pub name: String,
     pub role: UserRole,
     pub created_at: NaiveDateTime,
@@ -35,7 +35,7 @@ pub struct User {
 
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
 pub struct EmailUser {
-    pub id: i64,
+    pub id: String,
     pub name: String,
     pub role: UserRole,
     pub email: String,

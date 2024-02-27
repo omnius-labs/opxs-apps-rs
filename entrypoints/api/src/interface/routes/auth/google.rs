@@ -4,12 +4,15 @@ use axum::{
     Json, Router,
 };
 use axum_extra::extract::cookie::{Cookie, SignedCookieJar};
-use opxs_auth::shared::model::AuthToken;
+use hyper::StatusCode;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::shared::{error::AppError, state::AppState};
+use opxs_auth::shared::model::{AuthToken, User};
+use opxs_base::AppError;
+
+use crate::shared::state::AppState;
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {
@@ -17,6 +20,7 @@ pub fn gen_service(state: AppState) -> Router {
         .route("/nonce", get(nonce))
         .route("/register", post(register))
         .route("/login", post(login))
+        .route("/unregister", post(unregister))
         .with_state(state)
 }
 
@@ -100,4 +104,16 @@ pub async fn login(State(state): State<AppState>, jar: SignedCookieJar, Json(inp
 pub struct LoginInput {
     pub redirect_uri: String,
     pub code: String,
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/google/unregister",
+    responses(
+        (status = 200)
+    )
+)]
+pub async fn unregister(State(state): State<AppState>, user: User) -> Result<StatusCode, AppError> {
+    state.service.google_auth.unregister(user.id.as_str()).await?;
+    Ok(StatusCode::OK)
 }

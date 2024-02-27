@@ -20,7 +20,6 @@ pub struct AppInfo {
     pub mode: RunMode,
     pub git_semver: String,
     pub git_sha: String,
-    pub build_timestamp: String,
 }
 
 impl AppInfo {
@@ -28,7 +27,6 @@ impl AppInfo {
         let mode = env::var("RUN_MODE")?;
         let git_semver = env!("VERGEN_GIT_SEMVER").to_string();
         let git_sha = env!("VERGEN_GIT_SHA").to_string();
-        let build_timestamp = env!("VERGEN_BUILD_TIMESTAMP").to_string();
 
         Ok(Self {
             mode: match mode.as_str() {
@@ -38,7 +36,6 @@ impl AppInfo {
             },
             git_semver,
             git_sha,
-            build_timestamp,
         })
     }
 }
@@ -48,7 +45,6 @@ impl fmt::Display for AppInfo {
         write!(f, "mode: {:?},", self.mode)?;
         write!(f, "git_semver: {},", self.git_semver)?;
         write!(f, "git_sha: {},", self.git_sha)?;
-        write!(f, "build_timestamp: {}", self.build_timestamp)?;
         Ok(())
     }
 }

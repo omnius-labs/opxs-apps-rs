@@ -3,9 +3,11 @@ pub mod google;
 pub mod token;
 
 use axum::{routing::get, Json, Router};
-use opxs_auth::shared::model::User;
 
-use crate::shared::{error::AppError, state::AppState};
+use opxs_auth::shared::model::User;
+use opxs_base::AppError;
+
+use crate::shared::state::AppState;
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {

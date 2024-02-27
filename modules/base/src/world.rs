@@ -1,10 +1,15 @@
-use chrono::Duration;
+use std::sync::Arc;
+
+use chrono::{Duration, Utc};
+use core_base::clock::SystemClock;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::Row;
 
 use super::info::RunMode;
 
-pub struct WorldValidator;
+pub struct WorldValidator {
+    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+}
 
 impl WorldValidator {
     pub async fn verify(&self, mode: &RunMode, postgres_url: &str) -> anyhow::Result<WorldValidatedStatus> {
@@ -25,19 +30,20 @@ SELECT EXISTS (
         let (existed,): (bool,) = sqlx::query_as(sql).fetch_one(&db).await?;
 
         if !existed {
-            let sql = "
+            sqlx::query(
+                "
 CREATE TABLE IF NOT EXISTS _world (
     key VARCHAR(255) NOT NULL PRIMARY KEY,
     value TEXT NOT NULL,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-";
-            sqlx::query(sql).execute(&db).await?;
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+)",
+            )
+            .execute(&db)
+            .await?;
         }
 
-        let sql = "SELECT (value) FROM _world WHERE key = 'mode'";
-        let row: Result<PgRow, sqlx::Error> = sqlx::query(sql).fetch_one(&db).await;
+        let row: Result<PgRow, sqlx::Error> = sqlx::query("SELECT (value) FROM _world WHERE key = 'mode'").fetch_one(&db).await;
 
         match row {
             Ok(row) => {
@@ -48,8 +54,13 @@ CREATE TABLE IF NOT EXISTS _world (
                 Ok(WorldValidatedStatus::Match)
             }
             Err(sqlx::Error::RowNotFound) => {
-                let sql = "INSERT INTO _world (key, value) VALUES ('mode', $1)";
-                sqlx::query(sql).bind(mode.to_string()).execute(&db).await?;
+                let now = self.system_clock.now();
+                sqlx::query("INSERT INTO _world (key, value, created_at, updated_at) VALUES ('mode', $1, $2, $3)")
+                    .bind(mode.to_string())
+                    .bind(now)
+                    .bind(now)
+                    .execute(&db)
+                    .await?;
                 Ok(WorldValidatedStatus::Init)
             }
             Err(err) => Err(err.into()),
@@ -65,6 +76,7 @@ pub enum WorldValidatedStatus {
 
 #[cfg(test)]
 mod tests {
+    use core_base::clock::SystemClockUtc;
     use core_testkit::containers::postgres::PostgresContainer;
 
     use super::*;
@@ -74,7 +86,8 @@ mod tests {
         let docker = testcontainers::clients::Cli::default();
         let container = PostgresContainer::new(&docker, "15.1");
 
-        let world_verifier = WorldValidator {};
+        let system_clock = Arc::new(SystemClockUtc {});
+        let world_verifier = WorldValidator { system_clock };
         let res = world_verifier.verify(&RunMode::Local, &container.connection_string).await;
         assert_eq!(res.unwrap(), WorldValidatedStatus::Init);
 
