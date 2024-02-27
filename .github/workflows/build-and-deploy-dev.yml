@@ -52,35 +52,72 @@ jobs:
           load: true
       - name: Copy bin (api)
         run: |
-          mkdir -p ./bin/api
+          mkdir -p ./bin
           docker run --name opxs-api-builder -d opxs-build-api-image
-          docker cp opxs-api-builder:/app/opxs-api ./bin/api
+          docker cp opxs-api-builder:/app/opxs-api ./bin
           docker stop opxs-api-builder
           docker rm opxs-api-builder
 
-      - name: Build bin (batch)
+      - name: Build bin (batch-email-send)
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.build.batch
+          file: Dockerfile.build.batch-email-send
           push: false
-          tags: opxs-build-batch-image
+          tags: opxs-build-batch-email-send-image
           provenance: false
-          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-builder
-          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-builder,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-builder
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-builder,mode=max
           load: true
-      - name: Copy bin (batch)
+      - name: Copy bin (batch-email-send)
         run: |
-          mkdir -p ./bin/batch
-          docker run --name opxs-batch-builder -d opxs-build-batch-image
-          docker cp opxs-batch-builder:/app/opxs-batch-email-send ./bin/batch
-          docker cp opxs-batch-builder:/app/opxs-batch-email-send-feedback ./bin/batch
-          docker stop opxs-batch-builder
-          docker rm opxs-batch-builder
+          mkdir -p ./bin
+          docker run --name opxs-batch-email-send-builder -d opxs-build-batch-email-send-image
+          docker cp opxs-batch-email-send-builder:/app/opxs-batch-email-send ./bin
+          docker stop opxs-batch-email-send-builder
+          docker rm opxs-batch-email-send-builder
+
+      - name: Build bin (batch-email-send-feedback)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.build.batch-email-send-feedback
+          push: false
+          tags: opxs-build-batch-email-send-feedback-image
+          provenance: false
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback-builder
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback-builder,mode=max
+          load: true
+      - name: Copy bin (batch-email-send-feedback)
+        run: |
+          mkdir -p ./bin
+          docker run --name opxs-batch-email-send-feedback-builder -d opxs-build-batch-email-send-feedback-image
+          docker cp opxs-batch-email-send-feedback-builder:/app/opxs-batch-email-send-feedback ./bin
+          docker stop opxs-batch-email-send-feedback-builder
+          docker rm opxs-batch-email-send-feedback-builder
+
+      - name: Build bin (batch-image-convert)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.build.batch-image-convert
+          push: false
+          tags: opxs-build-batch-image-convert-image
+          provenance: false
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert-builder
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert-builder,mode=max
+          load: true
+      - name: Copy bin (batch-image-convert)
+        run: |
+          mkdir -p ./bin
+          docker run --name opxs-batch-image-convert-builder -d opxs-build-batch-image-convert-image
+          docker cp opxs-batch-image-convert-builder:/app/opxs-batch-image-convert ./bin
+          docker stop opxs-batch-image-convert-builder
+          docker rm opxs-batch-image-convert-builder
 
       - name: Login to Amazon ECR
         id: aws-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and Push image to Amazon ECR (opxs-api-ecs-service)
         uses: docker/build-push-action@v5
@@ -123,3 +160,17 @@ jobs:
       - name: Update Lambda
         run: |
           aws lambda update-function-code --function-name opxs-batch-email-send-feedback-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-feedback-lambda-ecr:latest
+
+      - name: Build and Push image to Amazon ECR (opxs-batch-image-convert-lambda)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.run.batch-image-convert
+          push: true
+          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-image-convert-lambda-ecr:latest
+          provenance: false
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert,mode=max
+      - name: Update Lambda
+        run: |
+          aws lambda update-function-code --function-name opxs-batch-image-convert-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-image-convert-lambda-ecr:latest

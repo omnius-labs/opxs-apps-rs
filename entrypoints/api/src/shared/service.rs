@@ -1,13 +1,15 @@
 use std::sync::Arc;
 
 use chrono::Utc;
+use opxs_base::{AppConfig, AppInfo};
+use opxs_image_convert::{ImageConvertJobCreator, ImageConvertJobRepository};
 use sqlx::PgPool;
 
-use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
-use core_cloud::aws::sqs::SqsSender;
+use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider, tsid::TsidProvider};
+use core_cloud::aws::{s3::S3Client, sqs::SqsSender};
 use opxs_auth::{
     email::{EmailAuthRepo, EmailAuthService},
-    google::{GoogleAuthService, GoogleOAuth2Provider, ProviderAuthRepo},
+    provider::{GoogleAuthService, GoogleOAuth2ProviderImpl, ProviderAuthRepo},
     shared::kdf::{Kdf, KdfAlgorithm},
     token::{TokenRepo, TokenService},
     user::{UserRepo, UserService},
@@ -16,13 +18,13 @@ use opxs_email_send::{EmailSendJobCreator, EmailSendJobRepository};
 
 use crate::domain::health::{repo::WorldRepo, service::HealthService};
 
-use super::{config::AppConfig, info::AppInfo};
-
 pub struct AppService {
     pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
     pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
+    pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
 
     pub email_send_job_creator: EmailSendJobCreator,
+    pub image_convert_job_creator: ImageConvertJobCreator,
 
     pub health: HealthService,
     pub email_auth: EmailAuthService,
@@ -32,21 +34,38 @@ pub struct AppService {
 }
 
 impl AppService {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         info: &AppInfo,
         conf: &AppConfig,
         db: Arc<PgPool>,
         system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
         random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
+        tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
         send_email_sqs_sender: Arc<dyn SqsSender + Send + Sync>,
+        image_convert_s3_client: Arc<dyn S3Client + Send + Sync>,
     ) -> Self {
         Self {
             system_clock: system_clock.clone(),
             random_bytes_provider: random_bytes_provider.clone(),
+            tsid_provider: tsid_provider.clone(),
 
             email_send_job_creator: EmailSendJobCreator {
-                email_send_job_repository: Arc::new(EmailSendJobRepository { db: db.clone() }),
+                email_send_job_repository: Arc::new(EmailSendJobRepository {
+                    db: db.clone(),
+                    system_clock: system_clock.clone(),
+                }),
                 send_email_sqs_sender: send_email_sqs_sender.clone(),
+            },
+
+            image_convert_job_creator: ImageConvertJobCreator {
+                image_convert_job_repository: Arc::new(ImageConvertJobRepository {
+                    db: db.clone(),
+                    system_clock: system_clock.clone(),
+                    tsid_provider: tsid_provider.clone(),
+                }),
+                system_clock: system_clock.clone(),
+                s3_client: image_convert_s3_client,
             },
 
             health: HealthService {
@@ -54,25 +73,36 @@ impl AppService {
                 world_repo: Arc::new(WorldRepo { db: db.clone() }),
             },
             email_auth: EmailAuthService {
-                auth_repo: Arc::new(EmailAuthRepo { db: db.clone() }),
+                auth_repo: Arc::new(EmailAuthRepo {
+                    db: db.clone(),
+                    system_clock: system_clock.clone(),
+                    tsid_provider: tsid_provider.clone(),
+                }),
                 system_clock: system_clock.clone(),
                 random_bytes_provider: random_bytes_provider.clone(),
-                jwt_conf: conf.jwt.clone(),
+                jwt_conf: conf.auth.jwt.clone(),
                 kdf: Kdf {
                     algorithm: KdfAlgorithm::Pbkdf2HmacSha256,
                     iterations: 1024,
                 },
             },
             google_auth: GoogleAuthService {
-                oauth2_provider: Arc::new(GoogleOAuth2Provider {}),
-                auth_repo: Arc::new(ProviderAuthRepo { db: db.clone() }),
+                oauth2_provider: Arc::new(GoogleOAuth2ProviderImpl {}),
+                auth_repo: Arc::new(ProviderAuthRepo {
+                    db: db.clone(),
+                    system_clock: system_clock.clone(),
+                    tsid_provider: tsid_provider.clone(),
+                }),
                 auth_conf: conf.auth.clone(),
             },
             token: TokenService {
                 system_clock: system_clock.clone(),
                 random_bytes_provider: random_bytes_provider.clone(),
-                jwt_conf: conf.jwt.clone(),
-                token_repo: Arc::new(TokenRepo { db: db.clone() }),
+                jwt_conf: conf.auth.jwt.clone(),
+                token_repo: Arc::new(TokenRepo {
+                    db: db.clone(),
+                    system_clock: system_clock.clone(),
+                }),
             },
             user: UserService {
                 user_repo: Arc::new(UserRepo { db }),

@@ -1,13 +1,19 @@
+use std::sync::Arc;
+
 use tracing::info;
 
-use core_cloud::aws::secrets::SecretsReaderImpl;
-use core_migration::Migrator;
+use core_base::clock::SystemClockUtc;
+use core_migration::postgres::PostgresMigrator;
 
-use crate::shared::{config::AppConfig, info::AppInfo, state::AppState, world::WorldValidator};
+use opxs_base::{AppConfig, AppInfo, WorldValidator};
+
+use crate::shared::state::AppState;
 
 mod domain;
 mod interface;
 mod shared;
+
+const APPLICATION_NAME: &str = "opxs-api";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -26,15 +32,13 @@ async fn main() -> anyhow::Result<()> {
     let info = AppInfo::new()?;
     info!("info: {}", info);
 
-    let secret_reader = Box::new(SecretsReaderImpl {
-        client: aws_sdk_secretsmanager::Client::new(&aws_config::load_from_env().await),
-    });
-    let conf = AppConfig::load(&info.mode, secret_reader).await?;
+    let conf = AppConfig::load(APPLICATION_NAME, &info.mode).await?;
 
-    let world_verifier = WorldValidator {};
+    let system_clock = Arc::new(SystemClockUtc {});
+    let world_verifier = WorldValidator { system_clock };
     world_verifier.verify(&info.mode, &conf.postgres.url).await?;
 
-    let migrator = Migrator::new(&conf.postgres.url, "./conf/migrations", "opxs-api", "").await?;
+    let migrator = PostgresMigrator::new(&conf.postgres.url, "./conf/migrations", "opxs-api", "").await?;
     migrator.migrate().await?;
 
     let state = AppState::new(info, conf).await?;

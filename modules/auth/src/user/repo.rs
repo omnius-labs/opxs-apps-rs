@@ -2,14 +2,16 @@ use std::sync::Arc;
 
 use sqlx::PgPool;
 
-use crate::shared::{error::AuthError, model::User};
+use opxs_base::AppError;
+
+use crate::shared::model::User;
 
 pub struct UserRepo {
     pub db: Arc<PgPool>,
 }
 
 impl UserRepo {
-    pub async fn get_user(&self, user_id: &i64) -> Result<User, AuthError> {
+    pub async fn get_user(&self, user_id: &str) -> Result<User, AppError> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT *
@@ -20,10 +22,10 @@ SELECT *
         .bind(user_id)
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| AuthError::UnexpectedError(e.into()))?;
+        .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         if user.is_none() {
-            return Err(AuthError::UserNotFound);
+            return Err(AppError::UserNotFound);
         }
 
         Ok(user.unwrap())

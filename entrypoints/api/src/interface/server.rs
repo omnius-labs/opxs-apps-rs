@@ -4,9 +4,11 @@ use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
+use opxs_base::AppError;
+
 use crate::{
-    interface::routes::auth,
-    shared::{error::AppError, state::AppState},
+    interface::routes::{auth, image},
+    shared::state::AppState,
 };
 
 pub struct WebServer;
@@ -25,7 +27,8 @@ impl WebServer {
                     Router::new()
                         .route("/health", get(health))
                         .with_state(state.clone())
-                        .nest_service("/auth", auth::gen_service(state.clone())),
+                        .nest_service("/auth", auth::gen_service(state.clone()))
+                        .nest_service("/image", image::gen_service(state.clone())),
                 ),
             )
             .layer(cors);
@@ -62,6 +65,8 @@ pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppErr
         auth::google::nonce,
         auth::google::register,
         auth::google::login,
+        image::convert::upload,
+        image::convert::status,
     ),
     components(
         schemas(
@@ -70,6 +75,10 @@ pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppErr
             auth::google::NonceOutput,
             auth::google::RegisterInput,
             auth::google::LoginInput,
+            image::convert::UploadInput,
+            image::convert::UploadOutput,
+            image::convert::StatusInput,
+            image::convert::StatusOutput,
         )
     ),
     modifiers(&SecurityAddon),

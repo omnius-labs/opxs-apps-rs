@@ -3,7 +3,6 @@ name = "opxs-api"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
-build = "build.rs"
 
 [features]
 stable-test = []
@@ -15,7 +14,9 @@ core-image = { workspace = true }
 core-migration = { workspace = true }
 core-testkit = { workspace = true }
 
+opxs-base = { workspace = true }
 opxs-auth = { workspace = true }
+opxs-image-convert = { workspace = true }
 opxs-email-send = { workspace = true }
 
 aws-config = { workspace = true }
@@ -59,7 +60,3 @@ url = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
-
-[build-dependencies]
-anyhow = { workspace = true }
-vergen = { workspace = true }

@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use crate::shared::{error::AuthError, model::User};
+use opxs_base::AppError;
+
+use crate::shared::model::User;
 
 use super::UserRepo;
 
@@ -9,7 +11,7 @@ pub struct UserService {
 }
 
 impl UserService {
-    pub async fn get_user(&self, user_id: &i64) -> Result<User, AuthError> {
+    pub async fn get_user(&self, user_id: &str) -> Result<User, AppError> {
         let user = self.user_repo.get_user(user_id).await?;
         Ok(user)
     }

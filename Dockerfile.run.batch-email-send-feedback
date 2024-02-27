@@ -1,12 +1,12 @@
-FROM public.ecr.aws/lambda/provided:al2 AS runtime
+FROM public.ecr.aws/lambda/provided:al2023 AS runtime
 
 WORKDIR /app
 
-RUN yum install -y \
+RUN dnf install -y \
     openssl-devel \
-    && rm -rf /var/cache/yum/* \
-    && yum clean all
+    && rm -rf /var/cache/dnf/* \
+    && dnf clean all
 
-COPY ./bin/batch/opxs-batch-email-send-feedback ${LAMBDA_RUNTIME_DIR}/bootstrap
+COPY ./bin/opxs-batch-email-send-feedback ${LAMBDA_RUNTIME_DIR}/bootstrap
 
 CMD [ "lambda-handler" ]
