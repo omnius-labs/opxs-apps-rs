@@ -34,7 +34,7 @@ mod tests {
 
     use core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::domain::health::repo::WorldRepo;
+    use crate::service::health::repo::WorldRepo;
 
     use super::*;
 
