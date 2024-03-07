@@ -16,7 +16,7 @@ use opxs_auth::{
 };
 use opxs_email_send::{EmailSendJobCreator, EmailSendJobRepository};
 
-use crate::domain::health::{repo::WorldRepo, service::HealthService};
+use crate::service::health::{repo::WorldRepo, service::HealthService};
 
 pub struct AppService {
     pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,

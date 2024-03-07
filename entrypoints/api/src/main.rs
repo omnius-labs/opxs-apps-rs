@@ -9,8 +9,8 @@ use opxs_base::{AppConfig, AppInfo, WorldValidator};
 
 use crate::shared::state::AppState;
 
-mod domain;
 mod interface;
+mod service;
 mod shared;
 
 const APPLICATION_NAME: &str = "opxs-api";
