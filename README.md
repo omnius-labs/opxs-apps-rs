@@ -1,5 +1,5 @@
-# Opxs - Omnius Anything Service (API)
-[![test](https://github.com/omnius-labs/opxs-api/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/omnius-labs/opxs-api/actions/workflows/test.yml)
+# Opxs - Omnius Anything Service (Apps)
+[![test](https://github.com/omnius-labs/opxs-apps-rs/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/omnius-labs/opxs-apps-rs/actions/workflows/test.yml)
 
 ## Development
 
