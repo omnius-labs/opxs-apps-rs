@@ -15,7 +15,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH
 
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y --default-toolchain "1.72.1"
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y --default-toolchain "1.76.0"
 
 RUN cargo install cargo-chef --locked
 
