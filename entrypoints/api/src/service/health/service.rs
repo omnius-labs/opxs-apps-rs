@@ -15,8 +15,6 @@ impl HealthService {
     pub async fn check(&self) -> Result<Value, AppError> {
         let ret = json!({
             "mode": self.world_repo.get_mode().await?,
-            "git_semver": self.info.git_semver,
-            "git_sha": self.info.git_sha
         });
         Ok(ret)
     }
@@ -43,11 +41,7 @@ mod tests {
         let docker = testcontainers::clients::Cli::default();
         let container = PostgresContainer::new(&docker, "15.1");
 
-        let info = AppInfo {
-            mode: RunMode::Local,
-            git_semver: "bbb".to_string(),
-            git_sha: "ccc".to_string(),
-        };
+        let info = AppInfo { mode: RunMode::Local };
 
         let system_clock = Arc::new(SystemClockUtc {});
         let world_verifier = WorldValidator { system_clock };
@@ -68,8 +62,6 @@ mod tests {
             service.check().await.unwrap(),
             json!({
                 "mode": "local",
-                "git_semver": "bbb",
-                "git_sha": "ccc"
             })
         );
     }

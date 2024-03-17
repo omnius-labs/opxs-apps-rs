@@ -18,15 +18,11 @@ impl fmt::Display for RunMode {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AppInfo {
     pub mode: RunMode,
-    pub git_semver: String,
-    pub git_sha: String,
 }
 
 impl AppInfo {
     pub fn new() -> anyhow::Result<Self> {
         let mode = env::var("RUN_MODE")?;
-        let git_semver = env!("VERGEN_GIT_SEMVER").to_string();
-        let git_sha = env!("VERGEN_GIT_SHA").to_string();
 
         Ok(Self {
             mode: match mode.as_str() {
@@ -34,8 +30,6 @@ impl AppInfo {
                 "dev" => RunMode::Dev,
                 _ => anyhow::bail!("invalid RUN_MODE: {}", mode),
             },
-            git_semver,
-            git_sha,
         })
     }
 }
@@ -43,8 +37,6 @@ impl AppInfo {
 impl fmt::Display for AppInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "mode: {:?},", self.mode)?;
-        write!(f, "git_semver: {},", self.git_semver)?;
-        write!(f, "git_sha: {},", self.git_sha)?;
         Ok(())
     }
 }

@@ -1,20 +1,19 @@
 {
-    "rust-analyzer.showUnlinkedFileNotification": false,
-    "files.watcherExclude": {
-        "**/target": true
-    },
-    "cSpell.words": [
-        "chrono",
-        "datetime",
-        "omnius",
-        "opxs",
-        "presigning",
-        "sesv",
-        "sqlx",
-        "testcontainers",
-        "testkit",
-        "Tsid",
-        "urlencoding",
-        "vergen"
-    ],
+  "rust-analyzer.showUnlinkedFileNotification": false,
+  "files.watcherExclude": {
+    "**/target": true
+  },
+  "cSpell.words": [
+    "chrono",
+    "datetime",
+    "omnius",
+    "opxs",
+    "presigning",
+    "sesv",
+    "sqlx",
+    "testcontainers",
+    "testkit",
+    "Tsid",
+    "urlencoding"
+  ]
 }
