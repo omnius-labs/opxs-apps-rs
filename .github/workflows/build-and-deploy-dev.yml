@@ -17,15 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Checkout submodule
-        uses: actions/checkout@v4
         with:
-          repository: omnius-labs/core-rs
-          path: refs/core-rs
-          ssh-key: ${{ secrets.PRIVATE_REPO_SSH_KEY }}
-          persist-credentials: true
-      - name: Update submodule
-        run: git submodule update --init
+          submodules: "recursive"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
