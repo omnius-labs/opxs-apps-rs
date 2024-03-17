@@ -1,15 +1,12 @@
-use std::cell::RefCell;
+use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 
 use crate::ImageConverter;
 
 pub struct ImageConverterMock {
-    pub convert_inputs: RefCell<Vec<ConvertInput>>,
+    pub convert_inputs: Arc<Mutex<Vec<ConvertInput>>>,
 }
-
-unsafe impl Sync for ImageConverterMock {}
-unsafe impl Send for ImageConverterMock {}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConvertInput {
@@ -20,7 +17,7 @@ pub struct ConvertInput {
 #[async_trait]
 impl ImageConverter for ImageConverterMock {
     async fn convert(&self, source: &str, target: &str) -> anyhow::Result<()> {
-        self.convert_inputs.borrow_mut().push(ConvertInput {
+        self.convert_inputs.lock().unwrap().push(ConvertInput {
             source: source.to_string(),
             target: target.to_string(),
         });
@@ -33,7 +30,7 @@ impl ImageConverterMock {
     #[allow(unused)]
     pub fn new() -> Self {
         Self {
-            convert_inputs: RefCell::new(vec![]),
+            convert_inputs: Arc::new(Mutex::new(vec![])),
         }
     }
 }

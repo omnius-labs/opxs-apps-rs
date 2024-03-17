@@ -126,7 +126,7 @@ mod tests {
             .unwrap();
 
         let ses_sender = Arc::new(SesSenderMock::new());
-        let sqs_send_message_input = send_email_sqs_sender.send_message_inputs.borrow().first().cloned().unwrap();
+        let sqs_send_message_input = send_email_sqs_sender.send_message_inputs.lock().unwrap().first().cloned().unwrap();
         let sqs_message = serde_json::from_str::<EmailSendJobBatchSqsMessage>(sqs_send_message_input.message_body.as_str()).unwrap();
 
         let executor = Executor {
@@ -135,7 +135,7 @@ mod tests {
         };
         executor.execute(&[sqs_message]).await.unwrap();
 
-        let ses_send_mail_simple_text_input = ses_sender.send_mail_simple_text_inputs.borrow().first().cloned().unwrap();
+        let ses_send_mail_simple_text_input = ses_sender.send_mail_simple_text_inputs.lock().unwrap().first().cloned().unwrap();
 
         assert_eq!(ses_send_mail_simple_text_input.to_address, "lyrise1984@gmail.com".to_string());
         assert_eq!(

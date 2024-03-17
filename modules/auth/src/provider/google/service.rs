@@ -71,7 +71,7 @@ impl GoogleAuthService {
 
 #[cfg(test)]
 mod tests {
-    use std::cell::RefCell;
+    use std::sync::Mutex;
 
     use async_trait::async_trait;
     use chrono::Duration;
@@ -163,14 +163,17 @@ mod tests {
         // register
         let user_id = auth_service.register(code, redirect_uri, nonce).await.unwrap();
         println!("{}", user_id);
-        assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.borrow().code, code.to_string());
+        assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.lock().unwrap().code, code.to_string());
         assert_eq!(
-            *oauth2_provider.clone().get_oauth2_token_param.borrow().redirect_uri,
+            *oauth2_provider.clone().get_oauth2_token_param.lock().unwrap().redirect_uri,
             redirect_uri.to_string()
         );
-        assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.borrow().client_id, client_id.to_string());
         assert_eq!(
-            *oauth2_provider.clone().get_oauth2_token_param.borrow().client_secret,
+            *oauth2_provider.clone().get_oauth2_token_param.lock().unwrap().client_id,
+            client_id.to_string()
+        );
+        assert_eq!(
+            *oauth2_provider.clone().get_oauth2_token_param.lock().unwrap().client_secret,
             client_secret.to_string()
         );
 
@@ -190,14 +193,11 @@ mod tests {
 
     #[derive(Debug, Clone)]
     struct GoogleOAuth2ProviderMock {
-        get_oauth2_token_param: RefCell<GetOauth2TokenParam>,
+        get_oauth2_token_param: Arc<Mutex<GetOauth2TokenParam>>,
         get_oauth2_token_result: OAuth2TokenResult,
-        get_user_info_param: RefCell<String>,
+        get_user_info_param: Arc<Mutex<String>>,
         get_user_info_result: UserInfo,
     }
-
-    unsafe impl Sync for GoogleOAuth2ProviderMock {}
-    unsafe impl Send for GoogleOAuth2ProviderMock {}
 
     #[derive(Debug, Clone)]
     struct GetOauth2TokenParam {
@@ -210,14 +210,14 @@ mod tests {
     impl GoogleOAuth2ProviderMock {
         fn new(get_oauth2_token_result: OAuth2TokenResult, get_user_info_result: UserInfo) -> Self {
             Self {
-                get_oauth2_token_param: RefCell::new(GetOauth2TokenParam {
+                get_oauth2_token_param: Arc::new(Mutex::new(GetOauth2TokenParam {
                     code: "".to_string(),
                     redirect_uri: "".to_string(),
                     client_id: "".to_string(),
                     client_secret: "".to_string(),
-                }),
+                })),
                 get_oauth2_token_result,
-                get_user_info_param: RefCell::new("".to_string()),
+                get_user_info_param: Arc::new(Mutex::new("".to_string())),
                 get_user_info_result,
             }
         }
@@ -232,7 +232,7 @@ mod tests {
             client_id: &str,
             client_secret: &str,
         ) -> Result<OAuth2TokenResult, AppError> {
-            *self.get_oauth2_token_param.borrow_mut() = GetOauth2TokenParam {
+            *self.get_oauth2_token_param.lock().unwrap() = GetOauth2TokenParam {
                 code: code.to_string(),
                 redirect_uri: redirect_uri.to_string(),
                 client_id: client_id.to_string(),
@@ -242,7 +242,7 @@ mod tests {
         }
 
         async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AppError> {
-            *self.get_user_info_param.borrow_mut() = access_token.to_string();
+            *self.get_user_info_param.lock().unwrap() = access_token.to_string();
             return Ok(self.get_user_info_result.clone());
         }
     }
