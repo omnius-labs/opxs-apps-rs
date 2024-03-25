@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export AWS_PROFILE=opxs-dev
+export AWS_PAGER=""
 
 case $1 in
 "image-convert")

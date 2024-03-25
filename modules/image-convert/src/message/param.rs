@@ -18,11 +18,15 @@ pub struct ImageConvertFile {
 pub enum ImageFormat {
     #[default]
     Unknown,
+    Gif,
     Jpg,
     Png,
-    Heic,
+    WebP,
+    Bmp,
     Heif,
+    Heic,
     Avif,
+    Svg,
 }
 
 impl ImageFormat {
@@ -34,22 +38,28 @@ impl ImageFormat {
 
     pub fn from_extension(ext: &str) -> Self {
         match ext.to_lowercase().as_str() {
+            "gif" => ImageFormat::Gif,
             "jpg" => ImageFormat::Jpg,
             "png" => ImageFormat::Png,
-            "heic" => ImageFormat::Heic,
+            "webp" => ImageFormat::WebP,
             "heif" => ImageFormat::Heif,
+            "heic" => ImageFormat::Heic,
             "avif" => ImageFormat::Avif,
+            "svg" => ImageFormat::Svg,
             _ => ImageFormat::Unknown,
         }
     }
 
     pub fn get_extension(&self) -> String {
         match self {
+            ImageFormat::Gif => "gif".to_string(),
             ImageFormat::Jpg => "jpg".to_string(),
             ImageFormat::Png => "png".to_string(),
-            ImageFormat::Heic => "heic".to_string(),
+            ImageFormat::WebP => "webp".to_string(),
             ImageFormat::Heif => "heif".to_string(),
+            ImageFormat::Heic => "heic".to_string(),
             ImageFormat::Avif => "avif".to_string(),
+            ImageFormat::Svg => "svg".to_string(),
             _ => "unknown".to_string(),
         }
     }

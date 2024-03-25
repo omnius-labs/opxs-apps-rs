@@ -16,21 +16,21 @@ pub struct ImageConvertJobCreator {
 }
 
 impl ImageConvertJobCreator {
-    pub async fn create_image_convert_job(&self, job_id: &str, source_filename: &str, target_image_format: &ImageFormat) -> Result<String, AppError> {
-        let original_filename_without_extension = Path::new(source_filename)
+    pub async fn create_image_convert_job(&self, job_id: &str, filename: &str, convert_format: &ImageFormat) -> Result<String, AppError> {
+        let filename_without_extension = Path::new(filename)
             .file_stem()
             .ok_or(anyhow::anyhow!("invalid filename"))?
             .to_str()
             .ok_or(anyhow::anyhow!("invalid filename"))?;
-        let in_format = ImageFormat::from_filename(source_filename);
+        let origin_format = ImageFormat::from_filename(filename);
 
         let input = ImageConvertFile {
-            filename: source_filename.to_string(),
-            format: in_format,
+            filename: filename.to_string(),
+            format: origin_format,
         };
         let output = ImageConvertFile {
-            filename: format!("{}.{}", original_filename_without_extension, target_image_format.get_extension()),
-            format: target_image_format.clone(),
+            filename: format!("{}.{}", filename_without_extension, convert_format.get_extension()),
+            format: convert_format.clone(),
         };
 
         let param = ImageConvertRequestParam {

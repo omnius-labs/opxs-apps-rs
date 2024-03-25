@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export AWS_PROFILE=opxs-dev
+export AWS_PAGER=""
 
 ./build-api.sh
 
