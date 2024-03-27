@@ -9,7 +9,7 @@ https://localhost.omnius-labs.com/api/docs/
 
 ```sh
 # start opxs-api
-RUN_MODE=local cargo make watch
+RUN_MODE=local AWS_PROFILE=opxs-dev AWS_REGION=us-east-1 cargo make watch
 ```
 
 ```sh
