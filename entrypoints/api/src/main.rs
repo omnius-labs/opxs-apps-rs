@@ -35,8 +35,9 @@ async fn main() -> anyhow::Result<()> {
     let conf = AppConfig::load(APPLICATION_NAME, &info.mode).await?;
 
     let system_clock = Arc::new(SystemClockUtc {});
-    let world_verifier = WorldValidator { system_clock };
-    world_verifier.verify(&info.mode, &conf.postgres.url).await?;
+    let world_verifier = WorldValidator::new(&conf.postgres.url, system_clock).await?;
+    world_verifier.verify(&info.mode).await?;
+    world_verifier.notify(&info.git_tag, &conf.notify).await?;
 
     let migrator = PostgresMigrator::new(&conf.postgres.url, "./conf/migrations", "opxs-api", "").await?;
     migrator.migrate().await?;

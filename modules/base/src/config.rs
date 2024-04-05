@@ -9,6 +9,7 @@ pub struct AppConfig {
     pub auth: AuthConfig,
     pub email: EmailConfig,
     pub image_convert: ImageConvertConfig,
+    pub notify: NotifyConfig,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -65,19 +66,30 @@ pub struct S3Config {
     pub bucket: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NotifyConfig {
+    pub discord: DiscordConfig,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiscordConfig {
+    pub release_webhook_url: String,
+}
+
 impl AppConfig {
     pub async fn load(application_name: &str, mode: &RunMode) -> anyhow::Result<Self> {
         let secret_reader = Box::new(SecretsReaderImpl {
             client: aws_sdk_secretsmanager::Client::new(&aws_config::load_from_env().await),
         });
 
-        let secret_value = serde_json::from_str::<serde_json::Value>(&secret_reader.read_value("opxs-api").await?)?;
+        let secret_value = serde_json::from_str::<serde_json::Value>(&secret_reader.read_value("opxs").await?)?;
         let postgres_user = secret_value.get_str("postgres_user")?;
         let postgres_password = secret_value.get_str("postgres_password")?;
         let jwt_secret_current = secret_value.get_str("jwt_secret_current")?;
         let jwt_secret_retired = secret_value.get_str("jwt_secret_retired")?;
         let auth_google_client_id = secret_value.get_str("auth_google_client_id")?;
         let auth_google_client_secret = secret_value.get_str("auth_google_client_secret")?;
+        let discord_release_webhook_url = secret_value.get_str("discord_release_webhook_url")?;
 
         match mode {
             RunMode::Local => {
@@ -118,6 +130,11 @@ impl AppConfig {
                             bucket: "opxs.v1.dev.image-convert".to_string(),
                         },
                     },
+                    notify: NotifyConfig {
+                        discord: DiscordConfig {
+                            release_webhook_url: discord_release_webhook_url,
+                        },
+                    },
                 })
             }
             RunMode::Dev => {
@@ -156,6 +173,11 @@ impl AppConfig {
                     image_convert: ImageConvertConfig {
                         s3: S3Config {
                             bucket: "opxs.v1.dev.image-convert".to_string(),
+                        },
+                    },
+                    notify: NotifyConfig {
+                        discord: DiscordConfig {
+                            release_webhook_url: discord_release_webhook_url,
                         },
                     },
                 })

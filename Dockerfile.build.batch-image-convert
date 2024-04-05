@@ -42,6 +42,10 @@ COPY ./modules ./modules
 COPY ./refs ./refs
 COPY Cargo.* .
 
+# Set Env
+ARG GIT_TAG
+ENV GIT_TAG=${GIT_TAG}
+
 # Build application
 RUN cargo build --release --bin opxs-batch-image-convert
 

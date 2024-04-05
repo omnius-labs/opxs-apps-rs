@@ -18,11 +18,13 @@ impl fmt::Display for RunMode {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AppInfo {
     pub mode: RunMode,
+    pub git_tag: String,
 }
 
 impl AppInfo {
     pub fn new() -> anyhow::Result<Self> {
         let mode = env::var("RUN_MODE")?;
+        let git_tag = option_env!("GIT_TAG").unwrap_or("unknown").to_string();
 
         Ok(Self {
             mode: match mode.as_str() {
@@ -30,6 +32,7 @@ impl AppInfo {
                 "dev" => RunMode::Dev,
                 _ => anyhow::bail!("invalid RUN_MODE: {}", mode),
             },
+            git_tag,
         })
     }
 }
