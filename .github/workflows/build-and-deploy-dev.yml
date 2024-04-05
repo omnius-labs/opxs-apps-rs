@@ -41,7 +41,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build.api
-          build-args: GIT_TAG=steps.variables.outputs.git_tag
+          build-args: GIT_TAG=${{ steps.variables.outputs.git_tag }}
           push: false
           tags: opxs-build-api-image
           provenance: false
@@ -61,7 +61,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build.batch-email-send
-          build-args: GIT_TAG=steps.variables.outputs.git_tag
+          build-args: GIT_TAG=${{ steps.variables.outputs.git_tag }}
           push: false
           tags: opxs-build-batch-email-send-image
           provenance: false
@@ -81,7 +81,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build.batch-email-send-feedback
-          build-args: GIT_TAG=steps.variables.outputs.git_tag
+          build-args: GIT_TAG=${{ steps.variables.outputs.git_tag }}
           push: false
           tags: opxs-build-batch-email-send-feedback-image
           provenance: false
@@ -101,7 +101,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build.batch-image-convert
-          build-args: GIT_TAG=steps.variables.outputs.git_tag
+          build-args: GIT_TAG=${{ steps.variables.outputs.git_tag }}
           push: false
           tags: opxs-build-batch-image-convert-image
           provenance: false
