@@ -29,7 +29,7 @@ jobs:
 
       - name: Set variables
         id: variables
-        run: echo "git_tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+        run: echo "git_tag=$(git describe --tags --always)" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
