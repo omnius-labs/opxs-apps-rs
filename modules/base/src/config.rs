@@ -207,7 +207,7 @@ mod tests {
     #[ignore]
     #[tokio::test]
     async fn secret_reader_test() {
-        let app_config = AppConfig::load("test", &RunMode::Dev).await.unwrap();
-        println!("{:?}", app_config);
+        let conf = AppConfig::load("test", &RunMode::Dev).await.unwrap();
+        println!("{:?}", conf);
     }
 }

@@ -47,8 +47,10 @@ mod tests {
         };
 
         let system_clock = Arc::new(SystemClockUtc {});
-        let world_verifier = WorldValidator::new(&container.connection_string, system_clock).await.unwrap();
-        world_verifier.verify(&info.mode).await.unwrap();
+        let world_verifier = WorldValidator::new(info.clone(), &container.connection_string, system_clock)
+            .await
+            .unwrap();
+        world_verifier.verify().await.unwrap();
 
         let db = Arc::new(
             PgPoolOptions::new()
