@@ -27,6 +27,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Set variables
+        id: variables
+        run: echo "git_tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
@@ -37,6 +41,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build.api
+          build-args: GIT_TAG=steps.variables.outputs.git_tag
           push: false
           tags: opxs-build-api-image
           provenance: false
@@ -56,6 +61,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build.batch-email-send
+          build-args: GIT_TAG=steps.variables.outputs.git_tag
           push: false
           tags: opxs-build-batch-email-send-image
           provenance: false
@@ -75,6 +81,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build.batch-email-send-feedback
+          build-args: GIT_TAG=steps.variables.outputs.git_tag
           push: false
           tags: opxs-build-batch-email-send-feedback-image
           provenance: false
@@ -94,6 +101,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build.batch-image-convert
+          build-args: GIT_TAG=steps.variables.outputs.git_tag
           push: false
           tags: opxs-build-batch-image-convert-image
           provenance: false
