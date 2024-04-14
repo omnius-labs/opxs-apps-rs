@@ -122,7 +122,7 @@ SELECT *
             r#"
 UPDATE email_send_job_batch_details
     SET message_id = $5, updated_at = $4
-    WHERE job_id = $1 AND batch_id $2 AND email_address = $3
+    WHERE job_id = $1 AND batch_id = $2 AND email_address = $3
 "#,
         )
         .bind(job_id)
@@ -197,6 +197,8 @@ UPDATE email_send_job_batch_details
         )
         .bind(job_id)
         .bind(now)
+        .bind(old)
+        .bind(new)
         .execute(&mut tx)
         .await?;
 
@@ -224,7 +226,7 @@ UPDATE email_send_job_batch_details
             r#"
 UPDATE email_send_job_batch_details
     SET status = $6, updated_at = $4
-    WHERE job_id = $1 AND batch_id $2 AND email_address = $3 AND status = $5
+    WHERE job_id = $1 AND batch_id = $2 AND email_address = $3 AND status = $5
 "#,
         )
         .bind(job_id)
@@ -291,7 +293,7 @@ UPDATE email_send_job_batch_details
             anyhow::bail!("no rows affected");
         }
 
-        let (job_id, batch_id): (String, String) = sqlx::query_as(
+        let (job_id, batch_id): (String, i32) = sqlx::query_as(
             r#"
 SELECT job_id, batch_id
     FROM email_send_job_batch_details
@@ -314,7 +316,7 @@ UPDATE email_send_job_batches
 "#,
         )
         .bind(job_id.as_str())
-        .bind(batch_id.as_str())
+        .bind(batch_id)
         .bind(now)
         .bind(old)
         .bind(new)
