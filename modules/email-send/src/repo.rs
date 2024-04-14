@@ -115,19 +115,72 @@ SELECT *
         Ok(res)
     }
 
+    pub async fn set_message_id(&self, job_id: &str, batch_id: i32, email_address: &str, message_id: &str) -> anyhow::Result<()> {
+        let now = self.system_clock.now();
+
+        sqlx::query(
+            r#"
+UPDATE email_send_job_batch_details
+    SET message_id = $5, updated_at = $4
+    WHERE job_id = $1 AND batch_id $2 AND email_address = $3
+"#,
+        )
+        .bind(job_id)
+        .bind(batch_id)
+        .bind(email_address)
+        .bind(now)
+        .bind(message_id)
+        .execute(self.db.as_ref())
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn update_status_to_waiting(&self, job_id: &str) -> anyhow::Result<()> {
+        self.update_status_by_job_id(job_id, &EmailSendJobBatchDetailStatus::Preparing, &EmailSendJobBatchDetailStatus::Waiting)
+            .await
+    }
+
+    pub async fn update_status_to_processing(&self, job_id: &str, batch_id: i32, email_address: &str) -> anyhow::Result<()> {
+        self.update_status_by_email_address(
+            job_id,
+            batch_id,
+            email_address,
+            &EmailSendJobBatchDetailStatus::Waiting,
+            &EmailSendJobBatchDetailStatus::Processing,
+        )
+        .await
+    }
+
+    pub async fn update_status_to_requested(&self, message_id: &str) -> anyhow::Result<()> {
+        self.update_status_by_message_id(
+            message_id,
+            &EmailSendJobBatchDetailStatus::Processing,
+            &EmailSendJobBatchDetailStatus::Requested,
+        )
+        .await
+    }
+
+    async fn update_status_by_job_id(
+        &self,
+        job_id: &str,
+        old: &EmailSendJobBatchDetailStatus,
+        new: &EmailSendJobBatchDetailStatus,
+    ) -> anyhow::Result<()> {
         let mut tx = self.db.begin().await?;
         let now = self.system_clock.now();
 
         let res = sqlx::query(
             r#"
 UPDATE email_send_job_batches
-    SET status = 'Waiting', updated_at = $2
-    WHERE job_id = $1 AND status = 'Preparing'
+    SET status = $4, updated_at = $2
+    WHERE job_id = $1 AND status = $3
 "#,
         )
         .bind(job_id)
         .bind(now)
+        .bind(old)
+        .bind(new)
         .execute(&mut tx)
         .await?;
 
@@ -138,8 +191,8 @@ UPDATE email_send_job_batches
         let res = sqlx::query(
             r#"
 UPDATE email_send_job_batch_details
-    SET status = 'Waiting', updated_at = $2
-    WHERE job_id = $1 AND status = 'Preparing'
+    SET status = $4, updated_at = $2
+    WHERE job_id = $1 AND status = $3
 "#,
         )
         .bind(job_id)
@@ -156,20 +209,30 @@ UPDATE email_send_job_batch_details
         Ok(())
     }
 
-    pub async fn update_status_to_processing(&self, job_id: &str, batch_id: i32, email_address: &str) -> anyhow::Result<()> {
+    async fn update_status_by_email_address(
+        &self,
+        job_id: &str,
+        batch_id: i32,
+        email_address: &str,
+        old: &EmailSendJobBatchDetailStatus,
+        new: &EmailSendJobBatchDetailStatus,
+    ) -> anyhow::Result<()> {
         let mut tx = self.db.begin().await?;
         let now = self.system_clock.now();
 
         let res = sqlx::query(
             r#"
 UPDATE email_send_job_batch_details
-    SET status = 'Processing', updated_at = $3
-    WHERE job_id = $1 AND email_address = $2 AND status = 'Waiting'
+    SET status = $6, updated_at = $4
+    WHERE job_id = $1 AND batch_id $2 AND email_address = $3 AND status = $5
 "#,
         )
         .bind(job_id)
+        .bind(batch_id)
         .bind(email_address)
         .bind(now)
+        .bind(old)
+        .bind(new)
         .execute(&mut tx)
         .await?;
 
@@ -181,16 +244,80 @@ UPDATE email_send_job_batch_details
             r#"
 UPDATE email_send_job_batches
     SET status = (
-        SELECT CASE WHEN COUNT(1) > 0 THEN 'Waiting' ELSE 'Processing' END
+        SELECT CASE WHEN COUNT(1) > 0 THEN $4 ELSE $5 END
             FROM email_send_job_batch_details
-            WHERE job_id = $1 AND batch_id = $2 AND status = 'Waiting'
+            WHERE job_id = $1 AND batch_id = $2 AND status = $4
     ), updated_at = $3
-    WHERE job_id = $1 AND batch_id = $2 AND status = 'Waiting'
+    WHERE job_id = $1 AND batch_id = $2 AND status = $4
 "#,
         )
         .bind(job_id)
         .bind(batch_id)
         .bind(now)
+        .bind(old)
+        .bind(new)
+        .execute(&mut tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(())
+    }
+
+    async fn update_status_by_message_id(
+        &self,
+        message_id: &str,
+        old: &EmailSendJobBatchDetailStatus,
+        new: &EmailSendJobBatchDetailStatus,
+    ) -> anyhow::Result<()> {
+        let mut tx = self.db.begin().await?;
+        let now = self.system_clock.now();
+
+        let res = sqlx::query(
+            r#"
+UPDATE email_send_job_batch_details
+    SET status = $4, updated_at = $2
+    WHERE message_id = $1 AND status = $3
+"#,
+        )
+        .bind(message_id)
+        .bind(now)
+        .bind(old)
+        .bind(new)
+        .execute(&mut tx)
+        .await?;
+
+        if res.rows_affected() < 1 {
+            anyhow::bail!("no rows affected");
+        }
+
+        let (job_id, batch_id): (String, String) = sqlx::query_as(
+            r#"
+SELECT job_id, batch_id
+    FROM email_send_job_batch_details
+    WHERE message_id = $1
+"#,
+        )
+        .bind(message_id)
+        .fetch_one(&mut tx)
+        .await?;
+
+        sqlx::query(
+            r#"
+UPDATE email_send_job_batches
+    SET status = (
+        SELECT CASE WHEN COUNT(1) > 0 THEN $4 ELSE $5 END
+            FROM email_send_job_batch_details
+            WHERE job_id = $1 AND batch_id = $2 AND status = $4
+    ), updated_at = $3
+    WHERE job_id = $1 AND batch_id = $2 AND status = $4
+"#,
+        )
+        .bind(job_id.as_str())
+        .bind(batch_id.as_str())
+        .bind(now)
+        .bind(old)
+        .bind(new)
         .execute(&mut tx)
         .await?;
 

@@ -4,12 +4,12 @@ use core_cloud::aws::ses::SesSender;
 
 use super::{EmailConfirmRequestParam, EmailSendJobBatchSqsMessage, EmailSendJobRepository, EmailSendJobType};
 
-pub struct Executor {
+pub struct EmailSendExecutor {
     pub email_send_job_repository: Arc<EmailSendJobRepository>,
     pub ses_sender: Arc<dyn SesSender + Send + Sync>,
 }
 
-impl Executor {
+impl EmailSendExecutor {
     pub async fn execute(&self, ms: &[EmailSendJobBatchSqsMessage]) -> anyhow::Result<()> {
         for m in ms.iter() {
             self.execute_one(m).await?;
@@ -57,9 +57,16 @@ Opxs サポートチーム",
             email_confirm_url = param.email_confirm_url,
         );
 
-        self.ses_sender
+        let message_id = self
+            .ses_sender
             .send_mail_simple_text(&param.to_email_address, &param.from_email_address, subject, body)
             .await?;
+
+        self.email_send_job_repository
+            .set_message_id(job_id, batch_id, &param.to_email_address, message_id.as_str())
+            .await?;
+
+        self.email_send_job_repository.update_status_to_requested(message_id.as_str()).await?;
 
         Ok(())
     }
@@ -129,7 +136,7 @@ mod tests {
         let sqs_send_message_input = send_email_sqs_sender.send_message_inputs.lock().unwrap().first().cloned().unwrap();
         let sqs_message = serde_json::from_str::<EmailSendJobBatchSqsMessage>(sqs_send_message_input.message_body.as_str()).unwrap();
 
-        let executor = Executor {
+        let executor = EmailSendExecutor {
             email_send_job_repository,
             ses_sender: ses_sender.clone(),
         };

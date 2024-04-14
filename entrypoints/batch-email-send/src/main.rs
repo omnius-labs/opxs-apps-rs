@@ -10,7 +10,7 @@ use core_base::clock::SystemClockUtc;
 use core_cloud::aws::ses::SesSenderImpl;
 
 use opxs_base::{AppConfig, AppInfo};
-use opxs_email_send::{EmailSendJobBatchSqsMessage, EmailSendJobRepository, Executor};
+use opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobRepository};
 
 const APPLICATION_NAME: &str = "opxs-batch-email-send";
 
@@ -28,7 +28,7 @@ async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
     );
     let system_clock = Arc::new(SystemClockUtc {});
 
-    let executor = Executor {
+    let executor = EmailSendExecutor {
         email_send_job_repository: Arc::new(EmailSendJobRepository {
             db: db.clone(),
             system_clock,

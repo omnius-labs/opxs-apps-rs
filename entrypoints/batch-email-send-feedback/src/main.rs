@@ -1,12 +1,9 @@
 use aws_lambda_events::event::sns::SnsEvent;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
+use opxs_email_send::SesNotification;
 use tracing::info;
 
 use opxs_base::AppInfo;
-
-mod message;
-
-use message::*;
 
 async fn handler_sub(_ms: &[SesNotification]) -> Result<(), Error> {
     let info = AppInfo::new()?;
@@ -81,6 +78,5 @@ async fn main() -> Result<(), Error> {
     }
 
     info!("----- start -----");
-
     run(service_fn(handler)).await
 }

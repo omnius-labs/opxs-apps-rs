@@ -1,4 +1,5 @@
 mod executor;
+mod feedback;
 mod job_creator;
 mod message;
 mod repo;
