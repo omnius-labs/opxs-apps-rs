@@ -114,8 +114,7 @@ mod tests {
             }),
         };
 
-        let now = NaiveDateTime::from_timestamp_opt(0, 0).unwrap_or(NaiveDateTime::MIN);
-        let now: DateTime<Utc> = Utc.from_utc_datetime(&now);
+        let now = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
         let user_id = "test_user_id";
         let user_name = "test_user_name";
 

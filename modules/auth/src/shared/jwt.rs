@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
@@ -35,8 +35,7 @@ pub fn verify(secret: &str, token: &str, now: DateTime<Utc>) -> Result<Claims, A
     let validation = Validation::default();
     let claims: Claims = jsonwebtoken::decode(token, &key, &validation).map(|token| token.claims)?;
 
-    let expired_at = NaiveDateTime::from_timestamp_opt(claims.exp, 0).unwrap_or(NaiveDateTime::MIN);
-    let expired_at: DateTime<Utc> = Utc.from_utc_datetime(&expired_at);
+    let expired_at = DateTime::<Utc>::from_timestamp(claims.exp, 0).ok_or(AppError::AccessTokenExpired)?;
     if expired_at < now {
         return Err(AppError::AccessTokenExpired);
     }
