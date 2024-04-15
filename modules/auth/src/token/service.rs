@@ -62,7 +62,7 @@ impl TokenService {
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
+    use chrono::{DateTime, Duration};
     use sqlx::postgres::PgPoolOptions;
 
     use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
