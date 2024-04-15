@@ -107,9 +107,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.80"
+version = "1.0.82"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
+checksum = "f538837af36e6f6a9be0faa67f9a314f8119e4e4b5867c6ab40ed60360142519"
 dependencies = [
  "backtrace",
 ]
@@ -151,9 +151,9 @@ dependencies = [
 
 [[package]]
 name = "async-trait"
-version = "0.1.77"
+version = "0.1.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c980ee35e870bd1a4d2c8294d4c04d0499e67bca1e4b5cefcc693c2fa00caea9"
+checksum = "c6fa2087f2753a7da8cc1c0dbfcf89579dd57458e36769de5ac750b4671737ca"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -859,9 +859,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chrono"
-version = "0.4.34"
+version = "0.4.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bc015644b92d5890fab7489e49d21f879d5c990186827d42ec511919404f38b"
+checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
@@ -1460,7 +1460,7 @@ dependencies = [
  "futures",
  "gcemeta",
  "hyper",
- "jsonwebtoken 9.3.0",
+ "jsonwebtoken",
  "once_cell",
  "prost",
  "prost-types",
@@ -1518,9 +1518,9 @@ checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
 name = "h2"
-version = "0.3.24"
+version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb2c4422095b67ee78da96fbb51a4cc413b3b25883c7717ff7ca1ab31022c9c9"
+checksum = "81fe527a889e1532da5c525686d96d4c2e74cdd345badf8dfef9f6b39dd5f5e8"
 dependencies = [
  "bytes",
  "fnv",
@@ -1879,27 +1879,13 @@ dependencies = [
 
 [[package]]
 name = "jsonwebtoken"
-version = "8.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6971da4d9c3aa03c3d8f3ff0f4155b534aad021292003895a469716b2a230378"
-dependencies = [
- "base64 0.21.7",
- "pem 1.1.1",
- "ring 0.16.20",
- "serde",
- "serde_json",
- "simple_asn1",
-]
-
-[[package]]
-name = "jsonwebtoken"
 version = "9.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9ae10193d25051e74945f1ea2d0b42e03cc3b890f7e4cc5faa44997d808193f"
 dependencies = [
  "base64 0.21.7",
  "js-sys",
- "pem 3.0.4",
+ "pem",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2066,9 +2052,9 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.8.10"
+version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f3d0b296e374a4e6f3c7b0a1f5a51d748a0d34c85e7dc48fc3fa9a87657fe09"
+checksum = "a4a650543ca06a924e8b371db273b2756685faae30f8487da1b56505a8f78b0c"
 dependencies = [
  "libc",
  "wasi",
@@ -2242,7 +2228,7 @@ dependencies = [
  "aws-sdk-sqs",
  "axum",
  "axum-extra",
- "base64 0.21.7",
+ "base64 0.22.0",
  "chrono",
  "config",
  "core-base",
@@ -2255,14 +2241,14 @@ dependencies = [
  "headers",
  "hex",
  "hyper",
- "jsonwebtoken 8.3.0",
+ "jsonwebtoken",
  "once_cell",
  "opxs-auth",
  "opxs-base",
  "opxs-email-send",
  "opxs-image-convert",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.8",
  "serde",
  "serde_json",
  "serial_test",
@@ -2295,7 +2281,7 @@ dependencies = [
  "aws-sdk-sqs",
  "axum",
  "axum-extra",
- "base64 0.21.7",
+ "base64 0.22.0",
  "chrono",
  "config",
  "core-base",
@@ -2308,11 +2294,11 @@ dependencies = [
  "headers",
  "hex",
  "hyper",
- "jsonwebtoken 8.3.0",
+ "jsonwebtoken",
  "once_cell",
  "opxs-base",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.8",
  "serde",
  "serde_json",
  "serial_test",
@@ -2344,7 +2330,7 @@ dependencies = [
  "aws-sdk-sqs",
  "axum",
  "axum-extra",
- "base64 0.21.7",
+ "base64 0.22.0",
  "chrono",
  "config",
  "core-base",
@@ -2357,10 +2343,10 @@ dependencies = [
  "headers",
  "hex",
  "hyper",
- "jsonwebtoken 8.3.0",
+ "jsonwebtoken",
  "once_cell",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.8",
  "serde",
  "serde_json",
  "serial_test",
@@ -2391,7 +2377,7 @@ dependencies = [
  "aws_lambda_events",
  "axum",
  "axum-extra",
- "base64 0.21.7",
+ "base64 0.22.0",
  "chrono",
  "config",
  "core-base",
@@ -2404,13 +2390,13 @@ dependencies = [
  "headers",
  "hex",
  "hyper",
- "jsonwebtoken 8.3.0",
+ "jsonwebtoken",
  "lambda_runtime",
  "once_cell",
  "opxs-base",
  "opxs-email-send",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.8",
  "serde",
  "serde_json",
  "serial_test",
@@ -2440,7 +2426,7 @@ dependencies = [
  "aws_lambda_events",
  "axum",
  "axum-extra",
- "base64 0.21.7",
+ "base64 0.22.0",
  "chrono",
  "config",
  "core-base",
@@ -2453,13 +2439,13 @@ dependencies = [
  "headers",
  "hex",
  "hyper",
- "jsonwebtoken 8.3.0",
+ "jsonwebtoken",
  "lambda_runtime",
  "once_cell",
  "opxs-base",
  "opxs-email-send",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.8",
  "serde",
  "serde_json",
  "serial_test",
@@ -2491,7 +2477,7 @@ dependencies = [
  "aws_lambda_events",
  "axum",
  "axum-extra",
- "base64 0.21.7",
+ "base64 0.22.0",
  "chrono",
  "config",
  "core-base",
@@ -2504,13 +2490,13 @@ dependencies = [
  "headers",
  "hex",
  "hyper",
- "jsonwebtoken 8.3.0",
+ "jsonwebtoken",
  "lambda_runtime",
  "once_cell",
  "opxs-base",
  "opxs-image-convert",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.8",
  "serde",
  "serde_json",
  "serial_test",
@@ -2542,7 +2528,7 @@ dependencies = [
  "aws-sdk-sqs",
  "axum",
  "axum-extra",
- "base64 0.21.7",
+ "base64 0.22.0",
  "chrono",
  "config",
  "core-base",
@@ -2555,11 +2541,11 @@ dependencies = [
  "headers",
  "hex",
  "hyper",
- "jsonwebtoken 8.3.0",
+ "jsonwebtoken",
  "once_cell",
  "opxs-base",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.8",
  "serde",
  "serde_json",
  "serial_test",
@@ -2591,7 +2577,7 @@ dependencies = [
  "aws-sdk-sqs",
  "axum",
  "axum-extra",
- "base64 0.21.7",
+ "base64 0.22.0",
  "chrono",
  "config",
  "core-base",
@@ -2604,11 +2590,11 @@ dependencies = [
  "headers",
  "hex",
  "hyper",
- "jsonwebtoken 8.3.0",
+ "jsonwebtoken",
  "once_cell",
  "opxs-base",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.8",
  "serde",
  "serde_json",
  "serial_test",
@@ -2708,15 +2694,6 @@ name = "pathdiff"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8835116a5c179084a830efb3adc117ab007512b535bc1a21c991d3b32a6b44dd"
-
-[[package]]
-name = "pem"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8835c273a76a90455d7344889b0964598e3316e2a79ede8e36f16bdcf2228b8"
-dependencies = [
- "base64 0.13.1",
-]
 
 [[package]]
 name = "pem"
@@ -3088,9 +3065,9 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 
 [[package]]
 name = "reqwest"
-version = "0.11.24"
+version = "0.11.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6920094eb85afde5e4a138be3f2de8bbdf28000f0029e72c45025a56b042251"
+checksum = "dd67538700a17451e7cba03ac727fb961abb7607553461627b97de0b89cf4a62"
 dependencies = [
  "async-compression",
  "base64 0.21.7",
@@ -3467,9 +3444,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.114"
+version = "1.0.115"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5f09b1bd632ef549eaa9f60a1f8de742bdbc698e6cee2095fc84dde5f549ae0"
+checksum = "12dc5c46daa8e9fdf4f5e71b6cf9a53f2487da0e86e55808e2d35539666497dd"
 dependencies = [
  "itoa",
  "ryu",
@@ -3894,18 +3871,18 @@ checksum = "d72e255c0541f86589b0287139b70bd941a197ea4cea8fd8f87afe9c965a99e4"
 
 [[package]]
 name = "thiserror"
-version = "1.0.57"
+version = "1.0.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e45bcbe8ed29775f228095caf2cd67af7a4ccf756ebff23a306bf3e8b47b24b"
+checksum = "03468839009160513471e86a034bb2c5c0e4baae3b43f79ffc55c4a5427b3297"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.57"
+version = "1.0.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a953cb265bef375dae3de6663da4d3804eee9682ea80d8e2542529b73c531c81"
+checksum = "c61f3ba182994efc43764a46c018c347bc492c79f024e705f46567b418f6d4f7"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3970,9 +3947,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.36.0"
+version = "1.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61285f6515fa018fb2d1e46eb21223fff441ee8db5d0f1435e8ab4f5cdb80931"
+checksum = "1adbebffeca75fcfd058afa480fb6c0b81e165a0323f9c9d39c9697e37c46787"
 dependencies = [
  "backtrace",
  "bytes",
@@ -4078,9 +4055,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-stream"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "397c988d37662c7dda6d2208364a706264bf3d6138b11d436cbac0ad38832842"
+checksum = "267ac89e0bec6e691e5813911606935d77c476ff49024f98abcea3e7b15e37af"
 dependencies = [
  "futures-core",
  "pin-project-lite",
@@ -4460,9 +4437,9 @@ dependencies = [
 
 [[package]]
 name = "uuid"
-version = "1.7.0"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f00cc9702ca12d3c81455259621e676d0f7251cec66a21e98fe2e9a37db93b2a"
+checksum = "a183cf7feeba97b4dd1c0d46788634f6221d87fa961b305bed08c851829efcc0"
 dependencies = [
  "getrandom",
  "serde",
@@ -4558,6 +4535,12 @@ name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+
+[[package]]
+name = "wasite"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8dad83b4f25e74f184f64c43b150b91efe7647395b42289f38e50566d82855b"
 
 [[package]]
 name = "wasm-bindgen"
@@ -4669,11 +4652,12 @@ dependencies = [
 
 [[package]]
 name = "whoami"
-version = "1.4.1"
+version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22fc3756b8a9133049b26c7f61ab35416c130e8c09b660f5b3958b446f52cc50"
+checksum = "a44ab49fad634e88f55bf8f9bb3abd2f27d7204172a112c7c9987e01c1c94ea9"
 dependencies = [
- "wasm-bindgen",
+ "redox_syscall 0.4.1",
+ "wasite",
  "web-sys",
 ]
 
