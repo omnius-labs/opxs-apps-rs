@@ -9,16 +9,17 @@ use tracing::info;
 use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
 use core_cloud::aws::s3::S3ClientImpl;
 
-use opxs_base::{AppConfig, AppInfo};
+use opxs_base::{AppConfig, AppInfo, RunMode};
 use opxs_image_convert::{Executor, ImageConvertJobRepository, ImageConvertJobSqsMessage, ImageConverterImpl};
 
-const APPLICATION_NAME: &str = "opxs-batch-image-convert";
+const APP_NAME: &str = "opxs-batch-image-convert";
 
 async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
-    let info = AppInfo::new()?;
+    let mode = RunMode::from_env()?;
+    let info = AppInfo::new(APP_NAME, mode)?;
     info!("info: {}", info);
 
-    let conf = AppConfig::load(APPLICATION_NAME, &info.mode).await?;
+    let conf = AppConfig::load(&info).await?;
     let db = Arc::new(
         PgPoolOptions::new()
             .max_connections(100)

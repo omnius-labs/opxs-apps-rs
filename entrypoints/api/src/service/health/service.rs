@@ -42,14 +42,13 @@ mod tests {
         let container = PostgresContainer::new(&docker, "15.1");
 
         let info = AppInfo {
+            app_name: "app".to_string(),
             mode: RunMode::Local,
             git_tag: "unknown".to_string(),
         };
 
         let system_clock = Arc::new(SystemClockUtc {});
-        let world_verifier = WorldValidator::new(info.clone(), &container.connection_string, system_clock)
-            .await
-            .unwrap();
+        let world_verifier = WorldValidator::new(&info, &container.connection_string, system_clock).await.unwrap();
         world_verifier.verify().await.unwrap();
 
         let db = Arc::new(

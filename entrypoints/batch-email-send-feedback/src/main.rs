@@ -3,10 +3,13 @@ use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use opxs_email_send::SesNotification;
 use tracing::info;
 
-use opxs_base::AppInfo;
+use opxs_base::{AppInfo, RunMode};
+
+const APP_NAME: &str = "opxs-batch-email-send-feedback";
 
 async fn handler_sub(_ms: &[SesNotification]) -> Result<(), Error> {
-    let info = AppInfo::new()?;
+    let mode = RunMode::from_env()?;
+    let info = AppInfo::new(APP_NAME, mode)?;
     info!("info: {}", info);
 
     todo!();

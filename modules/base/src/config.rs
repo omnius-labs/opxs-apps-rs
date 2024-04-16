@@ -1,5 +1,7 @@
 use core_cloud::aws::secrets::{SecretsReader, SecretsReaderImpl};
 
+use crate::AppInfo;
+
 use super::info::RunMode;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -77,7 +79,7 @@ pub struct DiscordConfig {
 }
 
 impl AppConfig {
-    pub async fn load(application_name: &str, mode: &RunMode) -> anyhow::Result<Self> {
+    pub async fn load(info: &AppInfo) -> anyhow::Result<Self> {
         let secret_reader = Box::new(SecretsReaderImpl {
             client: aws_sdk_secretsmanager::Client::new(&aws_config::load_from_env().await),
         });
@@ -91,15 +93,16 @@ impl AppConfig {
         let auth_google_client_secret = secret_value.get_str("auth_google_client_secret")?;
         let discord_release_webhook_url = secret_value.get_str("discord_release_webhook_url")?;
 
-        match mode {
+        match info.mode {
             RunMode::Local => {
                 let postgres_url = format!(
-                    "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={application_name}",
+                    "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
                     host = urlencoding::encode("localhost"),
                     port = 15432,
                     database = "local_opxs",
                     user = "postgres",
                     password = "postgres",
+                    app_name = info.app_name,
                 );
 
                 Ok(Self {
@@ -139,12 +142,13 @@ impl AppConfig {
             }
             RunMode::Dev => {
                 let postgres_url = format!(
-                    "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={application_name}",
+                    "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
                     host = urlencoding::encode("tk2-223-21081.vs.sakura.ne.jp"),
                     port = 15432,
                     database = "dev_opxs",
                     user = postgres_user,
                     password = postgres_password,
+                    app_name = info.app_name,
                 );
 
                 Ok(Self {
@@ -207,7 +211,12 @@ mod tests {
     #[ignore]
     #[tokio::test]
     async fn secret_reader_test() {
-        let conf = AppConfig::load("test", &RunMode::Dev).await.unwrap();
+        let info = AppInfo {
+            app_name: "app".to_string(),
+            mode: RunMode::Dev,
+            git_tag: "test".to_string(),
+        };
+        let conf = AppConfig::load(&info).await.unwrap();
         println!("{:?}", conf);
     }
 }

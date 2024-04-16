@@ -9,16 +9,17 @@ use tracing::info;
 use core_base::clock::SystemClockUtc;
 use core_cloud::aws::ses::SesSenderImpl;
 
-use opxs_base::{AppConfig, AppInfo};
+use opxs_base::{AppConfig, AppInfo, RunMode};
 use opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobRepository};
 
-const APPLICATION_NAME: &str = "opxs-batch-email-send";
+const APP_NAME: &str = "opxs-batch-email-send";
 
 async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
-    let info = AppInfo::new()?;
+    let mode = RunMode::from_env()?;
+    let info = AppInfo::new(APP_NAME, mode)?;
     info!("info: {}", info);
 
-    let conf = AppConfig::load(APPLICATION_NAME, &info.mode).await?;
+    let conf = AppConfig::load(&info).await?;
     let db = Arc::new(
         PgPoolOptions::new()
             .max_connections(100)
