@@ -6,7 +6,7 @@ use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;
 
-use core_base::clock::SystemClockUtc;
+use core_base::clock::RealClockUtc;
 use core_cloud::aws::ses::SesSenderImpl;
 
 use opxs_base::{AppConfig, AppInfo, RunMode};
@@ -27,13 +27,10 @@ async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
             .connect(&conf.postgres.url)
             .await?,
     );
-    let system_clock = Arc::new(SystemClockUtc {});
+    let clock = Arc::new(RealClockUtc {});
 
     let executor = EmailSendExecutor {
-        email_send_job_repository: Arc::new(EmailSendJobRepository {
-            db: db.clone(),
-            system_clock,
-        }),
+        email_send_job_repository: Arc::new(EmailSendJobRepository { db: db.clone(), clock }),
         ses_sender: Arc::new(SesSenderImpl {
             client: aws_sdk_sesv2::Client::new(&aws_config::load_from_env().await),
             configuration_set_name: Some(conf.email.ses.configuration_set_name),

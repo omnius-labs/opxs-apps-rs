@@ -3,7 +3,7 @@ use std::sync::Arc;
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
-use core_base::clock::SystemClock;
+use core_base::clock::Clock;
 
 use opxs_base::AppError;
 
@@ -11,12 +11,12 @@ use crate::shared::model::User;
 
 pub struct TokenRepo {
     pub db: Arc<PgPool>,
-    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
 }
 
 impl TokenRepo {
     pub async fn create_token(&self, user_id: &str, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
         sqlx::query(
             r#"
 INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, updated_at)
@@ -51,7 +51,7 @@ DELETE FROM refresh_tokens
     }
 
     pub async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
         sqlx::query(
             r#"
 UPDATE refresh_tokens
@@ -70,7 +70,7 @@ UPDATE refresh_tokens
     }
 
     pub async fn get_user_id(&self, refresh_token: &str) -> Result<String, AppError> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT u.*

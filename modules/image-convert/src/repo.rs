@@ -1,20 +1,20 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use core_base::{clock::SystemClock, tsid::TsidProvider};
+use core_base::{clock::Clock, tsid::TsidProvider};
 use sqlx::PgPool;
 
 use crate::{ImageConvertJob, ImageConvertJobStatus, ImageConvertRequestParam};
 
 pub struct ImageConvertJobRepository {
     pub db: Arc<PgPool>,
-    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
     pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
 }
 
 impl ImageConvertJobRepository {
     pub async fn create_image_convert_job(&self, job_id: &str, param: &ImageConvertRequestParam) -> anyhow::Result<()> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         sqlx::query(
             r#"
@@ -64,7 +64,7 @@ SELECT *
     }
 
     async fn update_status(&self, job_id: &str, old_status: ImageConvertJobStatus, new_status: ImageConvertJobStatus) -> anyhow::Result<()> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let res = sqlx::query(
             r#"
@@ -88,7 +88,7 @@ UPDATE image_convert_jobs
     }
 
     pub async fn update_status_to_failed(&self, job_id: &str, failed_reason: &str) -> anyhow::Result<()> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let res = sqlx::query(
             r#"

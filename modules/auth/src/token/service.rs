@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use chrono::{Duration, Utc};
 
-use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
+use core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
 use opxs_base::{AppError, JwtConfig};
 
@@ -11,7 +11,7 @@ use crate::shared::{jwt, model::AuthToken};
 use super::TokenRepo;
 
 pub struct TokenService {
-    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
     pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
     pub jwt_conf: JwtConfig,
     pub token_repo: Arc<TokenRepo>,
@@ -19,7 +19,7 @@ pub struct TokenService {
 
 impl TokenService {
     pub async fn create(&self, user_id: &str) -> Result<AuthToken, AppError> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let sub = user_id.to_string();
         let expires_in = Duration::days(14);
@@ -41,7 +41,7 @@ impl TokenService {
     }
 
     pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken, AppError> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
         let user_id = self.token_repo.get_user_id(refresh_token).await?;
 
         let sub = user_id.to_string();
@@ -65,7 +65,7 @@ mod tests {
     use chrono::{DateTime, Duration};
     use sqlx::postgres::PgPoolOptions;
 
-    use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl};
+    use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl};
     use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
 
@@ -98,9 +98,9 @@ mod tests {
             .unwrap();
         migrator.migrate().await.unwrap();
 
-        let system_clock = Arc::new(SystemClockUtc {});
+        let clock = Arc::new(RealClockUtc {});
         let token_service = TokenService {
-            system_clock: system_clock.clone(),
+            clock: clock.clone(),
             random_bytes_provider: Arc::new(RandomBytesProviderImpl {}),
             jwt_conf: JwtConfig {
                 secret: JwtSecretConfig {
@@ -110,7 +110,7 @@ mod tests {
             },
             token_repo: Arc::new(TokenRepo {
                 db: db.clone(),
-                system_clock: system_clock.clone(),
+                clock: clock.clone(),
             }),
         };
 

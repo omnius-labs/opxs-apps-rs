@@ -24,7 +24,7 @@ where
         let TypedHeader(Authorization(bearer)) = TypedHeader::<Authorization<Bearer>>::from_request(req, state).await?;
 
         let access_token = bearer.token();
-        let now = state.service.system_clock.now();
+        let now = state.service.clock.now();
         let claims = jwt::verify(&state.conf.auth.jwt.secret.current, access_token, now)?;
 
         let user_id = claims.sub;

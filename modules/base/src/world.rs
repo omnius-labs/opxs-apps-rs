@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::{Duration, Utc};
-use core_base::clock::SystemClock;
+use core_base::clock::Clock;
 use serde_json::json;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{PgPool, Row};
@@ -10,12 +10,12 @@ use crate::{AppInfo, NotifyConfig};
 
 pub struct WorldValidator {
     info: AppInfo,
-    system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    clock: Arc<dyn Clock<Utc> + Send + Sync>,
     db: PgPool,
 }
 
 impl WorldValidator {
-    pub async fn new(info: &AppInfo, postgres_url: &str, system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>) -> anyhow::Result<Self> {
+    pub async fn new(info: &AppInfo, postgres_url: &str, clock: Arc<dyn Clock<Utc> + Send + Sync>) -> anyhow::Result<Self> {
         let db = PgPoolOptions::new()
             .max_connections(10)
             .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
@@ -25,7 +25,7 @@ impl WorldValidator {
 
         Ok(Self {
             info: info.clone(),
-            system_clock,
+            clock,
             db,
         })
     }
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS _world (
                 Ok(WorldValidatedStatus::Match)
             }
             Err(sqlx::Error::RowNotFound) => {
-                let now = self.system_clock.now();
+                let now = self.clock.now();
                 sqlx::query("INSERT INTO _world (key, value, created_at, updated_at) VALUES ('mode', $1, $2, $3)")
                     .bind(self.info.mode.to_string())
                     .bind(now)
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS _world (
     }
 
     pub async fn notify(&self, conf: &NotifyConfig) -> anyhow::Result<()> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
         let res = sqlx::query(
             r#"
 INSERT INTO _world (key, value, created_at, updated_at) VALUES ($1, $2, $3, $4)
@@ -135,7 +135,7 @@ pub enum WorldValidatedStatus {
 mod tests {
     use std::env;
 
-    use core_base::clock::SystemClockUtc;
+    use core_base::clock::RealClockUtc;
     use core_testkit::containers::postgres::PostgresContainer;
 
     use crate::{AppConfig, RunMode};
@@ -152,11 +152,9 @@ mod tests {
             mode: RunMode::Dev,
             git_tag: "test".to_string(),
         };
-        let system_clock = Arc::new(SystemClockUtc {});
+        let clock = Arc::new(RealClockUtc {});
 
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, system_clock.clone())
-            .await
-            .unwrap();
+        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock.clone()).await.unwrap();
         let res = world_verifier.verify().await;
         assert_eq!(res.unwrap(), WorldValidatedStatus::Init);
 
@@ -168,7 +166,7 @@ mod tests {
             mode: RunMode::Local,
             git_tag: "test".to_string(),
         };
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, system_clock).await.unwrap();
+        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
         let res = world_verifier.verify().await;
         assert!(res.is_err());
     }
@@ -190,9 +188,9 @@ mod tests {
         let conf = AppConfig::load(&info).await.unwrap();
         println!("{:?}", conf);
 
-        let system_clock = Arc::new(SystemClockUtc {});
+        let clock = Arc::new(RealClockUtc {});
 
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, system_clock).await.unwrap();
+        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
         let res = world_verifier.notify(&conf.notify).await;
         println!("{:?}", res);
         assert!(res.is_ok());

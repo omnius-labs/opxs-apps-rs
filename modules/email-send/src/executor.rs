@@ -76,7 +76,7 @@ Opxs サポートチーム",
 mod tests {
     use chrono::Duration;
     use core_base::{
-        clock::SystemClockUtc,
+        clock::RealClockUtc,
         random_bytes::RandomBytesProviderImpl,
         tsid::{TsidProvider, TsidProviderImpl},
     };
@@ -103,8 +103,8 @@ mod tests {
                 .await
                 .unwrap(),
         );
-        let system_clock = Arc::new(SystemClockUtc {});
-        let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
+        let clock = Arc::new(RealClockUtc {});
+        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
         let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
@@ -112,7 +112,7 @@ mod tests {
             .unwrap();
         migrator.migrate().await.unwrap();
 
-        let email_send_job_repository = Arc::new(EmailSendJobRepository { db, system_clock });
+        let email_send_job_repository = Arc::new(EmailSendJobRepository { db, clock });
 
         let send_email_sqs_sender = Arc::new(SqsSenderMock::new());
 

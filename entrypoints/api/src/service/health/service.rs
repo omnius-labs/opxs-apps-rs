@@ -25,7 +25,7 @@ mod tests {
     use std::sync::Arc;
 
     use chrono::Duration;
-    use core_base::clock::SystemClockUtc;
+    use core_base::clock::RealClockUtc;
     use opxs_base::{RunMode, WorldValidator};
     use serde_json::json;
     use sqlx::postgres::PgPoolOptions;
@@ -47,8 +47,8 @@ mod tests {
             git_tag: "unknown".to_string(),
         };
 
-        let system_clock = Arc::new(SystemClockUtc {});
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, system_clock).await.unwrap();
+        let clock = Arc::new(RealClockUtc {});
+        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
         world_verifier.verify().await.unwrap();
 
         let db = Arc::new(

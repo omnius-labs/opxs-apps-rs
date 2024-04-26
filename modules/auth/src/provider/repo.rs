@@ -3,7 +3,7 @@ use std::sync::Arc;
 use chrono::Utc;
 use sqlx::PgPool;
 
-use core_base::{clock::SystemClock, tsid::TsidProvider};
+use core_base::{clock::Clock, tsid::TsidProvider};
 
 use opxs_base::AppError;
 
@@ -11,14 +11,14 @@ use crate::shared::model::{User, UserAuthenticationType, UserRole};
 
 pub struct ProviderAuthRepo {
     pub db: Arc<PgPool>,
-    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
     pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
 }
 
 impl ProviderAuthRepo {
     pub async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<String, AppError> {
         let user_id = self.tsid_provider.gen().to_string();
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let mut tx = self.db.begin().await?;
 

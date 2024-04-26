@@ -59,7 +59,7 @@ impl Executor {
 mod tests {
     use chrono::Duration;
     use core_base::{
-        clock::SystemClockUtc,
+        clock::RealClockUtc,
         random_bytes::RandomBytesProviderImpl,
         tsid::{TsidProvider, TsidProviderImpl},
     };
@@ -86,8 +86,8 @@ mod tests {
                 .await
                 .unwrap(),
         );
-        let system_clock = Arc::new(SystemClockUtc {});
-        let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
+        let clock = Arc::new(RealClockUtc {});
+        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
         let s3_client = Arc::new(S3ClientMock::new());
         s3_client
             .gen_put_presigned_uri_outputs
@@ -109,13 +109,13 @@ mod tests {
         let image_converter = Arc::new(ImageConverterMock::new());
         let image_convert_job_repository = Arc::new(ImageConvertJobRepository {
             db,
-            system_clock: system_clock.clone(),
+            clock: clock.clone(),
             tsid_provider: tsid_provider.clone(),
         });
 
         let job_creator = ImageConvertJobCreator {
             image_convert_job_repository: image_convert_job_repository.clone(),
-            system_clock: system_clock.clone(),
+            clock: clock.clone(),
             s3_client: s3_client.clone(),
         };
         let job_id = tsid_provider.gen().to_string();

@@ -75,7 +75,7 @@ mod tests {
 
     use async_trait::async_trait;
     use chrono::Duration;
-    use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
     use opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
@@ -121,8 +121,8 @@ mod tests {
         let client_id = "client_id";
         let client_secret = "client_secret";
 
-        let system_clock = Arc::new(SystemClockUtc {});
-        let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
+        let clock = Arc::new(RealClockUtc {});
+        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
         let oauth2_provider = Arc::new(GoogleOAuth2ProviderMock::new(
             OAuth2TokenResult {
                 access_token: access_token.to_string(),
@@ -138,7 +138,7 @@ mod tests {
         ));
         let auth_repo = Arc::new(ProviderAuthRepo {
             db,
-            system_clock: system_clock.clone(),
+            clock: clock.clone(),
             tsid_provider,
         });
         let auth_conf = AuthConfig {

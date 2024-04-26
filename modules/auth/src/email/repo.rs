@@ -3,7 +3,7 @@ use std::sync::Arc;
 use chrono::Utc;
 use sqlx::PgPool;
 
-use core_base::{clock::SystemClock, tsid::TsidProvider};
+use core_base::{clock::Clock, tsid::TsidProvider};
 
 use opxs_base::AppError;
 
@@ -11,14 +11,14 @@ use crate::shared::model::{EmailUser, UserAuthenticationType, UserRole};
 
 pub struct EmailAuthRepo {
     pub db: Arc<PgPool>,
-    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
     pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
 }
 
 impl EmailAuthRepo {
     pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<String, AppError> {
         let user_id = self.tsid_provider.gen().to_string();
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let mut tx = self.db.begin().await?;
 
@@ -126,7 +126,7 @@ SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.u
     }
 
     pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         sqlx::query(
             r#"

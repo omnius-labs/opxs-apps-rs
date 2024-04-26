@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use chrono::{Duration, Utc};
 
-use core_base::{clock::SystemClock, random_bytes::RandomBytesProvider};
+use core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
 use opxs_base::{AppError, JwtConfig};
 
@@ -13,7 +13,7 @@ use super::EmailAuthRepo;
 #[derive(Clone)]
 pub struct EmailAuthService {
     pub auth_repo: Arc<EmailAuthRepo>,
-    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
     pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
     pub jwt_conf: JwtConfig,
     pub kdf: Kdf,
@@ -32,7 +32,7 @@ impl EmailAuthService {
             .create_user(name, email, &hex::encode(password_hash), &hex::encode(salt))
             .await?;
 
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let sub = email.to_string();
         let expires_in = Duration::minutes(30);
@@ -63,7 +63,7 @@ impl EmailAuthService {
     }
 
     pub async fn confirm(&self, token: &str) -> Result<String, AppError> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
         let claims = jwt::verify(&self.jwt_conf.secret.current, token, now)?;
 
         let email = claims.sub;
@@ -80,7 +80,7 @@ mod tests {
     use chrono::Duration;
     use sqlx::postgres::PgPoolOptions;
 
-    use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
 
@@ -114,12 +114,12 @@ mod tests {
         let user_email = "user_email";
         let password = "password";
 
-        let system_clock = Arc::new(SystemClockUtc {});
+        let clock = Arc::new(RealClockUtc {});
         let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
-        let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
+        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
         let auth_repo = Arc::new(EmailAuthRepo {
             db,
-            system_clock: system_clock.clone(),
+            clock: clock.clone(),
             tsid_provider,
         });
         let jwt_conf = JwtConfig {
@@ -135,7 +135,7 @@ mod tests {
 
         let auth_service = EmailAuthService {
             auth_repo: auth_repo.clone(),
-            system_clock,
+            clock,
             random_bytes_provider,
             jwt_conf,
             kdf,

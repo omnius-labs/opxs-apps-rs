@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use core_base::clock::SystemClock;
+use core_base::clock::Clock;
 use sqlx::PgPool;
 
 use crate::EmailSendJobBatchDetail;
@@ -10,12 +10,12 @@ use super::{EmailConfirmRequestParam, EmailSendJob, EmailSendJobBatch, EmailSend
 
 pub struct EmailSendJobRepository {
     pub db: Arc<PgPool>,
-    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
 }
 
 impl EmailSendJobRepository {
     pub async fn create_email_confirm_job(&self, job_id: &str, param: &EmailConfirmRequestParam) -> anyhow::Result<()> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let mut tx = self.db.begin().await?;
 
@@ -116,7 +116,7 @@ SELECT *
     }
 
     pub async fn set_message_id(&self, job_id: &str, batch_id: i32, email_address: &str, message_id: &str) -> anyhow::Result<()> {
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         sqlx::query(
             r#"
@@ -168,7 +168,7 @@ UPDATE email_send_job_batch_details
         new: &EmailSendJobBatchDetailStatus,
     ) -> anyhow::Result<()> {
         let mut tx = self.db.begin().await?;
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let res = sqlx::query(
             r#"
@@ -220,7 +220,7 @@ UPDATE email_send_job_batch_details
         new: &EmailSendJobBatchDetailStatus,
     ) -> anyhow::Result<()> {
         let mut tx = self.db.begin().await?;
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let res = sqlx::query(
             r#"
@@ -273,7 +273,7 @@ UPDATE email_send_job_batches
         new: &EmailSendJobBatchDetailStatus,
     ) -> anyhow::Result<()> {
         let mut tx = self.db.begin().await?;
-        let now = self.system_clock.now();
+        let now = self.clock.now();
 
         let res = sqlx::query(
             r#"

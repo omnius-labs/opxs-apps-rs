@@ -1,7 +1,7 @@
 use std::{path::Path, sync::Arc};
 
 use chrono::{Duration, Utc};
-use core_base::clock::SystemClock;
+use core_base::clock::Clock;
 use core_cloud::aws::s3::S3Client;
 use opxs_base::AppError;
 
@@ -11,7 +11,7 @@ use super::ImageConvertJobRepository;
 
 pub struct ImageConvertJobCreator {
     pub image_convert_job_repository: Arc<ImageConvertJobRepository>,
-    pub system_clock: Arc<dyn SystemClock<Utc> + Send + Sync>,
+    pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
     pub s3_client: Arc<dyn S3Client + Send + Sync>,
 }
 
@@ -39,7 +39,7 @@ impl ImageConvertJobCreator {
         };
         self.image_convert_job_repository.create_image_convert_job(job_id, &param).await?;
 
-        let now = self.system_clock.now();
+        let now = self.clock.now();
         let expires_in = Duration::minutes(10);
         let upload_uri = self
             .s3_client
@@ -58,7 +58,7 @@ impl ImageConvertJobCreator {
             let param = job.param.ok_or(anyhow::anyhow!("param is not found"))?;
             let param = serde_json::from_str::<ImageConvertRequestParam>(&param).map_err(|e| anyhow::anyhow!(e))?;
 
-            let now = self.system_clock.now();
+            let now = self.clock.now();
             let expires_in = Duration::minutes(10);
             let download_uri = self
                 .s3_client

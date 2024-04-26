@@ -5,7 +5,7 @@ use axum_extra::extract::cookie;
 use chrono::Duration;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
-use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
 use core_cloud::aws::{s3::S3ClientImpl, sqs::SqsSenderImpl};
 
 use opxs_base::{AppConfig, AppInfo};
@@ -31,9 +31,9 @@ impl AppState {
                 .await?,
         );
 
-        let system_clock = Arc::new(SystemClockUtc);
+        let clock = Arc::new(RealClockUtc);
         let random_bytes_provider = Arc::new(RandomBytesProviderImpl);
-        let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
+        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
 
         let sdk_config = aws_config::load_from_env().await;
         let send_email_sqs_sender = Arc::new(SqsSenderImpl {
@@ -50,7 +50,7 @@ impl AppState {
             &info,
             &conf,
             db.clone(),
-            system_clock,
+            clock,
             random_bytes_provider,
             tsid_provider,
             send_email_sqs_sender,

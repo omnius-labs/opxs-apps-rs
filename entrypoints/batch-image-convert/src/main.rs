@@ -6,7 +6,7 @@ use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;
 
-use core_base::{clock::SystemClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
 use core_cloud::aws::s3::S3ClientImpl;
 
 use opxs_base::{AppConfig, AppInfo, RunMode};
@@ -27,14 +27,14 @@ async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
             .connect(&conf.postgres.url)
             .await?,
     );
-    let system_clock = Arc::new(SystemClockUtc {});
-    let tsid_provider = Arc::new(TsidProviderImpl::new(SystemClockUtc, RandomBytesProviderImpl, 16));
+    let clock = Arc::new(RealClockUtc {});
+    let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
 
     let executor = Executor {
         image_converter: Arc::new(ImageConverterImpl),
         image_convert_job_repository: Arc::new(ImageConvertJobRepository {
             db: db.clone(),
-            system_clock,
+            clock,
             tsid_provider,
         }),
         s3_client: Arc::new(S3ClientImpl {

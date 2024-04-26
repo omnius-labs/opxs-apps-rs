@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use tracing::info;
 
-use core_base::clock::SystemClockUtc;
+use core_base::clock::RealClockUtc;
 use core_migration::postgres::PostgresMigrator;
 
 use opxs_base::{AppConfig, AppInfo, RunMode, WorldValidator};
@@ -33,8 +33,8 @@ async fn main() -> anyhow::Result<()> {
 
     let conf = AppConfig::load(&info).await?;
 
-    let system_clock = Arc::new(SystemClockUtc {});
-    let world_verifier = WorldValidator::new(&info, &conf.postgres.url, system_clock).await?;
+    let clock = Arc::new(RealClockUtc {});
+    let world_verifier = WorldValidator::new(&info, &conf.postgres.url, clock).await?;
     world_verifier.verify().await?;
     world_verifier.notify(&conf.notify).await?;
 
