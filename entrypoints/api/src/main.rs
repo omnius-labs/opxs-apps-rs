@@ -19,7 +19,8 @@ const APP_NAME: &str = "opxs-api";
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     if cfg!(debug_assertions) {
-        tracing_subscriber::fmt().with_max_level(tracing::Level::TRACE).with_target(false).init();
+        let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=off"));
+        tracing_subscriber::fmt().with_env_filter(filter).with_target(false).init();
     } else {
         let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=off"));
         tracing_subscriber::fmt().with_env_filter(filter).with_target(false).json().init();

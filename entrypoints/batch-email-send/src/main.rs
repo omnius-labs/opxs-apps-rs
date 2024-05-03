@@ -11,6 +11,7 @@ use core_cloud::aws::ses::SesSenderImpl;
 
 use opxs_base::{AppConfig, AppInfo, RunMode};
 use opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobRepository};
+use tracing_subscriber::EnvFilter;
 
 const APP_NAME: &str = "opxs-batch-email-send";
 
@@ -67,13 +68,11 @@ async fn handler(event: LambdaEvent<serde_json::Value>) -> Result<(), Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     if cfg!(debug_assertions) {
-        tracing_subscriber::fmt().with_max_level(tracing::Level::TRACE).with_target(false).init();
+        let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=off"));
+        tracing_subscriber::fmt().with_env_filter(filter).with_target(false).init();
     } else {
-        tracing_subscriber::fmt()
-            .with_max_level(tracing::Level::INFO)
-            .with_target(false)
-            .json()
-            .init();
+        let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=off"));
+        tracing_subscriber::fmt().with_env_filter(filter).with_target(false).json().init();
     }
 
     info!("----- start -----");
