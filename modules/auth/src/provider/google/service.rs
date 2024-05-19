@@ -71,14 +71,13 @@ impl GoogleAuthService {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Mutex;
-
     use async_trait::async_trait;
     use chrono::Duration;
     use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use core_migration::postgres::PostgresMigrator;
     use core_testkit::containers::postgres::PostgresContainer;
     use opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
+    use parking_lot::Mutex;
     use sqlx::postgres::PgPoolOptions;
 
     use crate::{
