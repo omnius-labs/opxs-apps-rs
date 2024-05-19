@@ -18,7 +18,7 @@ pub struct ConvertInput {
 #[async_trait]
 impl ImageConverter for ImageConverterMock {
     async fn convert(&self, source: &str, target: &str) -> anyhow::Result<()> {
-        self.convert_inputs.lock().unwrap().push(ConvertInput {
+        self.convert_inputs.lock().push(ConvertInput {
             source: source.to_string(),
             target: target.to_string(),
         });

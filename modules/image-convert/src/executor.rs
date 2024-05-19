@@ -92,12 +92,10 @@ mod tests {
         s3_client
             .gen_put_presigned_uri_outputs
             .lock()
-            .unwrap()
             .push_back("https://put.s3.example.com".to_string());
         s3_client
             .gen_get_presigned_uri_outputs
             .lock()
-            .unwrap()
             .push_back("https://get.s3.example.com".to_string());
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
@@ -132,13 +130,10 @@ mod tests {
         };
         executor.execute(&[job_id.clone()]).await.unwrap();
 
-        println!("{:?}", image_converter.convert_inputs.lock().unwrap().first().unwrap());
+        println!("{:?}", image_converter.convert_inputs.lock().first().unwrap());
+        assert_eq!(s3_client.get_object_inputs.lock().first().unwrap().key, format!("in/{}", job_id).as_str());
         assert_eq!(
-            s3_client.get_object_inputs.lock().unwrap().first().unwrap().key,
-            format!("in/{}", job_id).as_str()
-        );
-        assert_eq!(
-            s3_client.put_object_inputs.lock().unwrap().first().unwrap().key,
+            s3_client.put_object_inputs.lock().first().unwrap().key,
             format!("out/{}", job_id).as_str()
         );
     }

@@ -162,17 +162,14 @@ mod tests {
         // register
         let user_id = auth_service.register(code, redirect_uri, nonce).await.unwrap();
         println!("{}", user_id);
-        assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.lock().unwrap().code, code.to_string());
+        assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.lock().code, code.to_string());
         assert_eq!(
-            *oauth2_provider.clone().get_oauth2_token_param.lock().unwrap().redirect_uri,
+            *oauth2_provider.clone().get_oauth2_token_param.lock().redirect_uri,
             redirect_uri.to_string()
         );
+        assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.lock().client_id, client_id.to_string());
         assert_eq!(
-            *oauth2_provider.clone().get_oauth2_token_param.lock().unwrap().client_id,
-            client_id.to_string()
-        );
-        assert_eq!(
-            *oauth2_provider.clone().get_oauth2_token_param.lock().unwrap().client_secret,
+            *oauth2_provider.clone().get_oauth2_token_param.lock().client_secret,
             client_secret.to_string()
         );
 
@@ -231,7 +228,7 @@ mod tests {
             client_id: &str,
             client_secret: &str,
         ) -> Result<OAuth2TokenResult, AppError> {
-            *self.get_oauth2_token_param.lock().unwrap() = GetOauth2TokenParam {
+            *self.get_oauth2_token_param.lock() = GetOauth2TokenParam {
                 code: code.to_string(),
                 redirect_uri: redirect_uri.to_string(),
                 client_id: client_id.to_string(),
@@ -241,7 +238,7 @@ mod tests {
         }
 
         async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AppError> {
-            *self.get_user_info_param.lock().unwrap() = access_token.to_string();
+            *self.get_user_info_param.lock() = access_token.to_string();
             return Ok(self.get_user_info_result.clone());
         }
     }
