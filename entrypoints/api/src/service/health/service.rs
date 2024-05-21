@@ -15,6 +15,7 @@ impl HealthService {
     pub async fn check(&self) -> Result<Value, AppError> {
         let ret = json!({
             "mode": self.world_repo.get_mode().await?,
+            "git_tag": self.info.git_tag,
         });
         Ok(ret)
     }
@@ -44,7 +45,7 @@ mod tests {
         let info = AppInfo {
             app_name: "app".to_string(),
             mode: RunMode::Local,
-            git_tag: "unknown".to_string(),
+            git_tag: "git_tag".to_string(),
         };
 
         let clock = Arc::new(RealClockUtc {});
@@ -66,6 +67,7 @@ mod tests {
             service.check().await.unwrap(),
             json!({
                 "mode": "local",
+                "git_tag": "git_tag"
             })
         );
     }
