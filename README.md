@@ -1,21 +1,59 @@
 # Opxs - Omnius Anything Service (Apps)
 [![test](https://github.com/omnius-labs/opxs-apps-rs/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/omnius-labs/opxs-apps-rs/actions/workflows/test.yml)
 
+This repository contains the backend code for the Opxs platform, a suite of experimental web services written in Rust.
+
+### Frontend
+
+The frontend for this project can be found here:
+https://github.com/omnius-labs/opxs-web-ts
+
+## Features
+
+- **Image Converter**: Convert images between different formats online.
+
 ## Development
 
-### Local
+### Getting Started
 
-https://localhost.omnius-labs.com/api/docs/
+To run the Opxs API locally, you need to set up your environment first.
+
+### Requirements
+
+- Docker
+- Cargo (Rust's package manager)
+
+### Running Locally
+
+#### 1. Start the Opxs API:
 
 ```sh
-# start opxs-api
 RUN_MODE=local AWS_PROFILE=opxs-dev AWS_REGION=us-east-1 cargo make watch
 ```
 
+#### 2. Start PostgreSQL:
+
 ```sh
-# start postgres
 docker compose up --build
 ```
 
-## References
-- https://github.com/tamasfe/aide/tree/master/examples/example-axum
+Access the API documentation locally at:
+https://localhost.omnius-labs.com/api/docs/
+
+## Documentation
+
+- [Requirements](./docs/requirements/index.adoc)
+- [Specifications](./docs/specifications/index.adoc)
+- [FAQ](./docs/faq.md)
+
+## Links
+
+- Official Documentation: https://docs.omnius-labs.com/
+
+## Contributing
+
+If you would like to contribute to this project, please contact us through [Issues](https://github.com/omnius-labs/opxs-apps-rs/issues) or [Pull Requests](https://github.com/omnius-labs/opxs-apps-rs/pulls) on GitHub.
+
+## License
+
+This project is released under the MIT License. For more details, please refer to the [LICENSE](LICENSE.txt) file.

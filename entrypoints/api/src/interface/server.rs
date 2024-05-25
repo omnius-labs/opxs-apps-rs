@@ -1,13 +1,13 @@
-use axum::{extract::State, response::Redirect, routing::get, Json, Router};
-use serde_json::Value;
+use axum::{response::Redirect, routing::get, Router};
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use opxs_base::AppError;
-
 use crate::{
-    interface::routes::{auth, image},
+    interface::{
+        health,
+        routes::{auth, image},
+    },
     shared::state::AppState,
 };
 
@@ -25,7 +25,7 @@ impl WebServer {
                 Router::new().route("/", get(|| async { Redirect::permanent("/api/docs") })).nest_service(
                     "/v1",
                     Router::new()
-                        .route("/health", get(health))
+                        .route("/health", get(health::check))
                         .with_state(state.clone())
                         .nest_service("/auth", auth::gen_service(state.clone()))
                         .nest_service("/image", image::gen_service(state.clone())),
@@ -42,23 +42,10 @@ impl WebServer {
     }
 }
 
-#[utoipa::path(
-    get,
-    path = "/api/health",
-    responses(
-        (status = 200)
-    )
-)]
-#[allow(unused)]
-pub async fn health(State(state): State<AppState>) -> Result<Json<Value>, AppError> {
-    let ret = state.service.health.check().await?;
-    Ok(Json(ret))
-}
-
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        health,
+        health::check,
         auth::me,
         auth::email::register,
         auth::email::login,

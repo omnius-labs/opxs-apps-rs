@@ -8,6 +8,7 @@
     "datetime",
     "Deque",
     "omnius",
+    "openapi",
     "opxs",
     "presigning",
     "sesv",
@@ -15,6 +16,7 @@
     "testcontainers",
     "testkit",
     "Tsid",
-    "urlencoding"
+    "urlencoding",
+    "utoipa"
   ]
 }
