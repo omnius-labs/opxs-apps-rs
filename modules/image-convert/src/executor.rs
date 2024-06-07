@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use core_cloud::aws::s3::S3Client;
-use tracing::info;
 
 use crate::{ImageConvertJobRepository, ImageConvertRequestParam, ImageConverter};
 
@@ -40,14 +39,12 @@ impl Executor {
     }
 
     async fn execute_image_convert(&self, job_id: &str, param: &ImageConvertRequestParam) -> anyhow::Result<()> {
-        let in_file = format!("/tmp/in_{}.{}", job_id, param.input.format.get_extension());
-        let out_file = format!("/tmp/out_{}.{}", job_id, param.output.format.get_extension());
+        let in_file = format!("/tmp/in_{}.{}", job_id, param.input.typ.get_extension());
+        let out_file = format!("/tmp/out_{}.{}", job_id, param.output.typ.get_extension());
 
         self.s3_client.get_object(format!("in/{}", job_id).as_str(), in_file.as_str()).await?;
 
-        info!("----- ImageConverter::convert start -----");
         self.image_converter.convert(in_file.as_str(), out_file.as_str()).await?;
-        info!("----- ImageConverter::convert end -----");
 
         self.s3_client.put_object(format!("out/{}", job_id).as_str(), out_file.as_str()).await?;
 
@@ -69,7 +66,7 @@ mod tests {
 
     use core_cloud::aws::s3::S3ClientMock;
 
-    use crate::{ImageConvertJobCreator, ImageConverterMock, ImageFormat};
+    use crate::{ImageConvertJobCreator, ImageConverterMock, ImageType};
 
     use super::*;
 
@@ -117,10 +114,7 @@ mod tests {
             s3_client: s3_client.clone(),
         };
         let job_id = tsid_provider.gen().to_string();
-        let upload_url = job_creator
-            .create_image_convert_job(&job_id, "test.png", &ImageFormat::Jpg)
-            .await
-            .unwrap();
+        let upload_url = job_creator.create_image_convert_job(&job_id, "test.png", &ImageType::Jpg).await.unwrap();
         println!("upload_url: {}", upload_url);
 
         let executor = Executor {

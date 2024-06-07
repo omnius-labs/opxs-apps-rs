@@ -2,17 +2,19 @@ use std::path::Path;
 
 use async_trait::async_trait;
 use tokio::process::Command;
-use tracing::error;
+use tracing::{error, instrument};
 
 #[async_trait]
 pub trait ImageConverter {
     async fn convert(&self, source: &str, target: &str) -> anyhow::Result<()>;
 }
 
+#[derive(Debug)]
 pub struct ImageConverterImpl;
 
 #[async_trait]
 impl ImageConverter for ImageConverterImpl {
+    #[instrument]
     async fn convert(&self, source: &str, target: &str) -> anyhow::Result<()> {
         let image_converter_dir = std::env::var("IMAGE_CONVERTER_DIR").map_err(|_| anyhow::anyhow!("IMAGE_CONVERTER is not set"))?;
         let image_converter = Path::new(&image_converter_dir).join("ImageConverter");
@@ -21,10 +23,9 @@ impl ImageConverter for ImageConverterImpl {
 
         if !output.status.success() {
             let stdout_message = String::from_utf8_lossy(&output.stdout).to_string();
-            error!("stdout: {}", stdout_message);
-
             let stderr_message = String::from_utf8_lossy(&output.stderr).to_string();
-            error!("stderr: {}", stderr_message);
+
+            error!(stdout = stdout_message, stderr = stderr_message, "image converter failed");
 
             anyhow::bail!(format!("failed to convert image: {}", stderr_message));
         }

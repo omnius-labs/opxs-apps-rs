@@ -5,7 +5,7 @@ use core_base::clock::Clock;
 use core_cloud::aws::s3::S3Client;
 use opxs_base::AppError;
 
-use crate::{ImageConvertFile, ImageConvertJobStatus, ImageConvertRequestParam, ImageFormat};
+use crate::{ImageConvertFile, ImageConvertJobStatus, ImageConvertRequestParam, ImageType};
 
 use super::ImageConvertJobRepository;
 
@@ -16,21 +16,21 @@ pub struct ImageConvertJobCreator {
 }
 
 impl ImageConvertJobCreator {
-    pub async fn create_image_convert_job(&self, job_id: &str, filename: &str, format: &ImageFormat) -> Result<String, AppError> {
-        let filename_without_extension = Path::new(filename)
+    pub async fn create_image_convert_job(&self, job_id: &str, file_name: &str, typ: &ImageType) -> Result<String, AppError> {
+        let file_stem = Path::new(file_name)
             .file_stem()
-            .ok_or(anyhow::anyhow!("invalid filename"))?
+            .ok_or(anyhow::anyhow!("invalid file_name"))?
             .to_str()
-            .ok_or(anyhow::anyhow!("invalid filename"))?;
-        let origin_format = ImageFormat::from_filename(filename);
+            .ok_or(anyhow::anyhow!("invalid file_name"))?;
+        let origin_type = ImageType::from_file_name(file_name);
 
         let input = ImageConvertFile {
-            filename: filename.to_string(),
-            format: origin_format,
+            file_name: file_name.to_string(),
+            typ: origin_type,
         };
         let output = ImageConvertFile {
-            filename: format!("{}.{}", filename_without_extension, format.get_extension()),
-            format: format.clone(),
+            file_name: format!("{}.{}", file_stem, typ.get_extension()),
+            typ: typ.clone(),
         };
 
         let param = ImageConvertRequestParam {
@@ -62,7 +62,7 @@ impl ImageConvertJobCreator {
             let expires_in = Duration::minutes(10);
             let download_uri = self
                 .s3_client
-                .gen_get_presigned_uri(format!("out/{}", job_id).as_str(), now, expires_in, &param.output.filename)
+                .gen_get_presigned_uri(format!("out/{}", job_id).as_str(), now, expires_in, &param.output.file_name)
                 .await?;
 
             Ok((job.status, Some(download_uri)))

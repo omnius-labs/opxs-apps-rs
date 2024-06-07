@@ -4,7 +4,7 @@ use axum::{
     Json, Router,
 };
 use opxs_base::AppError;
-use opxs_image_convert::{ImageConvertJobStatus, ImageFormat};
+use opxs_image_convert::{ImageConvertJobStatus, ImageType};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
@@ -32,7 +32,7 @@ pub async fn upload(State(state): State<AppState>, ValidatedJson(input): Validat
     let upload_uri = state
         .service
         .image_convert_job_creator
-        .create_image_convert_job(&job_id, &input.source_filename, &input.target_image_format)
+        .create_image_convert_job(&job_id, &input.source_file_name, &input.target_image_type)
         .await?;
 
     Ok(Json(UploadOutput { job_id, upload_uri }))
@@ -40,8 +40,8 @@ pub async fn upload(State(state): State<AppState>, ValidatedJson(input): Validat
 
 #[derive(Deserialize, ToSchema, Validate)]
 pub struct UploadInput {
-    pub source_filename: String,
-    pub target_image_format: ImageFormat,
+    pub source_file_name: String,
+    pub target_image_type: ImageType,
 }
 
 #[derive(Serialize, ToSchema, Validate)]

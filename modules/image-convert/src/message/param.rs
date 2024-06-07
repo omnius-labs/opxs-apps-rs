@@ -9,13 +9,14 @@ pub struct ImageConvertRequestParam {
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct ImageConvertFile {
-    pub filename: String,
-    pub format: ImageFormat,
+    pub file_name: String,
+    #[serde(alias = "type")]
+    pub typ: ImageType,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum ImageFormat {
+pub enum ImageType {
     #[default]
     Unknown,
     Gif,
@@ -29,8 +30,8 @@ pub enum ImageFormat {
     Svg,
 }
 
-impl ImageFormat {
-    pub fn from_filename(path: &str) -> Self {
+impl ImageType {
+    pub fn from_file_name(path: &str) -> Self {
         let v = path.rsplitn(2, '.').collect::<Vec<&str>>();
         let ext = *v.first().unwrap_or(&"");
         Self::from_extension(ext)
@@ -38,28 +39,28 @@ impl ImageFormat {
 
     pub fn from_extension(ext: &str) -> Self {
         match ext.to_lowercase().as_str() {
-            "gif" => ImageFormat::Gif,
-            "jpg" => ImageFormat::Jpg,
-            "png" => ImageFormat::Png,
-            "webp" => ImageFormat::WebP,
-            "heif" => ImageFormat::Heif,
-            "heic" => ImageFormat::Heic,
-            "avif" => ImageFormat::Avif,
-            "svg" => ImageFormat::Svg,
-            _ => ImageFormat::Unknown,
+            "gif" => ImageType::Gif,
+            "jpg" => ImageType::Jpg,
+            "png" => ImageType::Png,
+            "webp" => ImageType::WebP,
+            "heif" => ImageType::Heif,
+            "heic" => ImageType::Heic,
+            "avif" => ImageType::Avif,
+            "svg" => ImageType::Svg,
+            _ => ImageType::Unknown,
         }
     }
 
     pub fn get_extension(&self) -> String {
         match self {
-            ImageFormat::Gif => "gif".to_string(),
-            ImageFormat::Jpg => "jpg".to_string(),
-            ImageFormat::Png => "png".to_string(),
-            ImageFormat::WebP => "webp".to_string(),
-            ImageFormat::Heif => "heif".to_string(),
-            ImageFormat::Heic => "heic".to_string(),
-            ImageFormat::Avif => "avif".to_string(),
-            ImageFormat::Svg => "svg".to_string(),
+            ImageType::Gif => "gif".to_string(),
+            ImageType::Jpg => "jpg".to_string(),
+            ImageType::Png => "png".to_string(),
+            ImageType::WebP => "webp".to_string(),
+            ImageType::Heif => "heif".to_string(),
+            ImageType::Heic => "heic".to_string(),
+            ImageType::Avif => "avif".to_string(),
+            ImageType::Svg => "svg".to_string(),
             _ => "unknown".to_string(),
         }
     }
