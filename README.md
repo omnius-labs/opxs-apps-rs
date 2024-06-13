@@ -45,12 +45,6 @@ docker compose up --build
 Access the API documentation locally at:
 https://localhost.omnius-labs.com/api/docs/
 
-## Documentation
-
-- [Requirements](./docs/requirements/index.adoc)
-- [Specifications](./docs/specifications/index.adoc)
-- [FAQ](./docs/faq.md)
-
 ## Links
 
 - Official Documentation: https://docs.omnius-labs.com/
