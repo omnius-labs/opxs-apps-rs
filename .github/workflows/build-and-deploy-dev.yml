@@ -37,7 +37,7 @@ jobs:
           platforms: linux/amd64
 
       - name: Build bin (api)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.build.api
@@ -57,7 +57,7 @@ jobs:
           docker rm opxs-api-builder
 
       - name: Build bin (batch-email-send)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.build.batch-email-send
@@ -77,7 +77,7 @@ jobs:
           docker rm opxs-batch-email-send-builder
 
       - name: Build bin (batch-email-send-feedback)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.build.batch-email-send-feedback
@@ -97,7 +97,7 @@ jobs:
           docker rm opxs-batch-email-send-feedback-builder
 
       - name: Build bin (batch-image-convert)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.build.batch-image-convert
@@ -121,7 +121,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and Push image to Amazon ECR (opxs-api-ecs-service)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.run.api
@@ -135,7 +135,7 @@ jobs:
           aws ecs update-service --cluster opxs-api-ecs-cluster --service opxs-api-ecs-service --force-new-deployment
 
       - name: Build and Push image to Amazon ECR (opxs-batch-email-send-lambda)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.run.batch-email-send
@@ -149,7 +149,7 @@ jobs:
           aws lambda update-function-code --function-name opxs-batch-email-send-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-lambda-ecr:latest
 
       - name: Build and Push image to Amazon ECR (opxs-batch-email-send-feedback-lambda)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.run.batch-email-send-feedback
@@ -163,7 +163,7 @@ jobs:
           aws lambda update-function-code --function-name opxs-batch-email-send-feedback-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-feedback-lambda-ecr:latest
 
       - name: Build and Push image to Amazon ECR (opxs-batch-image-convert-lambda)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.run.batch-image-convert
