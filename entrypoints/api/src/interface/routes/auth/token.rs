@@ -8,8 +8,8 @@ use serde::Deserialize;
 use utoipa::ToSchema;
 use validator::Validate;
 
-use opxs_auth::shared::model::{AuthToken, User};
-use opxs_base::AppError;
+use omnius_opxs_auth::shared::model::{AuthToken, User};
+use omnius_opxs_base::AppError;
 
 use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
 

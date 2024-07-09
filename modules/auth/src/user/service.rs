@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use opxs_base::AppError;
+use omnius_opxs_base::AppError;
 
 use crate::shared::model::User;
 

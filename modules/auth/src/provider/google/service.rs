@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use opxs_base::{AppError, AuthConfig};
+use omnius_opxs_base::{AppError, AuthConfig};
 
 use crate::provider::ProviderAuthRepo;
 
@@ -73,10 +73,10 @@ impl GoogleAuthService {
 mod tests {
     use async_trait::async_trait;
     use chrono::Duration;
-    use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
-    use core_migration::postgres::PostgresMigrator;
-    use core_testkit::containers::postgres::PostgresContainer;
-    use opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
+    use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use omnius_core_migration::postgres::PostgresMigrator;
+    use omnius_core_testkit::containers::postgres::PostgresContainer;
+    use omnius_opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
     use parking_lot::Mutex;
     use sqlx::postgres::PgPoolOptions;
 

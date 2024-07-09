@@ -5,13 +5,13 @@ use chrono::Duration;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;
-
-use core_base::clock::RealClockUtc;
-use core_cloud::aws::ses::SesSenderImpl;
-
-use opxs_base::{AppConfig, AppInfo, RunMode};
-use opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobRepository};
 use tracing_subscriber::EnvFilter;
+
+use omnius_core_base::clock::RealClockUtc;
+use omnius_core_cloud::aws::ses::SesSenderImpl;
+
+use omnius_opxs_base::{AppConfig, AppInfo, RunMode};
+use omnius_opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobRepository};
 
 const APP_NAME: &str = "opxs-batch-email-send";
 

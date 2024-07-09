@@ -5,10 +5,10 @@ use axum_extra::extract::cookie;
 use chrono::Duration;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
-use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
-use core_cloud::aws::{s3::S3ClientImpl, sqs::SqsSenderImpl};
+use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+use omnius_core_cloud::aws::{s3::S3ClientImpl, sqs::SqsSenderImpl};
 
-use opxs_base::{AppConfig, AppInfo};
+use omnius_opxs_base::{AppConfig, AppInfo};
 
 use super::service::AppService;
 

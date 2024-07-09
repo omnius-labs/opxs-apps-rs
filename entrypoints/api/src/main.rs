@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use tracing::info;
 
-use core_base::clock::RealClockUtc;
-use core_migration::postgres::PostgresMigrator;
+use omnius_core_base::clock::RealClockUtc;
+use omnius_core_migration::postgres::PostgresMigrator;
 
-use opxs_base::{AppConfig, AppInfo, RunMode, WorldValidator};
+use omnius_opxs_base::{AppConfig, AppInfo, RunMode, WorldValidator};
 use tracing_subscriber::EnvFilter;
 
 use crate::shared::state::AppState;

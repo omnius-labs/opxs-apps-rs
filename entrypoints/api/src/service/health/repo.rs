@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sqlx::{PgPool, Row};
 
-use opxs_base::AppError;
+use omnius_opxs_base::AppError;
 
 pub struct WorldRepo {
     pub db: Arc<PgPool>,

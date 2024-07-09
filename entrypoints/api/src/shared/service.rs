@@ -1,20 +1,21 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use opxs_base::{AppConfig, AppInfo};
-use opxs_image_convert::{ImageConvertJobCreator, ImageConvertJobRepository};
 use sqlx::PgPool;
 
-use core_base::{clock::Clock, random_bytes::RandomBytesProvider, tsid::TsidProvider};
-use core_cloud::aws::{s3::S3Client, sqs::SqsSender};
-use opxs_auth::{
+use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider, tsid::TsidProvider};
+use omnius_core_cloud::aws::{s3::S3Client, sqs::SqsSender};
+
+use omnius_opxs_auth::{
     email::{EmailAuthRepo, EmailAuthService},
     provider::{GoogleAuthService, GoogleOAuth2ProviderImpl, ProviderAuthRepo},
     shared::kdf::{Kdf, KdfAlgorithm},
     token::{TokenRepo, TokenService},
     user::{UserRepo, UserService},
 };
-use opxs_email_send::{EmailSendJobCreator, EmailSendJobRepository};
+use omnius_opxs_base::{AppConfig, AppInfo};
+use omnius_opxs_email_send::{EmailSendJobCreator, EmailSendJobRepository};
+use omnius_opxs_image_convert::{ImageConvertJobCreator, ImageConvertJobRepository};
 
 use crate::service::health::{repo::WorldRepo, service::HealthService};
 

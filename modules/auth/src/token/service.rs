@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use chrono::{Duration, Utc};
 
-use core_base::{clock::Clock, random_bytes::RandomBytesProvider};
+use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
-use opxs_base::{AppError, JwtConfig};
+use omnius_opxs_base::{AppError, JwtConfig};
 
 use crate::shared::{jwt, model::AuthToken};
 
@@ -65,11 +65,11 @@ mod tests {
     use chrono::{DateTime, Duration};
     use sqlx::postgres::PgPoolOptions;
 
-    use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl};
-    use core_migration::postgres::PostgresMigrator;
-    use core_testkit::containers::postgres::PostgresContainer;
+    use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl};
+    use omnius_core_migration::postgres::PostgresMigrator;
+    use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use opxs_base::JwtSecretConfig;
+    use omnius_opxs_base::JwtSecretConfig;
 
     use crate::shared::{
         self,
@@ -114,7 +114,7 @@ mod tests {
             }),
         };
 
-        let now = DateTime::<Utc>::from_timestamp(0, 0).unwrap();
+        let now = DateTime::from_timestamp(0, 0).unwrap();
         let user_id = "test_user_id";
         let user_name = "test_user_name";
 

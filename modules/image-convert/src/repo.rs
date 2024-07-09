@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use core_base::{clock::Clock, tsid::TsidProvider};
+use omnius_core_base::{clock::Clock, tsid::TsidProvider};
 use sqlx::PgPool;
 
 use crate::{ImageConvertJob, ImageConvertJobStatus, ImageConvertRequestParam};

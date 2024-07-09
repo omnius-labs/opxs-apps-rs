@@ -1,5 +1,5 @@
 [package]
-name = "opxs-api"
+name = "omnius-opxs-api"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
@@ -8,16 +8,16 @@ authors = { workspace = true }
 stable-test = []
 
 [dependencies]
-core-base = { workspace = true }
-core-cloud = { workspace = true }
-core-image = { workspace = true }
-core-migration = { workspace = true }
-core-testkit = { workspace = true }
+omnius-core-base = { workspace = true }
+omnius-core-cloud = { workspace = true }
+omnius-core-image = { workspace = true }
+omnius-core-migration = { workspace = true }
+omnius-core-testkit = { workspace = true }
 
-opxs-base = { workspace = true }
-opxs-auth = { workspace = true }
-opxs-image-convert = { workspace = true }
-opxs-email-send = { workspace = true }
+omnius-opxs-base = { workspace = true }
+omnius-opxs-auth = { workspace = true }
+omnius-opxs-image-convert = { workspace = true }
+omnius-opxs-email-send = { workspace = true }
 
 aws-config = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }

@@ -4,7 +4,7 @@ use hyper::StatusCode;
 use serde::Deserialize;
 use serde_json::json;
 
-use opxs_base::AppError;
+use omnius_opxs_base::AppError;
 
 #[async_trait]
 pub trait GoogleOAuth2Provider {

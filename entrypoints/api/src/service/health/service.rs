@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use opxs_base::{AppError, AppInfo};
+use omnius_opxs_base::{AppError, AppInfo};
 use serde_json::{json, Value};
 
 use super::repo::WorldRepo;
@@ -26,12 +26,12 @@ mod tests {
     use std::sync::Arc;
 
     use chrono::Duration;
-    use core_base::clock::RealClockUtc;
-    use opxs_base::{RunMode, WorldValidator};
+    use omnius_core_base::clock::RealClockUtc;
+    use omnius_opxs_base::{RunMode, WorldValidator};
     use serde_json::json;
     use sqlx::postgres::PgPoolOptions;
 
-    use core_testkit::containers::postgres::PostgresContainer;
+    use omnius_core_testkit::containers::postgres::PostgresContainer;
 
     use crate::service::health::repo::WorldRepo;
 

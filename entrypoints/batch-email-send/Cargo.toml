@@ -1,5 +1,5 @@
 [package]
-name = "opxs-batch-email-send"
+name = "omnius-opxs-batch-email-send"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
@@ -8,14 +8,14 @@ authors = { workspace = true }
 stable-test = []
 
 [dependencies]
-core-base = { workspace = true }
-core-cloud = { workspace = true }
-core-image = { workspace = true }
-core-migration = { workspace = true }
-core-testkit = { workspace = true }
+omnius-core-base = { workspace = true }
+omnius-core-cloud = { workspace = true }
+omnius-core-image = { workspace = true }
+omnius-core-migration = { workspace = true }
+omnius-core-testkit = { workspace = true }
 
-opxs-base = { workspace = true }
-opxs-email-send = { workspace = true }
+omnius-opxs-base = { workspace = true }
+omnius-opxs-email-send = { workspace = true }
 
 lambda_runtime = { workspace = true }
 aws_lambda_events = { workspace = true }

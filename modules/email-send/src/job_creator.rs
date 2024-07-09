@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use core_cloud::aws::sqs::SqsSender;
+use omnius_core_cloud::aws::sqs::SqsSender;
 
 use super::{EmailConfirmRequestParam, EmailSendJobBatchSqsMessage, EmailSendJobRepository};
 

@@ -1,4 +1,4 @@
-use core_cloud::aws::secrets::{SecretsReader, SecretsReaderImpl};
+use omnius_core_cloud::aws::secrets::{SecretsReader, SecretsReaderImpl};
 
 use crate::AppInfo;
 

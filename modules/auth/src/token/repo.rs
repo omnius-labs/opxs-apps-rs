@@ -3,9 +3,9 @@ use std::sync::Arc;
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
-use core_base::clock::Clock;
+use omnius_core_base::clock::Clock;
 
-use opxs_base::AppError;
+use omnius_opxs_base::AppError;
 
 use crate::shared::model::User;
 

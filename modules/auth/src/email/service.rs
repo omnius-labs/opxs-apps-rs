@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use chrono::{Duration, Utc};
 
-use core_base::{clock::Clock, random_bytes::RandomBytesProvider};
+use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
-use opxs_base::{AppError, JwtConfig};
+use omnius_opxs_base::{AppError, JwtConfig};
 
 use crate::shared::{jwt, kdf::Kdf};
 
@@ -80,11 +80,11 @@ mod tests {
     use chrono::Duration;
     use sqlx::postgres::PgPoolOptions;
 
-    use core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
-    use core_migration::postgres::PostgresMigrator;
-    use core_testkit::containers::postgres::PostgresContainer;
+    use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use omnius_core_migration::postgres::PostgresMigrator;
+    use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use opxs_base::JwtSecretConfig;
+    use omnius_opxs_base::JwtSecretConfig;
 
     use crate::shared::{self, kdf::KdfAlgorithm};
 

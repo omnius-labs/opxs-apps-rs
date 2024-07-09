@@ -1,10 +1,11 @@
 use aws_lambda_events::event::sns::SnsEvent;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
-use opxs_email_send::SesNotification;
 use tracing::info;
-
-use opxs_base::{AppInfo, RunMode};
 use tracing_subscriber::EnvFilter;
+
+use omnius_opxs_base::{AppInfo, RunMode};
+
+use omnius_opxs_email_send::SesNotification;
 
 const APP_NAME: &str = "opxs-batch-email-send-feedback";
 

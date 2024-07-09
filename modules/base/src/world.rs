@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::{Duration, Utc};
-use core_base::clock::Clock;
+use omnius_core_base::clock::Clock;
 use serde_json::json;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{PgPool, Row};
@@ -135,8 +135,8 @@ pub enum WorldValidatedStatus {
 mod tests {
     use std::env;
 
-    use core_base::clock::RealClockUtc;
-    use core_testkit::containers::postgres::PostgresContainer;
+    use omnius_core_base::clock::RealClockUtc;
+    use omnius_core_testkit::containers::postgres::PostgresContainer;
 
     use crate::{AppConfig, RunMode};
 

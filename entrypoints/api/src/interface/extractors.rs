@@ -8,8 +8,8 @@ use headers::{authorization::Bearer, Authorization};
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
-use opxs_auth::shared::{jwt, model::User};
-use opxs_base::AppError;
+use omnius_opxs_auth::shared::{jwt, model::User};
+use omnius_opxs_base::AppError;
 
 use crate::shared::state::AppState;
 

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use core_base::clock::Clock;
+use omnius_core_base::clock::Clock;
 use sqlx::PgPool;
 
 use crate::EmailSendJobBatchDetail;

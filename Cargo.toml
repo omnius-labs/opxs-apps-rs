@@ -25,18 +25,20 @@ authors = ["Lyrise <lyrise1984@gmail.com>"]
 version = "0.1.0"
 
 [workspace.dependencies]
-core-base = { path = "./refs/core-rs/modules/base" }
-core-cloud = { path = "./refs/core-rs/modules/cloud", features = ["aws"] }
-core-image = { path = "./refs/core-rs/modules/image" }
-core-migration = { path = "./refs/core-rs/modules/migration", features = [
+omnius-core-base = { path = "./refs/core-rs/modules/base" }
+omnius-core-cloud = { path = "./refs/core-rs/modules/cloud", features = [
+    "aws",
+] }
+omnius-core-image = { path = "./refs/core-rs/modules/image" }
+omnius-core-migration = { path = "./refs/core-rs/modules/migration", features = [
     "postgres",
 ] }
-core-testkit = { path = "./refs/core-rs/modules/testkit" }
+omnius-core-testkit = { path = "./refs/core-rs/modules/testkit" }
 
-opxs-auth = { path = "./modules/auth" }
-opxs-base = { path = "./modules/base" }
-opxs-email-send = { path = "./modules/email-send" }
-opxs-image-convert = { path = "./modules/image-convert" }
+omnius-opxs-auth = { path = "./modules/auth" }
+omnius-opxs-base = { path = "./modules/base" }
+omnius-opxs-email-send = { path = "./modules/email-send" }
+omnius-opxs-image-convert = { path = "./modules/image-convert" }
 
 lambda_runtime = "0.8.3"
 aws_lambda_events = { version = "0.10.0", default-features = false, features = [

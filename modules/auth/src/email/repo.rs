@@ -3,9 +3,9 @@ use std::sync::Arc;
 use chrono::Utc;
 use sqlx::PgPool;
 
-use core_base::{clock::Clock, tsid::TsidProvider};
+use omnius_core_base::{clock::Clock, tsid::TsidProvider};
 
-use opxs_base::AppError;
+use omnius_opxs_base::AppError;
 
 use crate::shared::model::{EmailUser, UserAuthenticationType, UserRole};
 

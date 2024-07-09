@@ -2,7 +2,7 @@ use chrono::{DateTime, Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
-use opxs_base::AppError;
+use omnius_opxs_base::AppError;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
@@ -35,7 +35,7 @@ pub fn verify(secret: &str, token: &str, now: DateTime<Utc>) -> Result<Claims, A
     let validation = Validation::default();
     let claims: Claims = jsonwebtoken::decode(token, &key, &validation).map(|token| token.claims)?;
 
-    let expired_at = DateTime::<Utc>::from_timestamp(claims.exp, 0).ok_or(AppError::AccessTokenExpired)?;
+    let expired_at = DateTime::from_timestamp(claims.exp, 0).ok_or(AppError::AccessTokenExpired)?;
     if expired_at < now {
         return Err(AppError::AccessTokenExpired);
     }

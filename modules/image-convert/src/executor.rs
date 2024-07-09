@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use core_cloud::aws::s3::S3Client;
+use omnius_core_cloud::aws::s3::S3Client;
 
 use crate::{ImageConvertJobRepository, ImageConvertRequestParam, ImageConverter};
 
@@ -55,16 +55,16 @@ impl Executor {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
-    use core_base::{
+    use omnius_core_base::{
         clock::RealClockUtc,
         random_bytes::RandomBytesProviderImpl,
         tsid::{TsidProvider, TsidProviderImpl},
     };
-    use core_migration::postgres::PostgresMigrator;
-    use core_testkit::containers::postgres::PostgresContainer;
+    use omnius_core_migration::postgres::PostgresMigrator;
+    use omnius_core_testkit::containers::postgres::PostgresContainer;
     use sqlx::postgres::PgPoolOptions;
 
-    use core_cloud::aws::s3::S3ClientMock;
+    use omnius_core_cloud::aws::s3::S3ClientMock;
 
     use crate::{ImageConvertJobCreator, ImageConverterMock, ImageType};
 

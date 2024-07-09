@@ -1,7 +1,7 @@
 use axum::{extract::State, Json};
 use serde_json::Value;
 
-use opxs_base::AppError;
+use omnius_opxs_base::AppError;
 
 use crate::shared::state::AppState;
 
