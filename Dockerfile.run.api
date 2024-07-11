@@ -10,6 +10,6 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./conf/migrations ./conf/migrations
-COPY ./bin/opxs-api /usr/local/bin/
+COPY ./bin/omnius-opxs-api /usr/local/bin/
 
-ENTRYPOINT ["/usr/local/bin/opxs-api"]
+ENTRYPOINT ["/usr/local/bin/omnius-opxs-api"]

@@ -17,7 +17,7 @@ impl ImageConverter for ImageConverterImpl {
     #[instrument]
     async fn convert(&self, source: &str, target: &str) -> anyhow::Result<()> {
         let image_converter_dir = std::env::var("IMAGE_CONVERTER_DIR").map_err(|_| anyhow::anyhow!("IMAGE_CONVERTER is not set"))?;
-        let image_converter = Path::new(&image_converter_dir).join("ImageConverter");
+        let image_converter = Path::new(&image_converter_dir).join("Omnius.ImageConverter");
 
         let output = Command::new(image_converter).arg(source).arg(target).output().await?;
 

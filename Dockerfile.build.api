@@ -38,11 +38,11 @@ ARG GIT_TAG
 ENV GIT_TAG=${GIT_TAG}
 
 # Build application
-RUN cargo build --release --bin opxs-api
+RUN cargo build --release --bin omnius-opxs-api
 
 # We do not need the Rust toolchain to run the binary!
 FROM chef AS runtime
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/opxs-api ./opxs-api
+COPY --from=builder /app/target/release/omnius-opxs-api ./omnius-opxs-api

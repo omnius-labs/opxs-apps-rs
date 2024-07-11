@@ -8,7 +8,7 @@ RUN dnf install -y \
     && rm -rf /var/cache/dnf/* \
     && dnf clean all
 
-ENV IMAGE_CONVERTER_VERSION=0.0.7
+ENV IMAGE_CONVERTER_VERSION=0.0.8
 
 RUN wget https://github.com/omnius-labs/image-converter-cs/releases/download/v${IMAGE_CONVERTER_VERSION}/image-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -P /app \
     && unzip /app/image-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -d /app/image-converter \
@@ -16,6 +16,6 @@ RUN wget https://github.com/omnius-labs/image-converter-cs/releases/download/v${
 
 ENV IMAGE_CONVERTER_DIR=/app/image-converter
 
-COPY ./bin/opxs-batch-image-convert ${LAMBDA_RUNTIME_DIR}/bootstrap
+COPY ./bin/omnius-opxs-batch-image-convert ${LAMBDA_RUNTIME_DIR}/bootstrap
 
 CMD [ "lambda-handler" ]

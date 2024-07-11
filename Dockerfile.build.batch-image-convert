@@ -47,11 +47,11 @@ ARG GIT_TAG
 ENV GIT_TAG=${GIT_TAG}
 
 # Build application
-RUN cargo build --release --bin opxs-batch-image-convert
+RUN cargo build --release --bin omnius-opxs-batch-image-convert
 
 # We do not need the Rust toolchain to run the binary!
 FROM chef AS runtime
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/opxs-batch-image-convert ./opxs-batch-image-convert
+COPY --from=builder /app/target/release/omnius-opxs-batch-image-convert ./omnius-opxs-batch-image-convert
