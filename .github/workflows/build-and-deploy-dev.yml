@@ -52,7 +52,7 @@ jobs:
         run: |
           mkdir -p ./bin
           docker run --name opxs-api-builder -d opxs-build-api-image
-          docker cp opxs-api-builder:/app/opxs-api ./bin
+          docker cp opxs-api-builder:/app/omnius-opxs-api ./bin
           docker stop opxs-api-builder
           docker rm opxs-api-builder
 
@@ -72,7 +72,7 @@ jobs:
         run: |
           mkdir -p ./bin
           docker run --name opxs-batch-email-send-builder -d opxs-build-batch-email-send-image
-          docker cp opxs-batch-email-send-builder:/app/opxs-batch-email-send ./bin
+          docker cp opxs-batch-email-send-builder:/app/omnius-opxs-batch-email-send ./bin
           docker stop opxs-batch-email-send-builder
           docker rm opxs-batch-email-send-builder
 
@@ -92,7 +92,7 @@ jobs:
         run: |
           mkdir -p ./bin
           docker run --name opxs-batch-email-send-feedback-builder -d opxs-build-batch-email-send-feedback-image
-          docker cp opxs-batch-email-send-feedback-builder:/app/opxs-batch-email-send-feedback ./bin
+          docker cp opxs-batch-email-send-feedback-builder:/app/omnius-opxs-batch-email-send-feedback ./bin
           docker stop opxs-batch-email-send-feedback-builder
           docker rm opxs-batch-email-send-feedback-builder
 
@@ -112,7 +112,7 @@ jobs:
         run: |
           mkdir -p ./bin
           docker run --name opxs-batch-image-convert-builder -d opxs-build-batch-image-convert-image
-          docker cp opxs-batch-image-convert-builder:/app/opxs-batch-image-convert ./bin
+          docker cp opxs-batch-image-convert-builder:/app/omnius-opxs-batch-image-convert ./bin
           docker stop opxs-batch-image-convert-builder
           docker rm opxs-batch-image-convert-builder
 
