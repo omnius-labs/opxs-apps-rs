@@ -10,8 +10,7 @@ This repository contains the backend code for the Opxs platform, a suite of expe
 
 ### Frontend
 
-The frontend for this project can be found here:
-https://github.com/omnius-labs/opxs-web-ts
+The frontend for this project can be found here: https://github.com/omnius-labs/opxs-web-ts
 
 ## Features
 
