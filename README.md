@@ -22,8 +22,8 @@ To run the Opxs API locally, you need to set up your environment first.
 
 ### Requirements
 
-- Docker
 - Cargo (Rust's package manager)
+- Docker
 
 ### Running Locally
 
