@@ -8,9 +8,7 @@
 
 This repository contains the backend code for the Opxs platform, a suite of experimental web services written in Rust.
 
-### Frontend
-
-The frontend for this project can be found here: https://github.com/omnius-labs/opxs-web-ts
+- Frontend: https://github.com/omnius-labs/opxs-web-ts
 
 ## Features
 
