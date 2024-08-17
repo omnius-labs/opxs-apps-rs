@@ -5,6 +5,7 @@ use chrono::{Duration, Utc};
 use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
 use omnius_opxs_base::{AppError, JwtConfig};
+use parking_lot::Mutex;
 
 use crate::shared::{jwt, kdf::Kdf};
 
@@ -14,7 +15,7 @@ use super::EmailAuthRepo;
 pub struct EmailAuthService {
     pub auth_repo: Arc<EmailAuthRepo>,
     pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
-    pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
+    pub random_bytes_provider: Arc<Mutex<dyn RandomBytesProvider + Send + Sync>>,
     pub jwt_conf: JwtConfig,
     pub kdf: Kdf,
 }
@@ -78,9 +79,10 @@ impl EmailAuthService {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
+    use parking_lot::Mutex;
     use sqlx::postgres::PgPoolOptions;
 
-    use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
@@ -114,9 +116,9 @@ mod tests {
         let user_email = "user_email";
         let password = "password";
 
-        let clock = Arc::new(RealClockUtc {});
-        let random_bytes_provider = Arc::new(RandomBytesProviderImpl {});
-        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
+        let clock = Arc::new(ClockUtc {});
+        let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
         let auth_repo = Arc::new(EmailAuthRepo {
             db,
             clock: clock.clone(),

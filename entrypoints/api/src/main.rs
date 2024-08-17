@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use tracing::info;
 
-use omnius_core_base::clock::RealClockUtc;
+use omnius_core_base::clock::ClockUtc;
 use omnius_core_migration::postgres::PostgresMigrator;
 
 use omnius_opxs_base::{AppConfig, AppInfo, RunMode, WorldValidator};
@@ -34,10 +34,14 @@ async fn main() -> anyhow::Result<()> {
 
     let conf = AppConfig::load(&info).await?;
 
-    let clock = Arc::new(RealClockUtc {});
+    let clock = Arc::new(ClockUtc {});
+
     let world_verifier = WorldValidator::new(&info, &conf.postgres.url, clock).await?;
     world_verifier.verify().await?;
-    world_verifier.notify(&conf.notify).await?;
+
+    if let Some(notify_conf) = &conf.notify {
+        world_verifier.notify(notify_conf).await?;
+    }
 
     let migrator = PostgresMigrator::new(&conf.postgres.url, "./conf/migrations", APP_NAME, "").await?;
     migrator.migrate().await?;

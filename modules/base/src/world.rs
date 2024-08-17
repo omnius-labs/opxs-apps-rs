@@ -135,7 +135,7 @@ pub enum WorldValidatedStatus {
 mod tests {
     use std::env;
 
-    use omnius_core_base::clock::RealClockUtc;
+    use omnius_core_base::clock::ClockUtc;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
     use crate::{AppConfig, RunMode};
@@ -152,7 +152,7 @@ mod tests {
             mode: RunMode::Dev,
             git_tag: "test".to_string(),
         };
-        let clock = Arc::new(RealClockUtc {});
+        let clock = Arc::new(ClockUtc {});
 
         let world_verifier = WorldValidator::new(&info, &container.connection_string, clock.clone()).await.unwrap();
         let res = world_verifier.verify().await;
@@ -188,14 +188,14 @@ mod tests {
         let conf = AppConfig::load(&info).await.unwrap();
         println!("{:?}", conf);
 
-        let clock = Arc::new(RealClockUtc {});
+        let clock = Arc::new(ClockUtc {});
 
         let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
-        let res = world_verifier.notify(&conf.notify).await;
+        let res = world_verifier.notify(&conf.notify.clone().unwrap()).await;
         println!("{:?}", res);
         assert!(res.is_ok());
 
-        let res = world_verifier.notify(&conf.notify).await;
+        let res = world_verifier.notify(&conf.notify.unwrap()).await;
         assert!(res.is_ok());
     }
 }

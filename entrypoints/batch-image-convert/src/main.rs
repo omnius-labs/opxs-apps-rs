@@ -3,11 +3,12 @@ use std::{path::Path, sync::Arc};
 use aws_lambda_events::sqs::SqsEvent;
 use chrono::Duration;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
+use parking_lot::Mutex;
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
-use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
 use omnius_core_cloud::aws::s3::S3ClientImpl;
 
 use omnius_opxs_base::{AppConfig, AppInfo, RunMode};
@@ -28,8 +29,8 @@ async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
             .connect(&conf.postgres.url)
             .await?,
     );
-    let clock = Arc::new(RealClockUtc {});
-    let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
+    let clock = Arc::new(ClockUtc {});
+    let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
 
     let executor = Executor {
         image_converter: Arc::new(ImageConverterImpl),

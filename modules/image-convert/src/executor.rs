@@ -56,12 +56,13 @@ impl Executor {
 mod tests {
     use chrono::Duration;
     use omnius_core_base::{
-        clock::RealClockUtc,
+        clock::ClockUtc,
         random_bytes::RandomBytesProviderImpl,
         tsid::{TsidProvider, TsidProviderImpl},
     };
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
+    use parking_lot::Mutex;
     use sqlx::postgres::PgPoolOptions;
 
     use omnius_core_cloud::aws::s3::S3ClientMock;
@@ -83,8 +84,8 @@ mod tests {
                 .await
                 .unwrap(),
         );
-        let clock = Arc::new(RealClockUtc {});
-        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
+        let clock = Arc::new(ClockUtc {});
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
         let s3_client = Arc::new(S3ClientMock::new());
         s3_client
             .gen_put_presigned_uri_outputs
@@ -113,7 +114,7 @@ mod tests {
             clock: clock.clone(),
             s3_client: s3_client.clone(),
         };
-        let job_id = tsid_provider.gen().to_string();
+        let job_id = tsid_provider.lock().gen().to_string();
         let upload_url = job_creator.create_image_convert_job(&job_id, "test.png", &ImageType::Jpg).await.unwrap();
         println!("upload_url: {}", upload_url);
 

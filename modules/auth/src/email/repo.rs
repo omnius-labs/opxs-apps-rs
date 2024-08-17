@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use chrono::Utc;
+use parking_lot::Mutex;
 use sqlx::PgPool;
 
 use omnius_core_base::{clock::Clock, tsid::TsidProvider};
@@ -12,12 +13,12 @@ use crate::shared::model::{EmailUser, UserAuthenticationType, UserRole};
 pub struct EmailAuthRepo {
     pub db: Arc<PgPool>,
     pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
-    pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
+    pub tsid_provider: Arc<Mutex<dyn TsidProvider + Send + Sync>>,
 }
 
 impl EmailAuthRepo {
     pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<String, AppError> {
-        let user_id = self.tsid_provider.gen().to_string();
+        let user_id = self.tsid_provider.lock().gen().to_string();
         let now = self.clock.now();
 
         let mut tx = self.db.begin().await?;

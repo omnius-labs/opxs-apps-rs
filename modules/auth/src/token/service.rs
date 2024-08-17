@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use chrono::{Duration, Utc};
+use parking_lot::Mutex;
 
 use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
@@ -12,7 +13,7 @@ use super::TokenRepo;
 
 pub struct TokenService {
     pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
-    pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
+    pub random_bytes_provider: Arc<Mutex<dyn RandomBytesProvider + Send + Sync>>,
     pub jwt_conf: JwtConfig,
     pub token_repo: Arc<TokenRepo>,
 }
@@ -24,7 +25,7 @@ impl TokenService {
         let sub = user_id.to_string();
         let expires_in = Duration::days(14);
         let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, expires_in, now)?;
-        let refresh_token = hex::encode(self.random_bytes_provider.get_bytes(32));
+        let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
         let expires_at = now + expires_in;
 
         self.token_repo.create_token(user_id, &refresh_token, &expires_at).await?;
@@ -47,7 +48,7 @@ impl TokenService {
         let sub = user_id.to_string();
         let expires_in = Duration::days(14);
         let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, expires_in, now)?;
-        let refresh_token = hex::encode(self.random_bytes_provider.get_bytes(32));
+        let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
         let expires_at = now + expires_in;
 
         self.token_repo.update_token(&refresh_token, &expires_at).await?;
@@ -65,7 +66,7 @@ mod tests {
     use chrono::{DateTime, Duration};
     use sqlx::postgres::PgPoolOptions;
 
-    use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl};
+    use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl};
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
@@ -98,10 +99,10 @@ mod tests {
             .unwrap();
         migrator.migrate().await.unwrap();
 
-        let clock = Arc::new(RealClockUtc {});
+        let clock = Arc::new(ClockUtc {});
         let token_service = TokenService {
             clock: clock.clone(),
-            random_bytes_provider: Arc::new(RandomBytesProviderImpl {}),
+            random_bytes_provider: Arc::new(Mutex::new(RandomBytesProviderImpl::new())),
             jwt_conf: JwtConfig {
                 secret: JwtSecretConfig {
                     current: "current".to_string(),

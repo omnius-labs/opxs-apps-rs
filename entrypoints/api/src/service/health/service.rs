@@ -26,7 +26,7 @@ mod tests {
     use std::sync::Arc;
 
     use chrono::Duration;
-    use omnius_core_base::clock::RealClockUtc;
+    use omnius_core_base::clock::ClockUtc;
     use omnius_opxs_base::{RunMode, WorldValidator};
     use serde_json::json;
     use sqlx::postgres::PgPoolOptions;
@@ -48,7 +48,7 @@ mod tests {
             git_tag: "git_tag".to_string(),
         };
 
-        let clock = Arc::new(RealClockUtc {});
+        let clock = Arc::new(ClockUtc {});
         let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
         world_verifier.verify().await.unwrap();
 

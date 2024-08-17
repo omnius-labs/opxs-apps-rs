@@ -29,7 +29,7 @@ pub fn gen_service(state: AppState) -> Router {
     )
 )]
 pub async fn upload(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<UploadInput>) -> Result<Json<UploadOutput>, AppError> {
-    let job_id = state.service.tsid_provider.gen().to_string();
+    let job_id = state.service.tsid_provider.lock().gen().to_string();
     let upload_uri = state
         .service
         .image_convert_job_creator

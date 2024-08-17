@@ -76,12 +76,13 @@ Opxs サポートチーム",
 mod tests {
     use chrono::Duration;
     use omnius_core_base::{
-        clock::RealClockUtc,
+        clock::ClockUtc,
         random_bytes::RandomBytesProviderImpl,
         tsid::{TsidProvider, TsidProviderImpl},
     };
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
+    use parking_lot::Mutex;
     use sqlx::postgres::PgPoolOptions;
 
     use omnius_core_cloud::aws::{ses::SesSenderMock, sqs::SqsSenderMock};
@@ -103,8 +104,8 @@ mod tests {
                 .await
                 .unwrap(),
         );
-        let clock = Arc::new(RealClockUtc {});
-        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
+        let clock = Arc::new(ClockUtc {});
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
         let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
@@ -116,7 +117,7 @@ mod tests {
 
         let send_email_sqs_sender = Arc::new(SqsSenderMock::new());
 
-        let job_id = tsid_provider.gen().to_string();
+        let job_id = tsid_provider.lock().gen().to_string();
         let job_creator = EmailSendJobCreator {
             email_send_job_repository: email_send_job_repository.clone(),
             send_email_sqs_sender: send_email_sqs_sender.clone(),

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use chrono::Utc;
 use omnius_core_base::{clock::Clock, tsid::TsidProvider};
+use parking_lot::Mutex;
 use sqlx::PgPool;
 
 use crate::{ImageConvertJob, ImageConvertJobStatus, ImageConvertRequestParam};
@@ -9,7 +10,7 @@ use crate::{ImageConvertJob, ImageConvertJobStatus, ImageConvertRequestParam};
 pub struct ImageConvertJobRepository {
     pub db: Arc<PgPool>,
     pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
-    pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
+    pub tsid_provider: Arc<Mutex<dyn TsidProvider + Send + Sync>>,
 }
 
 impl ImageConvertJobRepository {

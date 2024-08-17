@@ -3,9 +3,10 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 use axum_extra::extract::cookie;
 use chrono::Duration;
+use parking_lot::Mutex;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
-use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
 use omnius_core_cloud::aws::{s3::S3ClientImpl, sqs::SqsSenderImpl};
 
 use omnius_opxs_base::{AppConfig, AppInfo};
@@ -31,9 +32,9 @@ impl AppState {
                 .await?,
         );
 
-        let clock = Arc::new(RealClockUtc);
-        let random_bytes_provider = Arc::new(RandomBytesProviderImpl);
-        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
+        let clock = Arc::new(ClockUtc);
+        let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
 
         let sdk_config = aws_config::load_from_env().await;
         let send_email_sqs_sender = Arc::new(SqsSenderImpl {

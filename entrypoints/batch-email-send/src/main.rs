@@ -7,7 +7,7 @@ use sqlx::postgres::PgPoolOptions;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
-use omnius_core_base::clock::RealClockUtc;
+use omnius_core_base::clock::ClockUtc;
 use omnius_core_cloud::aws::ses::SesSenderImpl;
 
 use omnius_opxs_base::{AppConfig, AppInfo, RunMode};
@@ -28,7 +28,7 @@ async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
             .connect(&conf.postgres.url)
             .await?,
     );
-    let clock = Arc::new(RealClockUtc {});
+    let clock = Arc::new(ClockUtc {});
 
     let executor = EmailSendExecutor {
         email_send_job_repository: Arc::new(EmailSendJobRepository { db: db.clone(), clock }),

@@ -7,6 +7,8 @@
     "chrono",
     "datetime",
     "Deque",
+    "HMAC",
+    "nanos",
     "omnius",
     "openapi",
     "opxs",

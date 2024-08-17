@@ -38,7 +38,7 @@ pub async fn register(State(state): State<AppState>, ValidatedJson(input): Valid
     .unwrap()
     .to_string();
 
-    let job_id = state.service.tsid_provider.gen().to_string();
+    let job_id = state.service.tsid_provider.lock().gen().to_string();
     state
         .service
         .email_send_job_creator

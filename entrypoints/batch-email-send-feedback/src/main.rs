@@ -28,8 +28,8 @@ async fn handler_sub(_ms: &[SesNotification]) -> Result<(), Error> {
     //         .connect(&conf.postgres.url)
     //         .await?,
     // );
-    // let clock = Arc::new(RealClockUtc {});
-    // let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
+    // let clock = Arc::new(ClockUtc {});
+    // let tsid_provider = Arc::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl, 16));
 
     // let executor = Executor {
     //     email_send_job_repository: Arc::new(EmailSendJobRepository {

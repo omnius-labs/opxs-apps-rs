@@ -73,7 +73,7 @@ impl GoogleAuthService {
 mod tests {
     use async_trait::async_trait;
     use chrono::Duration;
-    use omnius_core_base::{clock::RealClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
     use omnius_opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
@@ -120,8 +120,8 @@ mod tests {
         let client_id = "client_id";
         let client_secret = "client_secret";
 
-        let clock = Arc::new(RealClockUtc {});
-        let tsid_provider = Arc::new(TsidProviderImpl::new(RealClockUtc, RandomBytesProviderImpl, 16));
+        let clock = Arc::new(ClockUtc {});
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
         let oauth2_provider = Arc::new(GoogleOAuth2ProviderMock::new(
             OAuth2TokenResult {
                 access_token: access_token.to_string(),

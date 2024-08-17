@@ -17,7 +17,7 @@ use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
 pub fn gen_service(state: AppState) -> Router {
     Router::new()
         .route("/refresh", post(refresh_token))
-        .route("/delete", delete(delete_token))
+        .route("/refresh", delete(delete_token))
         .with_state(state)
 }
 
@@ -41,8 +41,8 @@ pub struct RefreshInput {
 }
 
 #[utoipa::path(
-    post,
-    path = "/api/v1/auth/token/delete",
+    delete,
+    path = "/api/v1/auth/token/refresh",
     responses(
         (status = 200)
     )

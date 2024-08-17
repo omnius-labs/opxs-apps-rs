@@ -11,7 +11,7 @@ pub struct AppConfig {
     pub auth: AuthConfig,
     pub email: EmailConfig,
     pub image_convert: ImageConvertConfig,
-    pub notify: NotifyConfig,
+    pub notify: Option<NotifyConfig>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -133,11 +133,11 @@ impl AppConfig {
                             bucket: "opxs.v1.dev.image-convert".to_string(),
                         },
                     },
-                    notify: NotifyConfig {
+                    notify: Some(NotifyConfig {
                         discord: DiscordConfig {
                             release_webhook_url: discord_release_webhook_url,
                         },
-                    },
+                    }),
                 })
             }
             RunMode::Dev => {
@@ -179,11 +179,7 @@ impl AppConfig {
                             bucket: "opxs.v1.dev.image-convert".to_string(),
                         },
                     },
-                    notify: NotifyConfig {
-                        discord: DiscordConfig {
-                            release_webhook_url: discord_release_webhook_url,
-                        },
-                    },
+                    notify: None,
                 })
             }
         }

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use chrono::Utc;
+use parking_lot::Mutex;
 use sqlx::PgPool;
 
 use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider, tsid::TsidProvider};
@@ -21,8 +22,8 @@ use crate::service::health::{repo::WorldRepo, service::HealthService};
 
 pub struct AppService {
     pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
-    pub random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
-    pub tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
+    pub random_bytes_provider: Arc<Mutex<dyn RandomBytesProvider + Send + Sync>>,
+    pub tsid_provider: Arc<Mutex<dyn TsidProvider + Send + Sync>>,
 
     pub email_send_job_creator: EmailSendJobCreator,
     pub image_convert_job_creator: ImageConvertJobCreator,
@@ -41,8 +42,8 @@ impl AppService {
         conf: &AppConfig,
         db: Arc<PgPool>,
         clock: Arc<dyn Clock<Utc> + Send + Sync>,
-        random_bytes_provider: Arc<dyn RandomBytesProvider + Send + Sync>,
-        tsid_provider: Arc<dyn TsidProvider + Send + Sync>,
+        random_bytes_provider: Arc<Mutex<dyn RandomBytesProvider + Send + Sync>>,
+        tsid_provider: Arc<Mutex<dyn TsidProvider + Send + Sync>>,
         send_email_sqs_sender: Arc<dyn SqsSender + Send + Sync>,
         image_convert_s3_client: Arc<dyn S3Client + Send + Sync>,
     ) -> Self {

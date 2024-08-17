@@ -23,4 +23,4 @@ dependencies = ["lint"]
 workspace = false
 command = "cargo"
 install_crate = "cargo-watch"
-args = ["watch", "-x", "run --bin opxs-api"]
+args = ["watch", "-x", "run --bin omnius-opxs-api"]
