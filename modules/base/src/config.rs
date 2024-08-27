@@ -125,7 +125,7 @@ impl AppConfig {
                     email: EmailConfig {
                         from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
                         ses: SesConfig {
-                            configuration_set_name: "opxs-dev".to_string(),
+                            configuration_set_name: "opxs-email-send".to_string(),
                         },
                     },
                     image_convert: ImageConvertConfig {
@@ -171,7 +171,7 @@ impl AppConfig {
                     email: EmailConfig {
                         from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
                         ses: SesConfig {
-                            configuration_set_name: "opxs-dev".to_string(),
+                            configuration_set_name: "opxs-email-send".to_string(),
                         },
                     },
                     image_convert: ImageConvertConfig {

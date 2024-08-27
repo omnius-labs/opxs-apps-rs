@@ -36,6 +36,10 @@ jobs:
         with:
           platforms: linux/amd64
 
+      - name: Make bin dir
+        run: |
+          mkdir -p ./bin
+
       - name: Build bin (api)
         uses: docker/build-push-action@v6
         with:
@@ -48,13 +52,7 @@ jobs:
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api-builder
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api-builder,mode=max
           load: true
-      - name: Copy bin (api)
-        run: |
-          mkdir -p ./bin
-          docker run --name opxs-api-builder -d opxs-build-api-image
-          docker cp opxs-api-builder:/app/omnius-opxs-api ./bin
-          docker stop opxs-api-builder
-          docker rm opxs-api-builder
+          outputs: type=local,dest=bin
 
       - name: Build bin (batch-email-send)
         uses: docker/build-push-action@v6
@@ -68,13 +66,7 @@ jobs:
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-builder
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-builder,mode=max
           load: true
-      - name: Copy bin (batch-email-send)
-        run: |
-          mkdir -p ./bin
-          docker run --name opxs-batch-email-send-builder -d opxs-build-batch-email-send-image
-          docker cp opxs-batch-email-send-builder:/app/omnius-opxs-batch-email-send ./bin
-          docker stop opxs-batch-email-send-builder
-          docker rm opxs-batch-email-send-builder
+          outputs: type=local,dest=bin
 
       - name: Build bin (batch-email-send-feedback)
         uses: docker/build-push-action@v6
@@ -88,13 +80,7 @@ jobs:
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback-builder
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-email-send-feedback-builder,mode=max
           load: true
-      - name: Copy bin (batch-email-send-feedback)
-        run: |
-          mkdir -p ./bin
-          docker run --name opxs-batch-email-send-feedback-builder -d opxs-build-batch-email-send-feedback-image
-          docker cp opxs-batch-email-send-feedback-builder:/app/omnius-opxs-batch-email-send-feedback ./bin
-          docker stop opxs-batch-email-send-feedback-builder
-          docker rm opxs-batch-email-send-feedback-builder
+          outputs: type=local,dest=bin
 
       - name: Build bin (batch-image-convert)
         uses: docker/build-push-action@v6
@@ -108,13 +94,7 @@ jobs:
           cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert-builder
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert-builder,mode=max
           load: true
-      - name: Copy bin (batch-image-convert)
-        run: |
-          mkdir -p ./bin
-          docker run --name opxs-batch-image-convert-builder -d opxs-build-batch-image-convert-image
-          docker cp opxs-batch-image-convert-builder:/app/omnius-opxs-batch-image-convert ./bin
-          docker stop opxs-batch-image-convert-builder
-          docker rm opxs-batch-image-convert-builder
+          outputs: type=local,dest=bin
 
       - name: Login to Amazon ECR
         id: aws-ecr

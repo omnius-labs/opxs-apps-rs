@@ -50,8 +50,6 @@ ENV GIT_TAG=${GIT_TAG}
 RUN cargo build --release --bin omnius-opxs-batch-email-send-feedback
 
 # We do not need the Rust toolchain to run the binary!
-FROM chef AS runtime
+FROM scratch AS final
 
-WORKDIR /app
-
-COPY --from=builder /app/target/release/omnius-opxs-batch-email-send-feedback ./omnius-opxs-batch-email-send-feedback
+COPY --from=builder /app/target/release/omnius-opxs-batch-email-send-feedback /omnius-opxs-batch-email-send-feedback
