@@ -3,11 +3,12 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow, Validate, ToSchema)]
+#[derive(Debug, Serialize, Deserialize, Validate, ToSchema)]
 pub struct AuthToken {
-    pub expires_in: i32,
     pub access_token: String,
+    pub access_token_expires_at: NaiveDateTime,
     pub refresh_token: String,
+    pub refresh_token_expires_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, sqlx::Type, ToSchema)]

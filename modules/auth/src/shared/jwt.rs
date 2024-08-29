@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
@@ -21,8 +21,7 @@ impl Claims {
     }
 }
 
-pub fn sign(secret: &str, sub: &str, expires_in: Duration, iat: DateTime<Utc>) -> Result<String, AppError> {
-    let exp = iat + expires_in;
+pub fn sign(secret: &str, sub: &str, exp: DateTime<Utc>, iat: DateTime<Utc>) -> Result<String, AppError> {
     Ok(jsonwebtoken::encode(
         &Header::default(),
         &Claims::new(sub, iat, exp),

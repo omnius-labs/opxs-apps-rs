@@ -34,10 +34,9 @@ impl EmailAuthService {
             .await?;
 
         let now = self.clock.now();
-
         let sub = email.to_string();
-        let expires_in = Duration::minutes(30);
-        let token = jwt::sign(&self.jwt_conf.secret.current, &sub, expires_in, now)?;
+        let exp = now + Duration::minutes(30);
+        let token = jwt::sign(&self.jwt_conf.secret.current, &sub, exp, now)?;
 
         Ok(token)
     }

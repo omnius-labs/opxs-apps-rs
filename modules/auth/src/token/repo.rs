@@ -15,7 +15,7 @@ pub struct TokenRepo {
 }
 
 impl TokenRepo {
-    pub async fn create_token(&self, user_id: &str, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
+    pub async fn create_token(&self, user_id: &str, refresh_token: &str, refresh_token_expires_at: &DateTime<Utc>) -> Result<(), AppError> {
         let now = self.clock.now();
         sqlx::query(
             r#"
@@ -25,7 +25,7 @@ INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, upda
         )
         .bind(refresh_token)
         .bind(user_id)
-        .bind(expires_at)
+        .bind(refresh_token_expires_at)
         .bind(now)
         .bind(now)
         .execute(self.db.as_ref())
@@ -43,25 +43,6 @@ DELETE FROM refresh_tokens
 "#,
         )
         .bind(user_id)
-        .execute(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
-
-        Ok(())
-    }
-
-    pub async fn update_token(&self, refresh_token: &str, expires_at: &DateTime<Utc>) -> Result<(), AppError> {
-        let now = self.clock.now();
-        sqlx::query(
-            r#"
-UPDATE refresh_tokens
-    SET expires_at = $2, updated_at = $3
-    WHERE refresh_token = $1;
-"#,
-        )
-        .bind(refresh_token)
-        .bind(expires_at)
-        .bind(now)
         .execute(self.db.as_ref())
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;

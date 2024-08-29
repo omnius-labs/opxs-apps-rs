@@ -11,6 +11,9 @@ use crate::shared::{jwt, model::AuthToken};
 
 use super::TokenRepo;
 
+const ACCESS_TOKEN_EXPIRES_IN: Duration = Duration::minutes(5);
+const REFRESH_TOKEN_EXPIRES_IN: Duration = Duration::days(14);
+
 pub struct TokenService {
     pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
     pub random_bytes_provider: Arc<Mutex<dyn RandomBytesProvider + Send + Sync>>,
@@ -22,18 +25,20 @@ impl TokenService {
     pub async fn create(&self, user_id: &str) -> Result<AuthToken, AppError> {
         let now = self.clock.now();
 
-        let sub = user_id.to_string();
-        let expires_in = Duration::days(14);
-        let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, expires_in, now)?;
-        let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
-        let expires_at = now + expires_in;
+        let access_token_expires_at = now + ACCESS_TOKEN_EXPIRES_IN;
+        let refresh_token_expires_at = now + REFRESH_TOKEN_EXPIRES_IN;
 
-        self.token_repo.create_token(user_id, &refresh_token, &expires_at).await?;
+        let sub = user_id.to_string();
+        let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, access_token_expires_at, now)?;
+        let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
+
+        self.token_repo.create_token(user_id, &refresh_token, &refresh_token_expires_at).await?;
 
         Ok(AuthToken {
-            expires_in: expires_in.num_seconds() as i32,
             access_token,
+            access_token_expires_at: access_token_expires_at.naive_utc(),
             refresh_token,
+            refresh_token_expires_at: refresh_token_expires_at.naive_utc(),
         })
     }
 
@@ -45,18 +50,20 @@ impl TokenService {
         let now = self.clock.now();
         let user_id = self.token_repo.get_user_id(refresh_token).await?;
 
-        let sub = user_id.to_string();
-        let expires_in = Duration::days(14);
-        let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, expires_in, now)?;
-        let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
-        let expires_at = now + expires_in;
+        let access_token_expires_at = now + ACCESS_TOKEN_EXPIRES_IN;
+        let refresh_token_expires_at = now + REFRESH_TOKEN_EXPIRES_IN;
 
-        self.token_repo.update_token(&refresh_token, &expires_at).await?;
+        let sub = user_id.to_string();
+        let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, access_token_expires_at, now)?;
+        let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
+
+        self.token_repo.create_token(&user_id, &refresh_token, &refresh_token_expires_at).await?;
 
         Ok(AuthToken {
-            expires_in: expires_in.num_seconds() as i32,
             access_token,
+            access_token_expires_at: access_token_expires_at.naive_utc(),
             refresh_token,
+            refresh_token_expires_at: refresh_token_expires_at.naive_utc(),
         })
     }
 }
