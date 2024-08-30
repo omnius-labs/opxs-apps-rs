@@ -54,7 +54,7 @@ impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let (status_code, error_code) = match self {
             AppError::SqlxError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
-            AppError::JwtError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
+            AppError::JwtError(_) => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
             AppError::TokioRecvError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
             AppError::AxumError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
             AppError::AxumTypedHeaderError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
