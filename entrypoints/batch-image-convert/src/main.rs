@@ -41,7 +41,7 @@ async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
         }),
         s3_client: Arc::new(S3ClientImpl {
             client: aws_sdk_s3::Client::new(&aws_config::load_from_env().await),
-            bucket: conf.image_convert.s3.bucket,
+            bucket: conf.image.convert.s3.bucket,
         }),
     };
     executor.execute(job_ids).await?;

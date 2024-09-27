@@ -1,15 +1,12 @@
-FROM debian:buster-slim AS runtime
+FROM public.ecr.aws/lambda/provided:al2023 AS runtime
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
-    ca-certificates \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN dnf install -y \
+    openssl-devel \
+    && rm -rf /var/cache/dnf/* \
+    && dnf clean all
 
-COPY ./conf/migrations ./conf/migrations
-COPY ./bin/omnius-opxs-api /usr/local/bin/
+COPY ./bin/omnius-opxs-api ${LAMBDA_RUNTIME_DIR}/bootstrap
 
-ENTRYPOINT ["/usr/local/bin/omnius-opxs-api"]
+CMD [ "lambda-handler" ]

@@ -8,7 +8,7 @@ export AWS_PAGER=""
 
 AWS_REGION="us-east-1"
 AWS_ACCOUNT_ID="464209738056"
-DOCKER_IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/opxs-api-ecs-ecr:latest"
+DOCKER_IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/opxs-api-lambda-ecr:latest"
 
 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
@@ -18,4 +18,5 @@ if ! docker buildx build --platform linux/amd64 -f "./Dockerfile.run.api" -t "${
 fi
 
 docker push "${DOCKER_IMAGE}"
-aws ecs update-service --region ${AWS_REGION} --cluster opxs-api-ecs-cluster --service opxs-api-ecs-service --force-new-deployment
+
+aws lambda --region ${AWS_REGION} update-function-code --function-name opxs-api-lambda --image-uri ${DOCKER_IMAGE}

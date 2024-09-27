@@ -44,7 +44,7 @@ impl AppState {
         });
         let image_convert_s3_client = Arc::new(S3ClientImpl {
             client: aws_sdk_s3::Client::new(&aws_config::load_from_env().await),
-            bucket: conf.image_convert.s3.bucket.clone(),
+            bucket: conf.image.convert.s3.bucket.clone(),
         });
 
         let service = Arc::new(AppService::new(

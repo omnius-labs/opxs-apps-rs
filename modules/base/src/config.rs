@@ -10,7 +10,7 @@ pub struct AppConfig {
     pub web: WebConfig,
     pub auth: AuthConfig,
     pub email: EmailConfig,
-    pub image_convert: ImageConvertConfig,
+    pub image: ImageConfig,
     pub notify: Option<NotifyConfig>,
 }
 
@@ -56,6 +56,11 @@ pub struct EmailConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SesConfig {
     pub configuration_set_name: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImageConfig {
+    pub convert: ImageConvertConfig,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -128,9 +133,11 @@ impl AppConfig {
                             configuration_set_name: "opxs-email-send".to_string(),
                         },
                     },
-                    image_convert: ImageConvertConfig {
-                        s3: S3Config {
-                            bucket: "opxs.v1.dev.image-convert".to_string(),
+                    image: ImageConfig {
+                        convert: ImageConvertConfig {
+                            s3: S3Config {
+                                bucket: "opxs.v1.dev.image-convert".to_string(),
+                            },
                         },
                     },
                     notify: Some(NotifyConfig {
@@ -174,9 +181,11 @@ impl AppConfig {
                             configuration_set_name: "opxs-email-send".to_string(),
                         },
                     },
-                    image_convert: ImageConvertConfig {
-                        s3: S3Config {
-                            bucket: "opxs.v1.dev.image-convert".to_string(),
+                    image: ImageConfig {
+                        convert: ImageConvertConfig {
+                            s3: S3Config {
+                                bucket: "opxs.v1.dev.image-convert".to_string(),
+                            },
                         },
                     },
                     notify: None,
