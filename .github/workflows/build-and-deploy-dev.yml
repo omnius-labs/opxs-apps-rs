@@ -112,7 +112,7 @@ jobs:
           cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-api,mode=max
       - name: Update lambda
         run: |
-          aws lambda update-function-code --function-name opxs-api --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-api-lambda-ecr:latest
+          aws lambda update-function-code --function-name opxs-api-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-api-lambda-ecr:latest
 
       - name: Build and Push image to Amazon ECR (opxs-batch-email-send-lambda)
         uses: docker/build-push-action@v6
