@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD as BASE64, Engine};
-use hyper::StatusCode;
+use reqwest::StatusCode;
 use serde::Deserialize;
 use serde_json::json;
 

@@ -58,6 +58,8 @@ futures-util = { workspace = true }
 serial_test = { workspace = true }
 url = { workspace = true }
 parking_lot = { workspace = true }
+axum-aws-lambda = { workspace = true }
+lambda_http = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }

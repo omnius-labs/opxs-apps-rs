@@ -1,27 +1,27 @@
 use axum::{
     async_trait,
-    extract::{rejection::JsonRejection, FromRequest, TypedHeader},
-    http::Request,
-    Json,
+    extract::{rejection::JsonRejection, FromRequest, FromRequestParts, Request},
+    http::request::Parts,
+    Json, RequestPartsExt as _,
 };
-use headers::{authorization::Bearer, Authorization};
-use serde::de::DeserializeOwned;
-use validator::Validate;
+use axum_extra::{
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
+};
 
 use omnius_opxs_auth::shared::{jwt, model::User};
 use omnius_opxs_base::AppError;
+use serde::de::DeserializeOwned;
+use validator::Validate;
 
 use crate::shared::state::AppState;
 
 #[async_trait]
-impl<B> FromRequest<AppState, B> for User
-where
-    B: Send + 'static,
-{
+impl FromRequestParts<AppState> for User {
     type Rejection = AppError;
 
-    async fn from_request(req: Request<B>, state: &AppState) -> Result<Self, Self::Rejection> {
-        let TypedHeader(Authorization(bearer)) = TypedHeader::<Authorization<Bearer>>::from_request(req, state).await?;
+    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+        let TypedHeader(Authorization(bearer)) = parts.extract::<TypedHeader<Authorization<Bearer>>>().await?;
 
         let access_token = bearer.token();
         let now = state.service.clock.now();
@@ -39,16 +39,15 @@ where
 pub struct ValidatedJson<T>(pub T);
 
 #[async_trait]
-impl<T, S, B> FromRequest<S, B> for ValidatedJson<T>
+impl<T, S> FromRequest<S> for ValidatedJson<T>
 where
     S: Send + Sync,
-    B: Send + 'static,
     T: DeserializeOwned + Validate,
-    Json<T>: FromRequest<S, B, Rejection = JsonRejection>,
+    Json<T>: FromRequest<S, Rejection = JsonRejection>,
 {
     type Rejection = AppError;
 
-    async fn from_request(req: Request<B>, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
         let Json(value) = Json::<T>::from_request(req, state).await?;
 
         value.validate()?;

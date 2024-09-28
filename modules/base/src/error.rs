@@ -18,7 +18,7 @@ pub enum AppError {
     #[error(transparent)]
     AxumError(#[from] axum::Error),
     #[error(transparent)]
-    AxumTypedHeaderError(#[from] axum::extract::rejection::TypedHeaderRejection),
+    AxumTypedHeaderError(#[from] axum_extra::typed_header::TypedHeaderRejection),
     #[error(transparent)]
     AxumExtensionError(#[from] axum::extract::rejection::ExtensionRejection),
     #[error(transparent)]

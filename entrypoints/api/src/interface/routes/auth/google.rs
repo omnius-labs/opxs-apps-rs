@@ -60,7 +60,7 @@ pub async fn register(
         return Err(AppError::InvalidRequest(anyhow::anyhow!("Nonce not found")));
     }
     let cookie_nonce = cookie_nonce.unwrap();
-    let jar = jar.remove(Cookie::named("nonce"));
+    let jar = jar.remove(Cookie::build("nonce"));
 
     let user_id = state
         .service

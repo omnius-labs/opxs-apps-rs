@@ -54,6 +54,7 @@ futures = { workspace = true }
 futures-util = { workspace = true }
 serial_test = { workspace = true }
 parking_lot = { workspace = true }
+http = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
