@@ -7,6 +7,7 @@ RUN dnf install -y \
     && rm -rf /var/cache/dnf/* \
     && dnf clean all
 
+COPY ./conf/migrations ./conf/migrations
 COPY ./bin/omnius-opxs-api ${LAMBDA_RUNTIME_DIR}/bootstrap
 
 CMD [ "lambda-handler" ]
