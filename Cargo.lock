@@ -179,6 +179,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "atomic-waker"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
+
+[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -648,31 +654,20 @@ dependencies = [
 
 [[package]]
 name = "aws_lambda_events"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65991dbc3bfb586939ba1527eefdc99bc21157b6ec891f180fb1e16e2dddc7a9"
-dependencies = [
- "base64 0.21.7",
- "chrono",
- "serde",
- "serde_json",
- "serde_with 3.9.0",
-]
-
-[[package]]
-name = "aws_lambda_events"
 version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7319a086b79c3ff026a33a61e80f04fd3885fbb73237981ea080d21944e1cb1c"
 dependencies = [
  "base64 0.22.1",
  "bytes",
+ "chrono",
  "http 1.1.0",
  "http-body 1.0.1",
- "http-serde 2.1.1",
+ "http-serde",
  "query_map",
  "serde",
  "serde_json",
+ "serde_with 3.9.0",
 ]
 
 [[package]]
@@ -804,7 +799,7 @@ dependencies = [
  "bytes",
  "cookie",
  "futures-util",
- "headers 0.4.0",
+ "headers",
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
@@ -848,12 +843,6 @@ name = "base64"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
-
-[[package]]
-name = "base64"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ea22880d78093b0cbe17c89f64a7d457941e65759157ec6cb31a31d652b05e5"
 
 [[package]]
 name = "base64"
@@ -1558,6 +1547,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "h2"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "524e8ac6999421f49a846c2d4411f337e53497d8ec55d67753beffa43c5d9205"
+dependencies = [
+ "atomic-waker",
+ "bytes",
+ "fnv",
+ "futures-core",
+ "futures-sink",
+ "http 1.1.0",
+ "indexmap 2.5.0",
+ "slab",
+ "tokio",
+ "tokio-util",
+ "tracing",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1587,41 +1595,17 @@ dependencies = [
 
 [[package]]
 name = "headers"
-version = "0.3.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06683b93020a07e3dbcf5f8c0f6d40080d725bea7936fc01ad345c01b97dc270"
-dependencies = [
- "base64 0.21.7",
- "bytes",
- "headers-core 0.2.0",
- "http 0.2.12",
- "httpdate",
- "mime",
- "sha1",
-]
-
-[[package]]
-name = "headers"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "322106e6bd0cba2d5ead589ddb8150a13d7c4217cf80d7c4f682ca994ccc6aa9"
 dependencies = [
  "base64 0.21.7",
  "bytes",
- "headers-core 0.3.0",
+ "headers-core",
  "http 1.1.0",
  "httpdate",
  "mime",
  "sha1",
-]
-
-[[package]]
-name = "headers-core"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7f66481bfee273957b1f20485a4ff3362987f85b2c236580d81b4eb7a326429"
-dependencies = [
- "http 0.2.12",
 ]
 
 [[package]]
@@ -1730,16 +1714,6 @@ dependencies = [
 
 [[package]]
 name = "http-serde"
-version = "1.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f560b665ad9f1572cfcaf034f7fb84338a7ce945216d64a90fd81f046a3caee"
-dependencies = [
- "http 0.2.12",
- "serde",
-]
-
-[[package]]
-name = "http-serde"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f056c8559e3757392c8d091e796416e4649d8e49e88b8d76df6c002f05027fd"
@@ -1770,7 +1744,7 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-util",
- "h2",
+ "h2 0.3.26",
  "http 0.2.12",
  "http-body 0.4.6",
  "httparse",
@@ -1793,6 +1767,7 @@ dependencies = [
  "bytes",
  "futures-channel",
  "futures-util",
+ "h2 0.4.6",
  "http 1.1.0",
  "http-body 1.0.1",
  "httparse",
@@ -1852,15 +1827,18 @@ dependencies = [
 
 [[package]]
 name = "hyper-tls"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6183ddfa99b85da61a140bea0efc93fdf56ceaa041b37d553518030827f9905"
+checksum = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0"
 dependencies = [
  "bytes",
- "hyper 0.14.30",
+ "http-body-util",
+ "hyper 1.4.1",
+ "hyper-util",
  "native-tls",
  "tokio",
  "tokio-native-tls",
+ "tower-service",
 ]
 
 [[package]]
@@ -2057,7 +2035,7 @@ version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67fe279be7f89f5f72c97c3a96f45c43db8edab1007320ecc6a5741273b4d6db"
 dependencies = [
- "aws_lambda_events 0.15.1",
+ "aws_lambda_events",
  "base64 0.22.1",
  "bytes",
  "encoding_rs",
@@ -2067,7 +2045,7 @@ dependencies = [
  "http-body 1.0.1",
  "http-body-util",
  "hyper 1.4.1",
- "lambda_runtime 0.13.0",
+ "lambda_runtime",
  "mime",
  "percent-encoding",
  "pin-project-lite",
@@ -2076,30 +2054,6 @@ dependencies = [
  "serde_urlencoded",
  "tokio-stream",
  "url",
-]
-
-[[package]]
-name = "lambda_runtime"
-version = "0.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "deca8f65d7ce9a8bfddebb49d7d91b22e788a59ca0c5190f26794ab80ed7a702"
-dependencies = [
- "async-stream",
- "base64 0.20.0",
- "bytes",
- "futures",
- "http 0.2.12",
- "http-body 0.4.6",
- "http-serde 1.1.3",
- "hyper 0.14.30",
- "lambda_runtime_api_client 0.8.0",
- "serde",
- "serde_json",
- "serde_path_to_error",
- "tokio",
- "tokio-stream",
- "tower 0.4.13",
- "tracing",
 ]
 
 [[package]]
@@ -2115,10 +2069,10 @@ dependencies = [
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
- "http-serde 2.1.1",
+ "http-serde",
  "hyper 1.4.1",
  "hyper-util",
- "lambda_runtime_api_client 0.11.1",
+ "lambda_runtime_api_client",
  "pin-project 1.1.5",
  "serde",
  "serde_json",
@@ -2128,18 +2082,6 @@ dependencies = [
  "tower 0.4.13",
  "tower-layer",
  "tracing",
-]
-
-[[package]]
-name = "lambda_runtime_api_client"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "690c5ae01f3acac8c9c3348b556fc443054e9b7f1deaf53e9ebab716282bf0ed"
-dependencies = [
- "http 0.2.12",
- "hyper 0.14.30",
- "tokio",
- "tower-service",
 ]
 
 [[package]]
@@ -2430,7 +2372,7 @@ dependencies = [
  "chrono",
  "gcloud-sdk",
  "parking_lot 0.12.3",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "serde",
  "serde_json",
  "testcontainers",
@@ -2505,7 +2447,7 @@ dependencies = [
  "config",
  "futures",
  "futures-util",
- "headers 0.3.9",
+ "headers",
  "hex",
  "hyper 1.4.1",
  "jsonwebtoken",
@@ -2521,7 +2463,7 @@ dependencies = [
  "omnius-opxs-image-convert",
  "once_cell",
  "parking_lot 0.12.3",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2530,7 +2472,7 @@ dependencies = [
  "testcontainers",
  "thiserror",
  "tokio",
- "tower 0.4.13",
+ "tower 0.5.1",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -2560,7 +2502,7 @@ dependencies = [
  "config",
  "futures",
  "futures-util",
- "headers 0.3.9",
+ "headers",
  "hex",
  "http 1.1.0",
  "hyper 1.4.1",
@@ -2573,7 +2515,7 @@ dependencies = [
  "omnius-opxs-base",
  "once_cell",
  "parking_lot 0.12.3",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2582,7 +2524,7 @@ dependencies = [
  "testcontainers",
  "thiserror",
  "tokio",
- "tower 0.4.13",
+ "tower 0.5.1",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -2611,7 +2553,7 @@ dependencies = [
  "config",
  "futures",
  "futures-util",
- "headers 0.3.9",
+ "headers",
  "hex",
  "hyper 1.4.1",
  "jsonwebtoken",
@@ -2622,7 +2564,7 @@ dependencies = [
  "omnius-core-testkit",
  "once_cell",
  "parking_lot 0.12.3",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2631,7 +2573,7 @@ dependencies = [
  "testcontainers",
  "thiserror",
  "tokio",
- "tower 0.4.13",
+ "tower 0.5.1",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -2651,7 +2593,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-secretsmanager",
  "aws-sdk-sesv2",
- "aws_lambda_events 0.10.0",
+ "aws_lambda_events",
  "axum 0.7.7",
  "axum-extra",
  "base64 0.22.1",
@@ -2659,11 +2601,11 @@ dependencies = [
  "config",
  "futures",
  "futures-util",
- "headers 0.3.9",
+ "headers",
  "hex",
  "hyper 1.4.1",
  "jsonwebtoken",
- "lambda_runtime 0.8.3",
+ "lambda_runtime",
  "omnius-core-base",
  "omnius-core-cloud",
  "omnius-core-image",
@@ -2672,7 +2614,7 @@ dependencies = [
  "omnius-opxs-base",
  "omnius-opxs-email-send",
  "once_cell",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2681,7 +2623,7 @@ dependencies = [
  "testcontainers",
  "thiserror",
  "tokio",
- "tower 0.4.13",
+ "tower 0.5.1",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -2700,7 +2642,7 @@ dependencies = [
  "async-trait",
  "aws-config",
  "aws-sdk-secretsmanager",
- "aws_lambda_events 0.10.0",
+ "aws_lambda_events",
  "axum 0.7.7",
  "axum-extra",
  "base64 0.22.1",
@@ -2708,11 +2650,11 @@ dependencies = [
  "config",
  "futures",
  "futures-util",
- "headers 0.3.9",
+ "headers",
  "hex",
  "hyper 1.4.1",
  "jsonwebtoken",
- "lambda_runtime 0.8.3",
+ "lambda_runtime",
  "omnius-core-base",
  "omnius-core-cloud",
  "omnius-core-image",
@@ -2721,7 +2663,7 @@ dependencies = [
  "omnius-opxs-base",
  "omnius-opxs-email-send",
  "once_cell",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2730,7 +2672,7 @@ dependencies = [
  "testcontainers",
  "thiserror",
  "tokio",
- "tower 0.4.13",
+ "tower 0.5.1",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -2751,7 +2693,7 @@ dependencies = [
  "aws-sdk-s3",
  "aws-sdk-secretsmanager",
  "aws-sdk-sesv2",
- "aws_lambda_events 0.10.0",
+ "aws_lambda_events",
  "axum 0.7.7",
  "axum-extra",
  "base64 0.22.1",
@@ -2759,11 +2701,11 @@ dependencies = [
  "config",
  "futures",
  "futures-util",
- "headers 0.3.9",
+ "headers",
  "hex",
  "hyper 1.4.1",
  "jsonwebtoken",
- "lambda_runtime 0.8.3",
+ "lambda_runtime",
  "omnius-core-base",
  "omnius-core-cloud",
  "omnius-core-image",
@@ -2773,7 +2715,7 @@ dependencies = [
  "omnius-opxs-image-convert",
  "once_cell",
  "parking_lot 0.12.3",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2782,7 +2724,7 @@ dependencies = [
  "testcontainers",
  "thiserror",
  "tokio",
- "tower 0.4.13",
+ "tower 0.5.1",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -2811,7 +2753,7 @@ dependencies = [
  "config",
  "futures",
  "futures-util",
- "headers 0.3.9",
+ "headers",
  "hex",
  "hyper 1.4.1",
  "jsonwebtoken",
@@ -2823,7 +2765,7 @@ dependencies = [
  "omnius-opxs-base",
  "once_cell",
  "parking_lot 0.12.3",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2832,7 +2774,7 @@ dependencies = [
  "testcontainers",
  "thiserror",
  "tokio",
- "tower 0.4.13",
+ "tower 0.5.1",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -2861,7 +2803,7 @@ dependencies = [
  "config",
  "futures",
  "futures-util",
- "headers 0.3.9",
+ "headers",
  "hex",
  "hyper 1.4.1",
  "jsonwebtoken",
@@ -2873,7 +2815,7 @@ dependencies = [
  "omnius-opxs-base",
  "once_cell",
  "parking_lot 0.12.3",
- "reqwest 0.11.27",
+ "reqwest 0.12.7",
  "ring 0.17.8",
  "serde",
  "serde_json",
@@ -2882,7 +2824,7 @@ dependencies = [
  "testcontainers",
  "thiserror",
  "tokio",
- "tower 0.4.13",
+ "tower 0.5.1",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -3514,18 +3456,16 @@ dependencies = [
  "encoding_rs",
  "futures-core",
  "futures-util",
- "h2",
+ "h2 0.3.26",
  "http 0.2.12",
  "http-body 0.4.6",
  "hyper 0.14.30",
  "hyper-rustls 0.24.2",
- "hyper-tls",
  "ipnet",
  "js-sys",
  "log",
  "mime",
  "mime_guess",
- "native-tls",
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
@@ -3536,9 +3476,8 @@ dependencies = [
  "serde_json",
  "serde_urlencoded",
  "sync_wrapper 0.1.2",
- "system-configuration",
+ "system-configuration 0.5.1",
  "tokio",
- "tokio-native-tls",
  "tokio-rustls 0.24.1",
  "tokio-util",
  "tower-service",
@@ -3558,19 +3497,23 @@ checksum = "f8f4955649ef5c38cc7f9e8aa41761d48fb9677197daea9984dc54f56aad5e63"
 dependencies = [
  "base64 0.22.1",
  "bytes",
+ "encoding_rs",
  "futures-channel",
  "futures-core",
  "futures-util",
+ "h2 0.4.6",
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
  "hyper 1.4.1",
  "hyper-rustls 0.27.3",
+ "hyper-tls",
  "hyper-util",
  "ipnet",
  "js-sys",
  "log",
  "mime",
+ "native-tls",
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
@@ -3582,7 +3525,9 @@ dependencies = [
  "serde_json",
  "serde_urlencoded",
  "sync_wrapper 1.0.1",
+ "system-configuration 0.6.1",
  "tokio",
+ "tokio-native-tls",
  "tokio-rustls 0.26.0",
  "tower-service",
  "url",
@@ -4334,7 +4279,18 @@ checksum = "ba3a3adc5c275d719af8cb4272ea1c4a6d668a777f37e115f6d11ddbc1c8e0e7"
 dependencies = [
  "bitflags 1.3.2",
  "core-foundation",
- "system-configuration-sys",
+ "system-configuration-sys 0.5.0",
+]
+
+[[package]]
+name = "system-configuration"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c879d448e9d986b661742763247d3693ed13609438cf3d006f51f5368a5ba6b"
+dependencies = [
+ "bitflags 2.6.0",
+ "core-foundation",
+ "system-configuration-sys 0.6.0",
 ]
 
 [[package]]
@@ -4342,6 +4298,16 @@ name = "system-configuration-sys"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a75fb188eb626b924683e3b95e3a48e63551fcfb51949de2f06a9d91dbee93c9"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
+]
+
+[[package]]
+name = "system-configuration-sys"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4"
 dependencies = [
  "core-foundation-sys",
  "libc",
@@ -4642,7 +4608,7 @@ dependencies = [
  "axum 0.6.20",
  "base64 0.21.7",
  "bytes",
- "h2",
+ "h2 0.3.26",
  "http 0.2.12",
  "http-body 0.4.6",
  "hyper 0.14.30",
