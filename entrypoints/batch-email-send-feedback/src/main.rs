@@ -24,7 +24,7 @@ async fn handler_sub(_ms: &[SesNotification]) -> Result<(), Error> {
     // let db = Arc::new(
     //     PgPoolOptions::new()
     //         .max_connections(100)
-    //         .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
+    //         .idle_timeout(Some(Duration::minutes(15).to_std()?))
     //         .connect(&conf.postgres.url)
     //         .await?,
     // );

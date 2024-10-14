@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use aws_config::BehaviorVersion;
 use axum::extract::FromRef;
 use axum_extra::extract::cookie;
 use chrono::Duration;
@@ -27,7 +28,7 @@ impl AppState {
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
-                .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
+                .idle_timeout(Some(Duration::minutes(15).to_std()?))
                 .connect(&conf.postgres.url)
                 .await?,
         );
@@ -36,14 +37,14 @@ impl AppState {
         let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
         let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
 
-        let sdk_config = aws_config::load_from_env().await;
+        let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
         let send_email_sqs_sender = Arc::new(SqsSenderImpl {
             client: aws_sdk_sqs::Client::new(&sdk_config),
             queue_url: "opxs-batch-email-send-sqs".to_string(),
             delay_seconds: None,
         });
         let image_convert_s3_client = Arc::new(S3ClientImpl {
-            client: aws_sdk_s3::Client::new(&aws_config::load_from_env().await),
+            client: aws_sdk_s3::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
             bucket: conf.image.convert.s3.bucket.clone(),
         });
 

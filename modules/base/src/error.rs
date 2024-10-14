@@ -24,6 +24,8 @@ pub enum AppError {
     #[error(transparent)]
     AxumJsonRejection(#[from] axum::extract::rejection::JsonRejection),
     #[error(transparent)]
+    UrlParseError(#[from] url::ParseError),
+    #[error(transparent)]
     ValidationError(#[from] validator::ValidationErrors),
 
     #[error("invalid request")]
@@ -60,6 +62,7 @@ impl IntoResponse for AppError {
             AppError::AxumTypedHeaderError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
             AppError::AxumExtensionError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
             AppError::AxumJsonRejection(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
+            AppError::UrlParseError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
             AppError::ValidationError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
 
             AppError::InvalidRequest(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),

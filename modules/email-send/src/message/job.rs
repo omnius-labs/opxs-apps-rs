@@ -14,12 +14,12 @@ impl sqlx::Type<sqlx::Postgres> for EmailSendJobType {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobType {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> sqlx::encode::IsNull {
+    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             EmailSendJobType::EmailConfirm => buf.extend_from_slice(b"EmailConfirm"),
             _ => buf.extend_from_slice(b"Unknown"),
         }
-        sqlx::encode::IsNull::No
+        Ok(sqlx::encode::IsNull::No)
     }
 }
 
@@ -62,7 +62,7 @@ impl sqlx::Type<sqlx::Postgres> for EmailSendJobBatchStatus {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchStatus {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> sqlx::encode::IsNull {
+    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             EmailSendJobBatchStatus::Preparing => buf.extend_from_slice(b"Preparing"),
             EmailSendJobBatchStatus::Waiting => buf.extend_from_slice(b"Waiting"),
@@ -73,7 +73,7 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchStatus {
             EmailSendJobBatchStatus::Failed => buf.extend_from_slice(b"Failed"),
             _ => buf.extend_from_slice(b"Unknown"),
         }
-        sqlx::encode::IsNull::No
+        Ok(sqlx::encode::IsNull::No)
     }
 }
 
@@ -120,7 +120,7 @@ impl sqlx::Type<sqlx::Postgres> for EmailSendJobBatchDetailStatus {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> sqlx::encode::IsNull {
+    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             EmailSendJobBatchDetailStatus::Preparing => buf.extend_from_slice(b"Preparing"),
             EmailSendJobBatchDetailStatus::Waiting => buf.extend_from_slice(b"Waiting"),
@@ -131,7 +131,7 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
             EmailSendJobBatchDetailStatus::Failed => buf.extend_from_slice(b"Failed"),
             _ => buf.extend_from_slice(b"Unknown"),
         }
-        sqlx::encode::IsNull::No
+        Ok(sqlx::encode::IsNull::No)
     }
 }
 

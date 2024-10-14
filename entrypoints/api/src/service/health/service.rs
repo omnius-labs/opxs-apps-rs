@@ -30,17 +30,17 @@ mod tests {
     use omnius_opxs_base::{RunMode, WorldValidator};
     use serde_json::json;
     use sqlx::postgres::PgPoolOptions;
+    use testresult::TestResult;
 
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::service::health::repo::WorldRepo;
+    use crate::{service::health::repo::WorldRepo, shared};
 
     use super::*;
 
     #[tokio::test]
-    async fn check_test() {
-        let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, "15.1");
+    async fn check_test() -> TestResult {
+        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
 
         let info = AppInfo {
             app_name: "app".to_string(),
@@ -49,26 +49,27 @@ mod tests {
         };
 
         let clock = Arc::new(ClockUtc {});
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
-        world_verifier.verify().await.unwrap();
+        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await?;
+        world_verifier.verify().await?;
 
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
-                .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
+                .idle_timeout(Some(Duration::minutes(15).to_std()?))
                 .connect(&container.connection_string)
-                .await
-                .unwrap(),
+                .await?,
         );
         let world_repo = Arc::new(WorldRepo { db });
         let service = HealthService { info, world_repo };
 
         assert_eq!(
-            service.check().await.unwrap(),
+            service.check().await?,
             json!({
                 "mode": "local",
                 "git_tag": "git_tag"
             })
         );
+
+        Ok(())
     }
 }

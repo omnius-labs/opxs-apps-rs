@@ -72,6 +72,7 @@ impl TokenService {
 mod tests {
     use chrono::{DateTime, Duration};
     use sqlx::postgres::PgPoolOptions;
+    use testresult::TestResult;
 
     use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl};
     use omnius_core_migration::postgres::PostgresMigrator;
@@ -87,9 +88,8 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn simple_test() {
-        let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, shared::POSTGRES_VERSION);
+    async fn simple_test() -> TestResult {
+        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()
@@ -152,5 +152,7 @@ INSERT INTO users (id, name, authentication_type, role, created_at, updated_at)
         assert!(token_service.refresh(&token.refresh_token).await.is_err());
 
         token_service.delete(user_id).await.unwrap();
+
+        Ok(())
     }
 }

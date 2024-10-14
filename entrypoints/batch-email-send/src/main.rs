@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use aws_config::BehaviorVersion;
 use aws_lambda_events::event::sqs::SqsEvent;
 use chrono::Duration;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
@@ -24,7 +25,7 @@ async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
     let db = Arc::new(
         PgPoolOptions::new()
             .max_connections(100)
-            .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
+            .idle_timeout(Some(Duration::minutes(15).to_std()?))
             .connect(&conf.postgres.url)
             .await?,
     );
@@ -33,7 +34,7 @@ async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
     let executor = EmailSendExecutor {
         email_send_job_repository: Arc::new(EmailSendJobRepository { db: db.clone(), clock }),
         ses_sender: Arc::new(SesSenderImpl {
-            client: aws_sdk_sesv2::Client::new(&aws_config::load_from_env().await),
+            client: aws_sdk_sesv2::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
             configuration_set_name: Some(conf.email.ses.configuration_set_name),
         }),
     };

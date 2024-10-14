@@ -29,9 +29,9 @@ INSERT INTO email_send_jobs (id, batch_count, email_address_count, type, param, 
         .bind(1)
         .bind(1)
         .bind(EmailSendJobType::EmailConfirm)
-        .bind(&serde_json::to_string(param).unwrap())
+        .bind(&serde_json::to_string(param)?)
         .bind(now)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         sqlx::query(
@@ -45,7 +45,7 @@ INSERT INTO email_send_job_batches (job_id, batch_id, status, created_at, update
         .bind(EmailSendJobBatchStatus::Preparing)
         .bind(now)
         .bind(now)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         sqlx::query(
@@ -61,7 +61,7 @@ INSERT INTO email_send_job_batch_details (job_id, batch_id, email_address, retry
         .bind(EmailSendJobBatchDetailStatus::Preparing)
         .bind(now)
         .bind(now)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         tx.commit().await?;
@@ -181,7 +181,7 @@ UPDATE email_send_job_batches
         .bind(now)
         .bind(old)
         .bind(new)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         if res.rows_affected() < 1 {
@@ -199,7 +199,7 @@ UPDATE email_send_job_batch_details
         .bind(now)
         .bind(old)
         .bind(new)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         if res.rows_affected() < 1 {
@@ -235,7 +235,7 @@ UPDATE email_send_job_batch_details
         .bind(now)
         .bind(old)
         .bind(new)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         if res.rows_affected() < 1 {
@@ -258,7 +258,7 @@ UPDATE email_send_job_batches
         .bind(now)
         .bind(old)
         .bind(new)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         tx.commit().await?;
@@ -286,7 +286,7 @@ UPDATE email_send_job_batch_details
         .bind(now)
         .bind(old)
         .bind(new)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         if res.rows_affected() < 1 {
@@ -301,7 +301,7 @@ SELECT job_id, batch_id
 "#,
         )
         .bind(message_id)
-        .fetch_one(&mut tx)
+        .fetch_one(&mut *tx)
         .await?;
 
         sqlx::query(
@@ -320,7 +320,7 @@ UPDATE email_send_job_batches
         .bind(now)
         .bind(old)
         .bind(new)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await?;
 
         tx.commit().await?;

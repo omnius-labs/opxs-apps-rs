@@ -20,7 +20,7 @@ impl sqlx::Type<sqlx::Postgres> for ImageConvertJobStatus {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for ImageConvertJobStatus {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> sqlx::encode::IsNull {
+    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             ImageConvertJobStatus::Preparing => buf.extend_from_slice(b"Preparing"),
             ImageConvertJobStatus::Waiting => buf.extend_from_slice(b"Waiting"),
@@ -30,7 +30,7 @@ impl sqlx::Encode<'_, sqlx::Postgres> for ImageConvertJobStatus {
             ImageConvertJobStatus::Failed => buf.extend_from_slice(b"Failed"),
             _ => buf.extend_from_slice(b"Unknown"),
         }
-        sqlx::encode::IsNull::No
+        Ok(sqlx::encode::IsNull::No)
     }
 }
 

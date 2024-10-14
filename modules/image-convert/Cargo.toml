@@ -57,3 +57,4 @@ parking_lot = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
+testresult = { workspace = true }

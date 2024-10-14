@@ -35,7 +35,7 @@ INSERT INTO users (id, name, authentication_type, role, created_at, updated_at)
         .bind(UserRole::User)
         .bind(now)
         .bind(now)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
@@ -49,7 +49,7 @@ INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id, creat
         .bind(provider_type)
         .bind(provider_user_id)
         .bind(now)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
@@ -68,7 +68,7 @@ INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id, creat
         ];
 
         for query in queries {
-            query.execute(&mut tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
+            query.execute(&mut *tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
         }
 
         tx.commit().await?;
@@ -113,10 +113,7 @@ SELECT *
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
-        if user.is_none() {
-            return Err(AppError::UserNotFound);
-        }
-
-        Ok(user.unwrap())
+        let user = user.ok_or_else(|| AppError::UserNotFound)?;
+        Ok(user)
     }
 }

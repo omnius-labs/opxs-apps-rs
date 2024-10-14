@@ -24,7 +24,7 @@ INSERT INTO image_convert_jobs (id, param, status, created_at, updated_at)
         "#,
         )
         .bind(job_id)
-        .bind(&serde_json::to_string(param).unwrap())
+        .bind(&serde_json::to_string(param)?)
         .bind(ImageConvertJobStatus::Preparing)
         .bind(now)
         .bind(now)

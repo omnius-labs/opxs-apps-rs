@@ -1,3 +1,4 @@
+use aws_config::BehaviorVersion;
 use omnius_core_cloud::aws::secrets::{SecretsReader, SecretsReaderImpl};
 
 use crate::AppInfo;
@@ -86,7 +87,7 @@ pub struct DiscordConfig {
 impl AppConfig {
     pub async fn load(info: &AppInfo) -> anyhow::Result<Self> {
         let secret_reader = Box::new(SecretsReaderImpl {
-            client: aws_sdk_secretsmanager::Client::new(&aws_config::load_from_env().await),
+            client: aws_sdk_secretsmanager::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
         });
 
         let secret_value = serde_json::from_str::<serde_json::Value>(&secret_reader.read_value("opxs").await?)?;
@@ -204,7 +205,7 @@ impl ValueExt for serde_json::Value {
         let res = self
             .get(name)
             .map(|n| n.as_str().unwrap_or_default().to_string())
-            .ok_or(anyhow::anyhow!("{name} is not found"))?;
+            .ok_or_else(|| anyhow::anyhow!("{name} is not found"))?;
         Ok(res)
     }
 }

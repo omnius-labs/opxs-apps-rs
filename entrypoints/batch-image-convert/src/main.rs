@@ -1,5 +1,6 @@
 use std::{path::Path, sync::Arc};
 
+use aws_config::BehaviorVersion;
 use aws_lambda_events::sqs::SqsEvent;
 use chrono::Duration;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
@@ -25,7 +26,7 @@ async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
     let db = Arc::new(
         PgPoolOptions::new()
             .max_connections(100)
-            .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
+            .idle_timeout(Some(Duration::minutes(15).to_std()?))
             .connect(&conf.postgres.url)
             .await?,
     );
@@ -40,7 +41,7 @@ async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
             tsid_provider,
         }),
         s3_client: Arc::new(S3ClientImpl {
-            client: aws_sdk_s3::Client::new(&aws_config::load_from_env().await),
+            client: aws_sdk_s3::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
             bucket: conf.image.convert.s3.bucket,
         }),
     };
@@ -61,21 +62,21 @@ async fn handler(event: LambdaEvent<serde_json::Value>) -> Result<(), Error> {
             let m = serde_json::from_str::<ImageConvertJobSqsMessage>(&v)?;
             for v in m.records {
                 let p = Path::new(&v.s3.object.key);
-                let job_id = p.file_name().ok_or(anyhow::anyhow!("file name is not found"))?;
-                job_ids.push(job_id.to_str().unwrap().to_string());
+                let job_id = p.file_name().ok_or_else(|| anyhow::anyhow!("file name is not found"))?.to_string_lossy();
+                job_ids.push(job_id.to_string());
             }
         }
     } else {
         info!("raw event");
         let key = event
             .get("key")
-            .ok_or(anyhow::anyhow!("key is not found"))?
+            .ok_or_else(|| anyhow::anyhow!("key is not found"))?
             .as_str()
-            .ok_or(anyhow::anyhow!("key is not string"))?
+            .ok_or_else(|| anyhow::anyhow!("key is not string"))?
             .to_string();
         let p = Path::new(&key);
-        let job_id = p.file_name().ok_or(anyhow::anyhow!("file name is not found"))?;
-        job_ids.push(job_id.to_str().unwrap().to_string());
+        let job_id = p.file_name().ok_or_else(|| anyhow::anyhow!("file name is not found"))?.to_string_lossy();
+        job_ids.push(job_id.to_string());
     }
 
     info!("messages: {:?}", job_ids);

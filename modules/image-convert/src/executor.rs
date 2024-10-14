@@ -31,7 +31,7 @@ impl Executor {
 
     async fn execute_one(&self, job_id: &str) -> anyhow::Result<()> {
         let job = self.image_convert_job_repository.get_job(job_id).await?;
-        let param = job.param.ok_or(anyhow::anyhow!("param is not found"))?;
+        let param = job.param.ok_or_else(|| anyhow::anyhow!("param is not found"))?;
         let param = serde_json::from_str::<ImageConvertRequestParam>(&param)?;
         self.execute_image_convert(job_id, &param).await?;
 
@@ -55,26 +55,26 @@ impl Executor {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
+    use parking_lot::Mutex;
+    use sqlx::postgres::PgPoolOptions;
+    use testresult::TestResult;
+
     use omnius_core_base::{
         clock::ClockUtc,
         random_bytes::RandomBytesProviderImpl,
         tsid::{TsidProvider, TsidProviderImpl},
     };
+    use omnius_core_cloud::aws::s3::S3ClientMock;
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
-    use parking_lot::Mutex;
-    use sqlx::postgres::PgPoolOptions;
 
-    use omnius_core_cloud::aws::s3::S3ClientMock;
-
-    use crate::{ImageConvertJobCreator, ImageConverterMock, ImageType};
+    use crate::{shared, ImageConvertJobCreator, ImageConverterMock, ImageType};
 
     use super::*;
 
     #[tokio::test]
-    async fn simple_test() {
-        let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, "15.1");
+    async fn simple_test() -> TestResult {
+        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()
@@ -131,5 +131,7 @@ mod tests {
             s3_client.put_object_inputs.lock().first().unwrap().key,
             format!("out/{}", job_id).as_str()
         );
+
+        Ok(())
     }
 }

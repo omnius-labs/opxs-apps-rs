@@ -79,6 +79,7 @@ mod tests {
     use omnius_opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
     use parking_lot::Mutex;
     use sqlx::postgres::PgPoolOptions;
+    use testresult::TestResult;
 
     use crate::{
         provider::{IdTokenClaims, OAuth2TokenResult, UserInfo},
@@ -88,24 +89,20 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn simple_test() {
-        let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, shared::POSTGRES_VERSION);
+    async fn simple_test() -> TestResult {
+        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
-                .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
+                .idle_timeout(Some(Duration::minutes(15).to_std()?))
                 .connect(&container.connection_string)
-                .await
-                .unwrap(),
+                .await?,
         );
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
-        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
-            .await
-            .unwrap();
-        migrator.migrate().await.unwrap();
+        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "").await?;
+        migrator.migrate().await?;
 
         let access_token = "access_token";
         let provider_user_id = "provider_user_id";
@@ -160,7 +157,7 @@ mod tests {
         };
 
         // register
-        let user_id = auth_service.register(code, redirect_uri, nonce).await.unwrap();
+        let user_id = auth_service.register(code, redirect_uri, nonce).await?;
         println!("{}", user_id);
         assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.lock().code, code.to_string());
         assert_eq!(
@@ -174,10 +171,10 @@ mod tests {
         );
 
         // login
-        assert_eq!(auth_service.login(code, redirect_uri, nonce).await.unwrap(), user_id);
+        assert_eq!(auth_service.login(code, redirect_uri, nonce).await?, user_id);
 
         // get user
-        let user = auth_repo.get_user("google", provider_user_id).await.unwrap();
+        let user = auth_repo.get_user("google", provider_user_id).await?;
         assert_eq!(user.name, user_name.to_string());
 
         // unregister
@@ -185,6 +182,8 @@ mod tests {
 
         // get user
         assert!(auth_repo.get_user("google", provider_user_id).await.is_err());
+
+        Ok(())
     }
 
     #[derive(Debug, Clone)]

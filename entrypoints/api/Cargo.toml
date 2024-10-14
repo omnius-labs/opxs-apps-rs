@@ -63,3 +63,4 @@ lambda_http = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }
+testresult = { workspace = true }

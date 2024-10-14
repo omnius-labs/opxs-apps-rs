@@ -21,9 +21,9 @@ impl ImageConvertJobCreator {
     pub async fn create_image_convert_job(&self, job_id: &str, file_name: &str, typ: &ImageType) -> Result<String, AppError> {
         let file_stem = Path::new(file_name)
             .file_stem()
-            .ok_or(anyhow::anyhow!("invalid file_name"))?
+            .ok_or_else(|| anyhow::anyhow!("invalid file_name"))?
             .to_str()
-            .ok_or(anyhow::anyhow!("invalid file_name"))?;
+            .ok_or_else(|| anyhow::anyhow!("invalid file_name"))?;
         let origin_type = ImageType::from_file_name(file_name);
 
         let input = ImageConvertFile {
@@ -57,7 +57,7 @@ impl ImageConvertJobCreator {
         let job = self.image_convert_job_repository.get_job(job_id).await?;
 
         if job.status == ImageConvertJobStatus::Completed {
-            let param = job.param.ok_or(anyhow::anyhow!("param is not found"))?;
+            let param = job.param.ok_or_else(|| anyhow::anyhow!("param is not found"))?;
             let param = serde_json::from_str::<ImageConvertRequestParam>(&param).map_err(|e| anyhow::anyhow!(e))?;
 
             let now = self.clock.now();

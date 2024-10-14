@@ -80,6 +80,7 @@ mod tests {
     use chrono::Duration;
     use parking_lot::Mutex;
     use sqlx::postgres::PgPoolOptions;
+    use testresult::TestResult;
 
     use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
     use omnius_core_migration::postgres::PostgresMigrator;
@@ -92,24 +93,20 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn simple_test() {
-        let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, shared::POSTGRES_VERSION);
+    async fn simple_test() -> TestResult {
+        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)
-                .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
+                .idle_timeout(Some(Duration::minutes(15).to_std()?))
                 .connect(&container.connection_string)
-                .await
-                .unwrap(),
+                .await?,
         );
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
-        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
-            .await
-            .unwrap();
-        migrator.migrate().await.unwrap();
+        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "").await?;
+        migrator.migrate().await?;
 
         let user_name = "user_name";
         let user_email = "user_email";
@@ -143,15 +140,15 @@ mod tests {
         };
 
         // register
-        let token = auth_service.register(user_name, user_email, password).await.unwrap();
+        let token = auth_service.register(user_name, user_email, password).await?;
         assert!(matches!(auth_service.login(user_email, password).await, Err(AppError::UserNotFound)));
-        auth_service.confirm(&token).await.unwrap();
+        auth_service.confirm(&token).await?;
 
         // login
         assert!(auth_service.login(user_email, password).await.is_ok());
 
         // get user
-        let user = auth_repo.get_user(user_email).await.unwrap();
+        let user = auth_repo.get_user(user_email).await?;
         assert_eq!(user.name, user_name.to_string());
 
         // unregister
@@ -159,5 +156,7 @@ mod tests {
 
         // login
         assert!(matches!(auth_service.login(user_email, password).await, Err(AppError::UserNotFound)));
+
+        Ok(())
     }
 }

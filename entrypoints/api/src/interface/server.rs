@@ -35,13 +35,13 @@ impl WebServer {
 
         if cfg!(debug_assertions) {
             // Run app on local server
-            let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 8080));
+            let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 8080));
             let listener = tokio::net::TcpListener::bind(addr).await?;
             axum::serve(listener, app).await?;
         } else {
             // Run app on AWS Lambda
             let app = tower::ServiceBuilder::new().layer(axum_aws_lambda::LambdaLayer::default()).service(app);
-            lambda_http::run(app).await.unwrap();
+            lambda_http::run(app).await.map_err(|_| anyhow::anyhow!("lambda_http run error"))?;
         }
 
         Ok(())

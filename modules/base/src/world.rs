@@ -135,17 +135,18 @@ pub enum WorldValidatedStatus {
 mod tests {
     use std::env;
 
+    use testresult::TestResult;
+
     use omnius_core_base::clock::ClockUtc;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{AppConfig, RunMode};
+    use crate::{shared, AppConfig, RunMode};
 
     use super::*;
 
     #[tokio::test]
-    async fn verify_test() {
-        let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, "15.1");
+    async fn verify_test() -> TestResult {
+        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
 
         let info = AppInfo {
             app_name: "app".to_string(),
@@ -169,13 +170,14 @@ mod tests {
         let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
         let res = world_verifier.verify().await;
         assert!(res.is_err());
+
+        Ok(())
     }
 
     #[ignore]
     #[tokio::test]
-    async fn notify_test() {
-        let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, "15.1");
+    async fn notify_test() -> TestResult {
+        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
 
         let info = AppInfo {
             app_name: "app".to_string(),
@@ -197,5 +199,7 @@ mod tests {
 
         let res = world_verifier.notify(&conf.notify.unwrap()).await;
         assert!(res.is_ok());
+
+        Ok(())
     }
 }

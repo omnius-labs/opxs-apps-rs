@@ -35,7 +35,7 @@ INSERT INTO users (id, name, authentication_type, role, created_at, updated_at)
         .bind(UserRole::User)
         .bind(now)
         .bind(now)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
@@ -57,7 +57,7 @@ INSERT INTO user_auth_emails (user_id, email, password_hash, salt, created_at, u
         .bind(salt)
         .bind(now)
         .bind(now)
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
@@ -76,7 +76,7 @@ INSERT INTO user_auth_emails (user_id, email, password_hash, salt, created_at, u
         ];
 
         for query in queries {
-            query.execute(&mut tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
+            query.execute(&mut *tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
         }
 
         tx.commit().await?;
@@ -119,11 +119,8 @@ SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.u
         .await
         .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
-        if user.is_none() {
-            return Err(AppError::UserNotFound);
-        }
-
-        Ok(user.unwrap())
+        let user = user.ok_or_else(|| AppError::UserNotFound)?;
+        Ok(user)
     }
 
     pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError> {

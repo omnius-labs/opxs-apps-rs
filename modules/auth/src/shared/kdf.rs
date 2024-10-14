@@ -33,7 +33,7 @@ impl Kdf {
                 let mut hash = vec![0; self.get_credential_len()];
                 pbkdf2::derive(
                     pbkdf2::PBKDF2_HMAC_SHA256,
-                    NonZeroU32::new(self.iterations).unwrap(),
+                    NonZeroU32::new(self.iterations).ok_or_else(|| anyhow::anyhow!("unexpected error"))?,
                     salt,
                     secret.as_bytes(),
                     &mut hash,
@@ -48,7 +48,7 @@ impl Kdf {
             KdfAlgorithm::Pbkdf2HmacSha256 => {
                 let result = pbkdf2::verify(
                     pbkdf2::PBKDF2_HMAC_SHA256,
-                    NonZeroU32::new(self.iterations).unwrap(),
+                    NonZeroU32::new(self.iterations).ok_or_else(|| anyhow::anyhow!("unexpected error"))?,
                     salt,
                     secret.as_bytes(),
                     derived_key,
@@ -68,22 +68,26 @@ impl Kdf {
 #[cfg(feature = "stable-test")]
 #[cfg(test)]
 mod tests {
+    use testresult::TestResult;
+
     use super::*;
 
     #[test]
-    fn simple_test() {
+    fn simple_test() -> TestResult {
         let kdf = Kdf {
             algorithm: KdfAlgorithm::Pbkdf2HmacSha256,
             iterations: 100,
         };
 
-        let salt = kdf.gen_salt().unwrap();
-        let hash = kdf.derive("test", &salt).unwrap();
+        let salt = kdf.gen_salt()?;
+        let hash = kdf.derive("test", &salt)?;
 
-        let result_ok = kdf.verify("test", &salt, &hash).unwrap();
+        let result_ok = kdf.verify("test", &salt, &hash)?;
         assert!(result_ok);
 
-        let result_failed = kdf.verify("test_error", &salt, &hash).unwrap();
+        let result_failed = kdf.verify("test_error", &salt, &hash)?;
         assert!(!result_failed);
+
+        Ok(())
     }
 }

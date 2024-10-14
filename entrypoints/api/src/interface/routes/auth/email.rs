@@ -34,8 +34,7 @@ pub async fn register(State(state): State<AppState>, ValidatedJson(input): Valid
     let email_confirm_url = Url::parse_with_params(
         format!("{}auth/register/email/confirm", state.conf.web.origin.as_str()).as_str(),
         &[("token", token)],
-    )
-    .unwrap()
+    )?
     .to_string();
 
     let job_id = state.service.tsid_provider.lock().gen().to_string();

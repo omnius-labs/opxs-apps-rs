@@ -55,18 +55,13 @@ pub async fn register(
     jar: SignedCookieJar,
     Json(input): Json<RegisterInput>,
 ) -> Result<(SignedCookieJar, Json<AuthToken>), AppError> {
-    let cookie_nonce: Option<String> = jar.get("nonce").map(|cookie| cookie.value().to_owned());
-    if cookie_nonce.is_none() {
-        return Err(AppError::InvalidRequest(anyhow::anyhow!("Nonce not found")));
-    }
-    let cookie_nonce = cookie_nonce.unwrap();
+    let nonce = jar
+        .get("nonce")
+        .map(|cookie| cookie.value().to_owned())
+        .ok_or_else(|| AppError::InvalidRequest(anyhow::anyhow!("Nonce not found")))?;
     let jar = jar.remove(Cookie::build("nonce"));
 
-    let user_id = state
-        .service
-        .google_auth
-        .register(&input.code, &input.redirect_uri, &cookie_nonce)
-        .await?;
+    let user_id = state.service.google_auth.register(&input.code, &input.redirect_uri, &nonce).await?;
 
     let auth_token = state.service.token.create(&user_id).await?;
 
@@ -87,11 +82,10 @@ pub struct RegisterInput {
     )
 )]
 pub async fn login(State(state): State<AppState>, jar: SignedCookieJar, Json(input): Json<LoginInput>) -> Result<Json<AuthToken>, AppError> {
-    let nonce: Option<String> = jar.get("nonce").map(|cookie| cookie.value().to_owned());
-    if nonce.is_none() {
-        return Err(AppError::InvalidRequest(anyhow::anyhow!("Nonce not found")));
-    }
-    let nonce = nonce.unwrap();
+    let nonce = jar
+        .get("nonce")
+        .map(|cookie| cookie.value().to_owned())
+        .ok_or_else(|| AppError::InvalidRequest(anyhow::anyhow!("Nonce not found")))?;
 
     let user_id = state.service.google_auth.login(&input.code, &input.redirect_uri, &nonce).await?;
 

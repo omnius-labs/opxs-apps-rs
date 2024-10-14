@@ -22,7 +22,7 @@ impl EmailSendExecutor {
 
         match job.typ {
             EmailSendJobType::EmailConfirm => {
-                let param = job.param.ok_or(anyhow::anyhow!("param is not found"))?;
+                let param = job.param.ok_or_else(|| anyhow::anyhow!("param is not found"))?;
                 let param = serde_json::from_str::<EmailConfirmRequestParam>(&param)?;
                 self.execute_email_confirm(&m.job_id, m.batch_id, &param).await
             }
@@ -75,26 +75,26 @@ Opxs サポートチーム",
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
+    use parking_lot::Mutex;
+    use sqlx::postgres::PgPoolOptions;
+    use testresult::TestResult;
+
     use omnius_core_base::{
         clock::ClockUtc,
         random_bytes::RandomBytesProviderImpl,
         tsid::{TsidProvider, TsidProviderImpl},
     };
+    use omnius_core_cloud::aws::{ses::SesSenderMock, sqs::SqsSenderMock};
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
-    use parking_lot::Mutex;
-    use sqlx::postgres::PgPoolOptions;
 
-    use omnius_core_cloud::aws::{ses::SesSenderMock, sqs::SqsSenderMock};
-
-    use crate::EmailSendJobCreator;
+    use crate::{shared, EmailSendJobCreator};
 
     use super::*;
 
     #[tokio::test]
-    async fn simple_test() {
-        let docker = testcontainers::clients::Cli::default();
-        let container = PostgresContainer::new(&docker, "15.1");
+    async fn simple_test() -> TestResult {
+        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()
@@ -152,5 +152,7 @@ mod tests {
         );
         println!("{}", ses_send_mail_simple_text_input.subject);
         println!("{}", ses_send_mail_simple_text_input.text_body);
+
+        Ok(())
     }
 }
