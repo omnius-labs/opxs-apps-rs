@@ -10,6 +10,7 @@ use tracing_subscriber::EnvFilter;
 
 use crate::shared::state::AppState;
 
+mod emulator;
 mod interface;
 mod service;
 mod shared;

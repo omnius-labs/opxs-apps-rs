@@ -86,6 +86,53 @@ pub struct DiscordConfig {
 
 impl AppConfig {
     pub async fn load(info: &AppInfo) -> anyhow::Result<Self> {
+        if info.mode == RunMode::Local {
+            let postgres_url = format!(
+                "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
+                host = urlencoding::encode("localhost"),
+                port = 15432,
+                database = "local_opxs",
+                user = "postgres",
+                password = "postgres",
+                app_name = info.app_name,
+            );
+
+            return Ok(Self {
+                postgres: PostgresConfig { url: postgres_url },
+                web: WebConfig {
+                    origin: "https://localhost.omnius-labs.com/".to_string(),
+                },
+                auth: AuthConfig {
+                    jwt: JwtConfig {
+                        secret: JwtSecretConfig {
+                            current: "current".to_string(),
+                            previous: "refired".to_string(),
+                        },
+                    },
+                    google: GoogleAuthConfig {
+                        client_id: "".to_string(),
+                        client_secret: "".to_string(),
+                    },
+                },
+                email: EmailConfig {
+                    from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
+                    ses: SesConfig {
+                        configuration_set_name: "".to_string(),
+                    },
+                },
+                image: ImageConfig {
+                    convert: ImageConvertConfig {
+                        s3: S3Config { bucket: "".to_string() },
+                    },
+                },
+                notify: Some(NotifyConfig {
+                    discord: DiscordConfig {
+                        release_webhook_url: "".to_string(),
+                    },
+                }),
+            });
+        }
+
         let secret_reader = Box::new(SecretsReaderImpl {
             client: aws_sdk_secretsmanager::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
         });
@@ -99,99 +146,54 @@ impl AppConfig {
         let auth_google_client_secret = secret_value.get_str("auth_google_client_secret")?;
         let discord_release_webhook_url = secret_value.get_str("discord_release_webhook_url")?;
 
+        let postgres_url = format!(
+            "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
+            host = urlencoding::encode("tk2-223-21081.vs.sakura.ne.jp"),
+            port = 15432,
+            database = "dev_opxs",
+            user = postgres_user,
+            password = postgres_password,
+            app_name = info.app_name,
+        );
+
         match info.mode {
-            RunMode::Local => {
-                let postgres_url = format!(
-                    "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
-                    host = urlencoding::encode("localhost"),
-                    port = 15432,
-                    database = "local_opxs",
-                    user = "postgres",
-                    password = "postgres",
-                    app_name = info.app_name,
-                );
-
-                Ok(Self {
-                    postgres: PostgresConfig { url: postgres_url },
-                    web: WebConfig {
-                        origin: "https://localhost.omnius-labs.com/".to_string(),
-                    },
-                    auth: AuthConfig {
-                        jwt: JwtConfig {
-                            secret: JwtSecretConfig {
-                                current: "current".to_string(),
-                                previous: "refired".to_string(),
-                            },
-                        },
-                        google: GoogleAuthConfig {
-                            client_id: auth_google_client_id,
-                            client_secret: auth_google_client_secret,
+            RunMode::Local => unreachable!(),
+            RunMode::Dev => Ok(Self {
+                postgres: PostgresConfig { url: postgres_url },
+                web: WebConfig {
+                    origin: "https://opxs-dev.omnius-labs.com/".to_string(),
+                },
+                auth: AuthConfig {
+                    jwt: JwtConfig {
+                        secret: JwtSecretConfig {
+                            current: jwt_secret_current,
+                            previous: jwt_secret_retired,
                         },
                     },
-                    email: EmailConfig {
-                        from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
-                        ses: SesConfig {
-                            configuration_set_name: "opxs-email-send".to_string(),
+                    google: GoogleAuthConfig {
+                        client_id: auth_google_client_id,
+                        client_secret: auth_google_client_secret,
+                    },
+                },
+                email: EmailConfig {
+                    from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
+                    ses: SesConfig {
+                        configuration_set_name: "opxs-email-send".to_string(),
+                    },
+                },
+                image: ImageConfig {
+                    convert: ImageConvertConfig {
+                        s3: S3Config {
+                            bucket: "opxs.v1.dev.image-convert".to_string(),
                         },
                     },
-                    image: ImageConfig {
-                        convert: ImageConvertConfig {
-                            s3: S3Config {
-                                bucket: "opxs.v1.dev.image-convert".to_string(),
-                            },
-                        },
+                },
+                notify: Some(NotifyConfig {
+                    discord: DiscordConfig {
+                        release_webhook_url: discord_release_webhook_url,
                     },
-                    notify: Some(NotifyConfig {
-                        discord: DiscordConfig {
-                            release_webhook_url: discord_release_webhook_url,
-                        },
-                    }),
-                })
-            }
-            RunMode::Dev => {
-                let postgres_url = format!(
-                    "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
-                    host = urlencoding::encode("tk2-223-21081.vs.sakura.ne.jp"),
-                    port = 15432,
-                    database = "dev_opxs",
-                    user = postgres_user,
-                    password = postgres_password,
-                    app_name = info.app_name,
-                );
-
-                Ok(Self {
-                    postgres: PostgresConfig { url: postgres_url },
-                    web: WebConfig {
-                        origin: "https://opxs-dev.omnius-labs.com/".to_string(),
-                    },
-                    auth: AuthConfig {
-                        jwt: JwtConfig {
-                            secret: JwtSecretConfig {
-                                current: jwt_secret_current,
-                                previous: jwt_secret_retired,
-                            },
-                        },
-                        google: GoogleAuthConfig {
-                            client_id: auth_google_client_id,
-                            client_secret: auth_google_client_secret,
-                        },
-                    },
-                    email: EmailConfig {
-                        from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
-                        ses: SesConfig {
-                            configuration_set_name: "opxs-email-send".to_string(),
-                        },
-                    },
-                    image: ImageConfig {
-                        convert: ImageConvertConfig {
-                            s3: S3Config {
-                                bucket: "opxs.v1.dev.image-convert".to_string(),
-                            },
-                        },
-                    },
-                    notify: None,
-                })
-            }
+                }),
+            }),
         }
     }
 }

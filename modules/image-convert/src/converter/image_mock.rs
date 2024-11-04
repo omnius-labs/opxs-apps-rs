@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use async_trait::async_trait;
 use parking_lot::Mutex;
@@ -11,16 +14,16 @@ pub struct ImageConverterMock {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConvertInput {
-    source: String,
-    target: String,
+    source: PathBuf,
+    target: PathBuf,
 }
 
 #[async_trait]
 impl ImageConverter for ImageConverterMock {
-    async fn convert(&self, source: &str, target: &str) -> anyhow::Result<()> {
+    async fn convert(&self, source: &Path, target: &Path) -> anyhow::Result<()> {
         self.convert_inputs.lock().push(ConvertInput {
-            source: source.to_string(),
-            target: target.to_string(),
+            source: source.to_path_buf(),
+            target: target.to_path_buf(),
         });
 
         Ok(())

@@ -6,7 +6,7 @@ use super::{EmailConfirmRequestParam, EmailSendJobBatchSqsMessage, EmailSendJobR
 
 pub struct EmailSendJobCreator {
     pub email_send_job_repository: Arc<EmailSendJobRepository>,
-    pub send_email_sqs_sender: Arc<dyn SqsSender + Send + Sync>,
+    pub sqs_sender: Arc<dyn SqsSender + Send + Sync>,
 }
 
 impl EmailSendJobCreator {
@@ -38,7 +38,7 @@ impl EmailSendJobCreator {
         self.email_send_job_repository.update_status_to_waiting(job_id).await?;
 
         for m in messages.iter() {
-            self.send_email_sqs_sender.send_message(&serde_json::to_string(m).unwrap()).await?;
+            self.sqs_sender.send_message(&serde_json::to_string(m).unwrap()).await?;
         }
 
         Ok(())
