@@ -120,7 +120,7 @@ mod tests {
         let job_id = tsid_provider.lock().gen().to_string();
         let job_creator = EmailSendJobCreator {
             email_send_job_repository: email_send_job_repository.clone(),
-            send_email_sqs_sender: send_email_sqs_sender.clone(),
+            sqs_sender: send_email_sqs_sender.clone(),
         };
         job_creator
             .create_email_confirm_job(
@@ -135,7 +135,7 @@ mod tests {
 
         let ses_sender = Arc::new(SesSenderMock::new());
         let sqs_send_message_input = send_email_sqs_sender.send_message_inputs.lock().first().cloned().unwrap();
-        let sqs_message = serde_json::from_str::<EmailSendJobBatchSqsMessage>(sqs_send_message_input.message_body.as_str()).unwrap();
+        let sqs_message = serde_json::from_str::<EmailSendJobBatchSqsMessage>(sqs_send_message_input.as_str()).unwrap();
 
         let executor = EmailSendExecutor {
             email_send_job_repository,

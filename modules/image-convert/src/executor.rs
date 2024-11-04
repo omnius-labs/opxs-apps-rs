@@ -1,16 +1,16 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use omnius_core_cloud::aws::s3::S3Client;
 
 use crate::{ImageConvertJobRepository, ImageConvertRequestParam, ImageConverter};
 
-pub struct Executor {
+pub struct ImageConvertExecutor {
     pub image_converter: Arc<dyn ImageConverter + Send + Sync>,
     pub image_convert_job_repository: Arc<ImageConvertJobRepository>,
     pub s3_client: Arc<dyn S3Client + Send + Sync>,
 }
 
-impl Executor {
+impl ImageConvertExecutor {
     pub async fn execute(&self, job_ids: &[String]) -> anyhow::Result<()> {
         for job_id in job_ids.iter() {
             self.image_convert_job_repository.update_status_to_processing(job_id).await?;
@@ -39,14 +39,14 @@ impl Executor {
     }
 
     async fn execute_image_convert(&self, job_id: &str, param: &ImageConvertRequestParam) -> anyhow::Result<()> {
-        let in_file = format!("/tmp/in_{}.{}", job_id, param.input.typ.get_extension());
-        let out_file = format!("/tmp/out_{}.{}", job_id, param.output.typ.get_extension());
+        let in_file = PathBuf::from(format!("/tmp/in_{}.{}", job_id, param.input.typ.get_extension()));
+        let out_file = PathBuf::from(format!("/tmp/out_{}.{}", job_id, param.output.typ.get_extension()));
 
-        self.s3_client.get_object(format!("in/{}", job_id).as_str(), in_file.as_str()).await?;
+        self.s3_client.get_object(format!("in/{}", job_id).as_str(), &in_file).await?;
 
-        self.image_converter.convert(in_file.as_str(), out_file.as_str()).await?;
+        self.image_converter.convert(&in_file, &out_file).await?;
 
-        self.s3_client.put_object(format!("out/{}", job_id).as_str(), out_file.as_str()).await?;
+        self.s3_client.put_object(format!("out/{}", job_id).as_str(), &out_file).await?;
 
         Ok(())
     }
@@ -118,7 +118,7 @@ mod tests {
         let upload_url = job_creator.create_image_convert_job(&job_id, "test.png", &ImageType::Jpg).await.unwrap();
         println!("upload_url: {}", upload_url);
 
-        let executor = Executor {
+        let executor = ImageConvertExecutor {
             image_converter: image_converter.clone(),
             image_convert_job_repository,
             s3_client: s3_client.clone(),

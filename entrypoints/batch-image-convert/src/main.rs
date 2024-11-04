@@ -13,7 +13,7 @@ use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, t
 use omnius_core_cloud::aws::s3::S3ClientImpl;
 
 use omnius_opxs_base::{AppConfig, AppInfo, RunMode};
-use omnius_opxs_image_convert::{Executor, ImageConvertJobRepository, ImageConvertJobSqsMessage, ImageConverterImpl};
+use omnius_opxs_image_convert::{ImageConvertExecutor, ImageConvertJobRepository, ImageConvertJobSqsMessage, ImageConverterImpl};
 
 const APP_NAME: &str = "opxs-batch-image-convert";
 
@@ -33,7 +33,7 @@ async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
     let clock = Arc::new(ClockUtc {});
     let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
 
-    let executor = Executor {
+    let executor = ImageConvertExecutor {
         image_converter: Arc::new(ImageConverterImpl),
         image_convert_job_repository: Arc::new(ImageConvertJobRepository {
             db: db.clone(),

@@ -30,7 +30,7 @@ To run the Opxs API locally, you need to set up your environment first.
 #### 1. Start the Opxs API:
 
 ```sh
-RUN_MODE=local AWS_PROFILE=opxs-dev AWS_REGION=us-east-1 cargo make watch
+RUN_MODE=local cargo make watch
 ```
 
 #### 2. Start PostgreSQL:

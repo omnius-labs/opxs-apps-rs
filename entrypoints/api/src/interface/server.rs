@@ -1,4 +1,5 @@
 use axum::{response::Redirect, routing::get, Router};
+use omnius_core_base::terminable::Terminable;
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -43,6 +44,8 @@ impl WebServer {
             let app = tower::ServiceBuilder::new().layer(axum_aws_lambda::LambdaLayer::default()).service(app);
             lambda_http::run(app).await.map_err(|_| anyhow::anyhow!("lambda_http run error"))?;
         }
+
+        state.service.terminate().await?;
 
         Ok(())
     }
