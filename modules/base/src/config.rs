@@ -51,7 +51,7 @@ pub struct GoogleAuthConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EmailConfig {
     pub from_email_address: String,
-    pub ses: SesConfig,
+    pub ses: Option<SesConfig>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -66,7 +66,7 @@ pub struct ImageConfig {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ImageConvertConfig {
-    pub s3: S3Config,
+    pub s3: Option<S3Config>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -116,20 +116,12 @@ impl AppConfig {
                 },
                 email: EmailConfig {
                     from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
-                    ses: SesConfig {
-                        configuration_set_name: "".to_string(),
-                    },
+                    ses: None,
                 },
                 image: ImageConfig {
-                    convert: ImageConvertConfig {
-                        s3: S3Config { bucket: "".to_string() },
-                    },
+                    convert: ImageConvertConfig { s3: None },
                 },
-                notify: Some(NotifyConfig {
-                    discord: DiscordConfig {
-                        release_webhook_url: "".to_string(),
-                    },
-                }),
+                notify: None,
             });
         }
 
@@ -146,54 +138,56 @@ impl AppConfig {
         let auth_google_client_secret = secret_value.get_str("auth_google_client_secret")?;
         let discord_release_webhook_url = secret_value.get_str("discord_release_webhook_url")?;
 
-        let postgres_url = format!(
-            "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
-            host = urlencoding::encode("tk2-223-21081.vs.sakura.ne.jp"),
-            port = 15432,
-            database = "dev_opxs",
-            user = postgres_user,
-            password = postgres_password,
-            app_name = info.app_name,
-        );
-
         match info.mode {
             RunMode::Local => unreachable!(),
-            RunMode::Dev => Ok(Self {
-                postgres: PostgresConfig { url: postgres_url },
-                web: WebConfig {
-                    origin: "https://opxs-dev.omnius-labs.com/".to_string(),
-                },
-                auth: AuthConfig {
-                    jwt: JwtConfig {
-                        secret: JwtSecretConfig {
-                            current: jwt_secret_current,
-                            previous: jwt_secret_retired,
+            RunMode::Dev => {
+                let postgres_url = format!(
+                    "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
+                    host = urlencoding::encode("tk2-223-21081.vs.sakura.ne.jp"),
+                    port = 15432,
+                    database = "dev_opxs",
+                    user = postgres_user,
+                    password = postgres_password,
+                    app_name = info.app_name,
+                );
+
+                Ok(Self {
+                    postgres: PostgresConfig { url: postgres_url },
+                    web: WebConfig {
+                        origin: "https://opxs-dev.omnius-labs.com/".to_string(),
+                    },
+                    auth: AuthConfig {
+                        jwt: JwtConfig {
+                            secret: JwtSecretConfig {
+                                current: jwt_secret_current,
+                                previous: jwt_secret_retired,
+                            },
+                        },
+                        google: GoogleAuthConfig {
+                            client_id: auth_google_client_id,
+                            client_secret: auth_google_client_secret,
                         },
                     },
-                    google: GoogleAuthConfig {
-                        client_id: auth_google_client_id,
-                        client_secret: auth_google_client_secret,
+                    email: EmailConfig {
+                        from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
+                        ses: Some(SesConfig {
+                            configuration_set_name: "opxs-email-send".to_string(),
+                        }),
                     },
-                },
-                email: EmailConfig {
-                    from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
-                    ses: SesConfig {
-                        configuration_set_name: "opxs-email-send".to_string(),
-                    },
-                },
-                image: ImageConfig {
-                    convert: ImageConvertConfig {
-                        s3: S3Config {
-                            bucket: "opxs.v1.dev.image-convert".to_string(),
+                    image: ImageConfig {
+                        convert: ImageConvertConfig {
+                            s3: Some(S3Config {
+                                bucket: "opxs.v1.dev.image-convert".to_string(),
+                            }),
                         },
                     },
-                },
-                notify: Some(NotifyConfig {
-                    discord: DiscordConfig {
-                        release_webhook_url: discord_release_webhook_url,
-                    },
-                }),
-            }),
+                    notify: Some(NotifyConfig {
+                        discord: DiscordConfig {
+                            release_webhook_url: discord_release_webhook_url,
+                        },
+                    }),
+                })
+            }
         }
     }
 }

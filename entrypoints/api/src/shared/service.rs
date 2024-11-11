@@ -70,7 +70,14 @@ impl AppService {
         });
         let image_convert_s3_client = Arc::new(S3ClientImpl {
             client: aws_sdk_s3::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
-            bucket: conf.image.convert.s3.bucket.clone(),
+            bucket: conf
+                .image
+                .convert
+                .s3
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("s3 config is not found"))?
+                .bucket
+                .clone(),
         });
 
         Ok(Self {

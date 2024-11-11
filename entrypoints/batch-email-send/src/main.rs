@@ -35,7 +35,12 @@ async fn handler_sub(ms: &[EmailSendJobBatchSqsMessage]) -> Result<(), Error> {
         email_send_job_repository: Arc::new(EmailSendJobRepository { db: db.clone(), clock }),
         ses_sender: Arc::new(SesSenderImpl {
             client: aws_sdk_sesv2::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
-            configuration_set_name: Some(conf.email.ses.configuration_set_name),
+            configuration_set_name: Some(
+                conf.email
+                    .ses
+                    .ok_or_else(|| anyhow::anyhow!("ses config is not found"))?
+                    .configuration_set_name,
+            ),
         }),
     };
     executor.execute(ms).await?;
