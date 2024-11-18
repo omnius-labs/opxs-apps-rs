@@ -5,14 +5,14 @@ export AWS_PROFILE=opxs-dev
 export AWS_PAGER=""
 
 case $1 in
-"image-convert")
+"file-convert")
     ;;
 "email-send")
     ;;
 "email-send-feedback")
     ;;
 *)
-    echo "Usage: $0 <image-convert|email-send|email-send-feedback>"
+    echo "Usage: $0 <file-convert|email-send|email-send-feedback>"
     exit 1
     ;;
 esac

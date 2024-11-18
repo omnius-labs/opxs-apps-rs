@@ -1,5 +1,5 @@
 [package]
-name = "omnius-opxs-batch-image-convert"
+name = "omnius-opxs-batch-file-convert"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
@@ -15,7 +15,7 @@ omnius-core-migration = { workspace = true }
 omnius-core-testkit = { workspace = true }
 
 omnius-opxs-base = { workspace = true }
-omnius-opxs-image-convert = { workspace = true }
+omnius-opxs-file-convert = { workspace = true }
 
 lambda_runtime = { workspace = true }
 aws_lambda_events = { workspace = true }

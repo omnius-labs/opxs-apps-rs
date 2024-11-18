@@ -82,17 +82,17 @@ jobs:
           load: true
           outputs: type=local,dest=bin
 
-      - name: Build bin (batch-image-convert)
+      - name: Build bin (batch-file-convert)
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.build.batch-image-convert
+          file: Dockerfile.build.batch-file-convert
           build-args: GIT_TAG=${{ steps.variables.outputs.git_tag }}
           push: false
-          tags: opxs-build-batch-image-convert-image
+          tags: opxs-build-batch-file-convert-image
           provenance: false
-          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert-builder
-          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert-builder,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-file-convert-builder
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-file-convert-builder,mode=max
           load: true
           outputs: type=local,dest=bin
 
@@ -142,16 +142,16 @@ jobs:
         run: |
           aws lambda update-function-code --function-name opxs-batch-email-send-feedback-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-email-send-feedback-lambda-ecr:latest
 
-      - name: Build and Push image to Amazon ECR (opxs-batch-image-convert-lambda)
+      - name: Build and Push image to Amazon ECR (opxs-batch-file-convert-lambda)
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.run.batch-image-convert
+          file: Dockerfile.run.batch-file-convert
           push: true
-          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-image-convert-lambda-ecr:latest
+          tags: ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-file-convert-lambda-ecr:latest
           provenance: false
-          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert
-          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-image-convert,mode=max
+          cache-from: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-file-convert
+          cache-to: type=s3,region=us-east-1,bucket=opxs.v1.dev.docker-build-cache,name=opxs-batch-file-convert,mode=max
       - name: Update Lambda
         run: |
-          aws lambda update-function-code --function-name opxs-batch-image-convert-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-image-convert-lambda-ecr:latest
+          aws lambda update-function-code --function-name opxs-batch-file-convert-lambda --image-uri ${{ steps.aws-ecr.outputs.registry }}/opxs-batch-file-convert-lambda-ecr:latest

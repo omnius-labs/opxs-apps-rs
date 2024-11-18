@@ -15,7 +15,7 @@ use omnius_core_cloud::aws::s3::S3ClientImpl;
 use omnius_opxs_base::{AppConfig, AppInfo, RunMode};
 use omnius_opxs_image_convert::{ImageConvertExecutor, ImageConvertJobRepository, ImageConvertJobSqsMessage, ImageConverterImpl};
 
-const APP_NAME: &str = "opxs-batch-image-convert";
+const APP_NAME: &str = "opxs-batch-file-convert";
 
 async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
     let mode = RunMode::from_env()?;

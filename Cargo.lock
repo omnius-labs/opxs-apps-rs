@@ -2783,7 +2783,7 @@ dependencies = [
  "omnius-opxs-auth",
  "omnius-opxs-base",
  "omnius-opxs-email-send",
- "omnius-opxs-image-convert",
+ "omnius-opxs-file-convert",
  "once_cell",
  "parking_lot",
  "reqwest",
@@ -3015,7 +3015,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnius-opxs-batch-image-convert"
+name = "omnius-opxs-batch-file-convert"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3043,7 +3043,7 @@ dependencies = [
  "omnius-core-migration",
  "omnius-core-testkit",
  "omnius-opxs-base",
- "omnius-opxs-image-convert",
+ "omnius-opxs-file-convert",
  "once_cell",
  "parking_lot",
  "reqwest",
@@ -3119,7 +3119,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnius-opxs-image-convert"
+name = "omnius-opxs-file-convert"
 version = "0.1.0"
 dependencies = [
  "anyhow",

@@ -43,7 +43,7 @@ mod tests {
     #[ignore]
     #[tokio::test]
     async fn simple_test() {
-        env::set_var("IMAGE_CONVERTER_DIR", "/home/lyrise/bin/image-converter");
+        env::set_var("IMAGE_CONVERTER_DIR", "/home/lyrise/bin/file-converter");
         let base_path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/src/converter/test"));
         let input = base_path.join("test.avif");
         let output = base_path.join("test.png");

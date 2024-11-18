@@ -177,7 +177,7 @@ impl AppConfig {
                     image: ImageConfig {
                         convert: ImageConvertConfig {
                             s3: Some(S3Config {
-                                bucket: "opxs.v1.dev.image-convert".to_string(),
+                                bucket: "opxs.v1.dev.file-convert".to_string(),
                             }),
                         },
                     },

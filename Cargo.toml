@@ -9,12 +9,12 @@ members = [
     "./modules/auth",
     "./modules/base",
     "./modules/email-send",
-    "./modules/image-convert",
+    "./modules/file-convert",
 
     "./entrypoints/api",
     "./entrypoints/batch-email-send",
     "./entrypoints/batch-email-send-feedback",
-    "./entrypoints/batch-image-convert",
+    "./entrypoints/batch-file-convert",
 ]
 exclude = ["refs/core-rs"]
 resolver = "2"
@@ -38,7 +38,7 @@ omnius-core-testkit = { path = "./refs/core-rs/modules/testkit" }
 omnius-opxs-auth = { path = "./modules/auth" }
 omnius-opxs-base = { path = "./modules/base" }
 omnius-opxs-email-send = { path = "./modules/email-send" }
-omnius-opxs-image-convert = { path = "./modules/image-convert" }
+omnius-opxs-file-convert = { path = "./modules/file-convert" }
 
 lambda_runtime = "0.13.0"
 aws_lambda_events = { version = "0.15.1", default-features = false, features = [

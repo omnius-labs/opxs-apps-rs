@@ -16,7 +16,7 @@ omnius-core-testkit = { workspace = true }
 
 omnius-opxs-base = { workspace = true }
 omnius-opxs-auth = { workspace = true }
-omnius-opxs-image-convert = { workspace = true }
+omnius-opxs-file-convert = { workspace = true }
 omnius-opxs-email-send = { workspace = true }
 
 aws-config = { workspace = true }

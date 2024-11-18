@@ -1,0 +1,21 @@
+FROM public.ecr.aws/lambda/provided:al2023 AS runtime
+
+WORKDIR /app
+
+RUN dnf install -y \
+    wget unzip \
+    openssl-devel \
+    && rm -rf /var/cache/dnf/* \
+    && dnf clean all
+
+ENV IMAGE_CONVERTER_VERSION=0.0.8
+
+RUN wget https://github.com/omnius-labs/file-converter-cs/releases/download/v${IMAGE_CONVERTER_VERSION}/file-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -P /app \
+    && unzip /app/file-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -d /app/file-converter \
+    && rm /app/file-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip
+
+ENV IMAGE_CONVERTER_DIR=/app/file-converter
+
+COPY ./bin/omnius-opxs-batch-file-convert ${LAMBDA_RUNTIME_DIR}/bootstrap
+
+CMD [ "lambda-handler" ]
