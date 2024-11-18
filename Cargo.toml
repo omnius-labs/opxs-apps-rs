@@ -60,8 +60,8 @@ rand_chacha = "0.3.1"
 reqwest = { version = "0.12.9", features = ["json"] }
 anyhow = { version = "1.0.93", features = ["backtrace"] }
 async-trait = "0.1.83"
-axum = { version = "0.7.7", features = ["macros"] }
-axum-extra = { version = "0.9.4", features = [
+axum = { version = "0.7.9", features = ["macros"] }
+axum-extra = { version = "0.9.6", features = [
     "cookie",
     "cookie-signed",
     "cookie-private",
@@ -70,7 +70,7 @@ axum-extra = { version = "0.9.4", features = [
 chrono = { version = "0.4.38", features = ["serde"] }
 config = "0.14.1"
 serde = { version = "1.0", features = ["derive", "rc"] }
-serde_json = "1.0.132"
+serde_json = "1.0.133"
 testcontainers = "0.23.1"
 tokio = { version = "1.41.1", features = ["full"] }
 tokio-postgres = { version = "0.7.12", features = ["with-chrono-0_4"] }
