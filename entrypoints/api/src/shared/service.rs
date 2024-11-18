@@ -27,7 +27,7 @@ use omnius_opxs_auth::{
 };
 use omnius_opxs_base::{AppConfig, AppInfo};
 use omnius_opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobCreator, EmailSendJobRepository};
-use omnius_opxs_image_convert::{ImageConvertExecutor, ImageConvertJobCreator, ImageConvertJobRepository, ImageConverterImpl};
+use omnius_opxs_file_convert::{ImageConvertExecutor, ImageConvertJobCreator, ImageConvertJobRepository, ImageConverterImpl};
 
 use crate::{
     emulator::aws::{S3ClientEmulator, S3ClientEmulatorOption, SesSenderEmulator, SqsSenderEmulator},

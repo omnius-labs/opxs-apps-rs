@@ -8,7 +8,7 @@ use utoipa::ToSchema;
 use validator::Validate;
 
 use omnius_opxs_base::AppError;
-use omnius_opxs_image_convert::{ImageConvertJobStatus, ImageType};
+use omnius_opxs_file_convert::{ImageConvertJobStatus, ImageType};
 
 use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
 

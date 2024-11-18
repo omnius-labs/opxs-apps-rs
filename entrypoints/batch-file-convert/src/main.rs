@@ -13,7 +13,7 @@ use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, t
 use omnius_core_cloud::aws::s3::S3ClientImpl;
 
 use omnius_opxs_base::{AppConfig, AppInfo, RunMode};
-use omnius_opxs_image_convert::{ImageConvertExecutor, ImageConvertJobRepository, ImageConvertJobSqsMessage, ImageConverterImpl};
+use omnius_opxs_file_convert::{ImageConvertExecutor, ImageConvertJobRepository, ImageConvertJobSqsMessage, ImageConverterImpl};
 
 const APP_NAME: &str = "opxs-batch-file-convert";
 
