@@ -1,5 +1,5 @@
 [package]
-name = "omnius-opxs-image-convert"
+name = "omnius-opxs-file-convert"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
