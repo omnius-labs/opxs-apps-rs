@@ -86,7 +86,7 @@ sqlx = { version = "0.8.2", features = [
     "macros",
     "runtime-tokio-rustls",
 ] }
-tower-http = { version = "0.6.1", features = ["cors"] }
+tower-http = { version = "0.6.2", features = ["cors"] }
 utoipa = "4.2.3"
 utoipa-swagger-ui = { version = "7.1.0", features = ["axum"] }
 ring = "0.17.8"
@@ -103,7 +103,7 @@ base64 = "0.22.1"
 futures = "0.3.31"
 futures-util = "0.3.31"
 serial_test = "3.2.0"
-url = "2.5.3"
+url = "2.5.4"
 kamadak-exif = "0.5.5"
 testresult = "0.4.1"
 parking_lot = "0.12.3"
