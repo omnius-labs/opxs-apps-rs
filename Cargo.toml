@@ -76,8 +76,8 @@ tokio = { version = "1.41.1", features = ["full"] }
 tokio-postgres = { version = "0.7.12", features = ["with-chrono-0_4"] }
 tokio-util = { version = "0.7.12", features = ["full"] }
 tokio-stream = "0.1.16"
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
 uuid = { version = "1.11.0", features = ["serde", "v4"] }
 sqlx = { version = "0.8.2", features = [
     "postgres",
@@ -86,7 +86,7 @@ sqlx = { version = "0.8.2", features = [
     "macros",
     "runtime-tokio-rustls",
 ] }
-tower-http = { version = "0.6.1", features = ["cors"] }
+tower-http = { version = "0.6.2", features = ["cors"] }
 utoipa = "4.2.3"
 utoipa-swagger-ui = { version = "7.1.0", features = ["axum"] }
 ring = "0.17.8"
@@ -103,7 +103,7 @@ base64 = "0.22.1"
 futures = "0.3.31"
 futures-util = "0.3.31"
 serial_test = "3.2.0"
-url = "2.5.3"
+url = "2.5.4"
 kamadak-exif = "0.5.5"
 testresult = "0.4.1"
 parking_lot = "0.12.3"

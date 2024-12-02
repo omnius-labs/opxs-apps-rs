@@ -659,7 +659,7 @@ dependencies = [
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-util",
  "itoa",
  "matchit",
@@ -691,7 +691,7 @@ dependencies = [
  "futures-util",
  "http 1.1.0",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "lambda_http",
  "tower 0.5.1",
  "tower-service",
@@ -842,7 +842,7 @@ dependencies = [
  "home",
  "http 1.1.0",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-named-pipe",
  "hyper-rustls 0.27.3",
  "hyper-util",
@@ -1564,7 +1564,7 @@ dependencies = [
  "bytes",
  "chrono",
  "futures",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "once_cell",
  "prost",
@@ -1888,9 +1888,9 @@ dependencies = [
 
 [[package]]
 name = "hyper"
-version = "1.5.0"
+version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbbff0a806a4728c99295b254c8838933b5b082d75e3cb70c8dab21fdfbcfa9a"
+checksum = "97818827ef4f364230e16705d4706e2897df2bb60617d6ca15d598025a3c481f"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -1914,7 +1914,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73b7d8abf35697b81a825e386fc151e0d503e8cb5fcb93cc8669c376dfd6f278"
 dependencies = [
  "hex",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-util",
  "pin-project-lite",
  "tokio",
@@ -1946,7 +1946,7 @@ checksum = "08afdbb5c31130e3034af566421053ab03787c640246a446327f550d11bcb333"
 dependencies = [
  "futures-util",
  "http 1.1.0",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-util",
  "rustls 0.23.13",
  "rustls-native-certs 0.8.0",
@@ -1963,7 +1963,7 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3203a961e5c83b6f5498933e78b6b263e208c197b63e9c6c53cc82ffd3f63793"
 dependencies = [
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-util",
  "pin-project-lite",
  "tokio",
@@ -1978,7 +1978,7 @@ checksum = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0"
 dependencies = [
  "bytes",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-util",
  "native-tls",
  "tokio",
@@ -1997,7 +1997,7 @@ dependencies = [
  "futures-util",
  "http 1.1.0",
  "http-body 1.0.1",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "pin-project-lite",
  "socket2",
  "tokio",
@@ -2013,7 +2013,7 @@ checksum = "986c5ce3b994526b3cd75578e62554abd09f0899d6206de48b3e96ab34ccc8c7"
 dependencies = [
  "hex",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-util",
  "pin-project-lite",
  "tokio",
@@ -2309,7 +2309,7 @@ dependencies = [
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "lambda_runtime",
  "mime",
  "percent-encoding",
@@ -2335,7 +2335,7 @@ dependencies = [
  "http-body 1.0.1",
  "http-body-util",
  "http-serde",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-util",
  "lambda_runtime_api_client",
  "pin-project 1.1.5",
@@ -2361,7 +2361,7 @@ dependencies = [
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-util",
  "tokio",
  "tower 0.4.13",
@@ -2790,7 +2790,7 @@ dependencies = [
  "futures-util",
  "headers",
  "hex",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "lambda_http",
  "omnius-core-base",
@@ -2849,7 +2849,7 @@ dependencies = [
  "headers",
  "hex",
  "http 1.1.0",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "omnius-core-base",
  "omnius-core-cloud",
@@ -2900,7 +2900,7 @@ dependencies = [
  "futures-util",
  "headers",
  "hex",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "omnius-core-base",
  "omnius-core-cloud",
@@ -2950,7 +2950,7 @@ dependencies = [
  "futures-util",
  "headers",
  "hex",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "lambda_runtime",
  "omnius-core-base",
@@ -3000,7 +3000,7 @@ dependencies = [
  "futures-util",
  "headers",
  "hex",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "lambda_runtime",
  "omnius-core-base",
@@ -3052,7 +3052,7 @@ dependencies = [
  "futures-util",
  "headers",
  "hex",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "lambda_runtime",
  "omnius-core-base",
@@ -3105,7 +3105,7 @@ dependencies = [
  "futures-util",
  "headers",
  "hex",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "omnius-core-base",
  "omnius-core-cloud",
@@ -3156,7 +3156,7 @@ dependencies = [
  "futures-util",
  "headers",
  "hex",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "jsonwebtoken",
  "omnius-core-base",
  "omnius-core-cloud",
@@ -3834,7 +3834,7 @@ dependencies = [
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-rustls 0.27.3",
  "hyper-tls",
  "hyper-util",
@@ -5158,7 +5158,7 @@ dependencies = [
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
- "hyper 1.5.0",
+ "hyper 1.5.1",
  "hyper-timeout",
  "hyper-util",
  "percent-encoding",
@@ -5214,9 +5214,9 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.6.1"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8437150ab6bbc8c5f0f519e3d5ed4aa883a83dd4cdd3d1b21f9482936046cb97"
+checksum = "403fa3b783d4b626a8ad51d766ab03cb6d2dbfc46b1c5d4448395e6628dc9697"
 dependencies = [
  "bitflags 2.6.0",
  "bytes",
@@ -5252,9 +5252,9 @@ dependencies = [
 
 [[package]]
 name = "tracing"
-version = "0.1.40"
+version = "0.1.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3523ab5a71916ccf420eebdf5521fcef02141234bbc0b8a49f2fdc4544364ef"
+checksum = "784e0ac535deb450455cbfa28a6f0df145ea1bb7ae51b821cf5e7927fdcfbdd0"
 dependencies = [
  "log",
  "pin-project-lite",
@@ -5264,9 +5264,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-attributes"
-version = "0.1.27"
+version = "0.1.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34704c8d6ebcbc939824180af020566b01a7c01f80641264eba0999f6c2b6be7"
+checksum = "395ae124c09f9e6918a2310af6038fba074bcf474ac352496d5910dd59a2226d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5275,9 +5275,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-core"
-version = "0.1.32"
+version = "0.1.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c06d3da6113f116aaee68e4d601191614c9053067f9ab7f6edbcb161237daa54"
+checksum = "e672c95779cf947c5311f83787af4fa8fffd12fb27e4993211a84bdfd9610f9c"
 dependencies = [
  "once_cell",
  "valuable",
@@ -5296,9 +5296,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-serde"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc6b213177105856957181934e4920de57730fc69bf42c37ee5bb664d406d9e1"
+checksum = "704b1aeb7be0d0a84fc9828cae51dab5970fee5088f83d1dd7ee6f6246fc6ff1"
 dependencies = [
  "serde",
  "tracing-core",
@@ -5306,9 +5306,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-subscriber"
-version = "0.3.18"
+version = "0.3.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad0f048c97dbd9faa9b7df56362b8ebcaa52adb06b498c050d2f4e32f90a7a8b"
+checksum = "e8189decb5ac0fa7bc8b96b7cb9b2701d60d48805aca84a238004d665fcc4008"
 dependencies = [
  "matchers",
  "nu-ansi-term",
@@ -5409,9 +5409,9 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "url"
-version = "2.5.3"
+version = "2.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d157f1b96d14500ffdc1f10ba712e780825526c03d9a49b4d0324b0d9113ada"
+checksum = "32f8b686cadd1473f4bd0117a5d28d36b1ade384ea9b5069a1c40aefed7fda60"
 dependencies = [
  "form_urlencoded",
  "idna 1.0.3",
