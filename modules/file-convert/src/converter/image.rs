@@ -1,12 +1,24 @@
-use std::path::Path;
+use std::{path::Path, process::Stdio};
 
 use async_trait::async_trait;
-use tokio::process::Command;
-use tracing::{error, instrument};
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD as BASE64, Engine};
+use serde::{Deserialize, Serialize};
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
+    process::Command,
+};
+
+use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType};
 
 #[async_trait]
 pub trait ImageConverter {
-    async fn convert(&self, source: &Path, target: &Path) -> anyhow::Result<()>;
+    async fn convert(
+        &self,
+        in_path: &Path,
+        in_type: &FileConvertImageInputFileType,
+        out_path: &Path,
+        out_type: &FileConvertImageOutputFileType,
+    ) -> anyhow::Result<()>;
 }
 
 #[derive(Debug)]
@@ -14,42 +26,119 @@ pub struct ImageConverterImpl;
 
 #[async_trait]
 impl ImageConverter for ImageConverterImpl {
-    #[instrument]
-    async fn convert(&self, source: &Path, target: &Path) -> anyhow::Result<()> {
-        let image_converter_dir = std::env::var("IMAGE_CONVERTER_DIR").map_err(|_| anyhow::anyhow!("IMAGE_CONVERTER is not set"))?;
+    async fn convert(
+        &self,
+        in_path: &Path,
+        in_type: &FileConvertImageInputFileType,
+        out_path: &Path,
+        out_type: &FileConvertImageOutputFileType,
+    ) -> anyhow::Result<()> {
+        let image_converter_dir = std::env::var("IMAGE_CONVERTER_DIR")
+            .map_err(|_| anyhow::anyhow!("IMAGE_CONVERTER is not set"))?;
         let image_converter = Path::new(&image_converter_dir).join("Omnius.ImageConverter");
 
-        let output = Command::new(image_converter).arg(source).arg(target).output().await?;
+        let image_converter_option = ImageConverterOption {
+            in_path: in_path.to_string_lossy().to_string(),
+            in_type: in_type.clone(),
+            out_path: out_path.to_string_lossy().to_string(),
+            out_type: out_type.clone(),
+        };
+        let image_converter_option = BASE64.encode(serde_json::to_string(&image_converter_option)?);
 
-        if !output.status.success() {
-            let stdout_message = String::from_utf8_lossy(&output.stdout).to_string();
-            let stderr_message = String::from_utf8_lossy(&output.stderr).to_string();
+        let mut cmd = Command::new(image_converter)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()?;
 
-            error!(stdout = stdout_message, stderr = stderr_message, "image converter failed");
+        let mut stdin = cmd
+            .stdin
+            .take()
+            .ok_or_else(|| anyhow::anyhow!("Failed to get to stdin"))?;
+        stdin
+            .write_all(image_converter_option.as_bytes())
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to write to stdin: {}", e))?;
+        stdin
+            .write_all(b"\n")
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to write newline to stdin: {}", e))?;
 
-            anyhow::bail!(format!("failed to convert image: {}", stderr_message));
+        let mut stdout = cmd
+            .stdout
+            .take()
+            .ok_or_else(|| anyhow::anyhow!("Failed to get to stdout"))?;
+        let stdout_handle = tokio::spawn(async move {
+            let mut v = String::new();
+            stdout.read_to_string(&mut v).await.ok();
+            v
+        });
+
+        let mut stderr = cmd
+            .stderr
+            .take()
+            .ok_or_else(|| anyhow::anyhow!("Failed to get to stderr"))?;
+        let stderr_handle = tokio::spawn(async move {
+            let mut v = String::new();
+            stderr.read_to_string(&mut v).await.ok();
+            v
+        });
+
+        let (stdout_result, stderr_result) = tokio::try_join!(stdout_handle, stderr_handle)
+            .map_err(|e| anyhow::anyhow!("Failed to read output: {}", e))?;
+
+        let status = cmd.wait().await?;
+        if !status.success() {
+            anyhow::bail!(
+                "Process failed.\nstdout: {}\nstderr: {}",
+                stdout_result,
+                stderr_result
+            );
         }
 
         Ok(())
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+struct ImageConverterOption {
+    pub in_path: String,
+    pub in_type: FileConvertImageInputFileType,
+    pub out_path: String,
+    pub out_type: FileConvertImageOutputFileType,
+}
+
 #[cfg(test)]
 mod tests {
     use std::{env, path::Path};
 
-    use crate::converter::ImageConverter;
+    use crate::{
+        FileConvertImageInputFileType, FileConvertImageOutputFileType, ImageConverter as _,
+        ImageConverterImpl,
+    };
 
     #[ignore]
     #[tokio::test]
     async fn simple_test() {
-        env::set_var("IMAGE_CONVERTER_DIR", "/home/lyrise/bin/file-converter");
+        env::set_var(
+            "IMAGE_CONVERTER_DIR",
+            "/home/lyrise/repos/omnius-labs/image-converter-cs/pub/linux-x64",
+        );
         let base_path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/src/converter/test"));
         let input = base_path.join("test.avif");
         let output = base_path.join("test.png");
 
-        let image_converter = crate::converter::ImageConverterImpl;
+        let converter = ImageConverterImpl;
 
-        image_converter.convert(&input, &output).await.unwrap();
+        converter
+            .convert(
+                &input,
+                &FileConvertImageInputFileType::Avif,
+                &output,
+                &FileConvertImageOutputFileType::Png,
+            )
+            .await
+            .unwrap();
     }
 }

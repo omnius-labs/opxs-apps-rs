@@ -126,10 +126,13 @@ impl AppConfig {
         }
 
         let secret_reader = Box::new(SecretsReaderImpl {
-            client: aws_sdk_secretsmanager::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
+            client: aws_sdk_secretsmanager::Client::new(
+                &aws_config::load_defaults(BehaviorVersion::latest()).await,
+            ),
         });
 
-        let secret_value = serde_json::from_str::<serde_json::Value>(&secret_reader.read_value("opxs").await?)?;
+        let secret_value =
+            serde_json::from_str::<serde_json::Value>(&secret_reader.read_value("opxs").await?)?;
         let postgres_user = secret_value.get_str("postgres_user")?;
         let postgres_password = secret_value.get_str("postgres_password")?;
         let jwt_secret_current = secret_value.get_str("jwt_secret_current")?;

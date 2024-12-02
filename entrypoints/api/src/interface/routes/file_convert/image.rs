@@ -8,7 +8,10 @@ use utoipa::ToSchema;
 use validator::Validate;
 
 use omnius_opxs_base::AppError;
-use omnius_opxs_file_convert::{ImageConvertJobStatus, ImageType};
+use omnius_opxs_file_convert::{
+    FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertImageRequestParam,
+    FileConvertJobStatus, FileConvertJobType,
+};
 
 use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
 
@@ -22,18 +25,26 @@ pub fn gen_service(state: AppState) -> Router {
 
 #[utoipa::path(
     post,
-    path = "/api/v1/convert/file/upload",
+    path = "/api/v1/file-convert/image/upload",
     request_body = UploadInput,
     responses(
         (status = 200, body = UploadOutput)
     )
 )]
-pub async fn upload(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<UploadInput>) -> Result<Json<UploadOutput>, AppError> {
+pub async fn upload(
+    State(state): State<AppState>,
+    ValidatedJson(input): ValidatedJson<UploadInput>,
+) -> Result<Json<UploadOutput>, AppError> {
     let job_id = state.service.tsid_provider.lock().gen().to_string();
+    let param = FileConvertImageRequestParam {
+        file_stem: input.file_stem,
+        in_type: input.in_type,
+        out_type: input.out_type,
+    };
     let upload_uri = state
         .service
         .image_convert_job_creator
-        .create_image_convert_job(&job_id, &input.source_file_name, &input.target_image_type)
+        .create_job(&job_id, &FileConvertJobType::Image, &param)
         .await?;
 
     Ok(Json(UploadOutput { job_id, upload_uri }))
@@ -41,8 +52,9 @@ pub async fn upload(State(state): State<AppState>, ValidatedJson(input): Validat
 
 #[derive(Deserialize, ToSchema, Validate)]
 pub struct UploadInput {
-    pub source_file_name: String,
-    pub target_image_type: ImageType,
+    pub file_stem: String,
+    pub in_type: FileConvertImageInputFileType,
+    pub out_type: FileConvertImageOutputFileType,
 }
 
 #[derive(Serialize, ToSchema, Validate)]
@@ -53,25 +65,36 @@ pub struct UploadOutput {
 
 #[utoipa::path(
     get,
-    path = "/api/v1/convert/file/status",
+    path = "/api/v1/file-convert/image/status",
     request_body = StatusInput,
     responses(
         (status = 200, body = StatusOutput)
     )
 )]
-pub async fn status(State(state): State<AppState>, input: Query<StatusInput>) -> Result<Json<StatusOutput>, AppError> {
-    let (status, download_uri) = state.service.image_convert_job_creator.get_status(&input.job_id).await?;
+pub async fn status(
+    State(state): State<AppState>,
+    input: Query<StatusInput>,
+) -> Result<Json<StatusOutput>, AppError> {
+    let (status, download_uri) = state
+        .service
+        .image_convert_job_creator
+        .get_download_url(&input.job_id, &input.file_name)
+        .await?;
 
-    Ok(Json(StatusOutput { status, download_uri }))
+    Ok(Json(StatusOutput {
+        status,
+        download_uri,
+    }))
 }
 
 #[derive(Deserialize, ToSchema, Validate)]
 pub struct StatusInput {
     pub job_id: String,
+    pub file_name: String,
 }
 
 #[derive(Serialize, ToSchema, Validate)]
 pub struct StatusOutput {
-    pub status: ImageConvertJobStatus,
+    pub status: FileConvertJobStatus,
     pub download_uri: Option<String>,
 }

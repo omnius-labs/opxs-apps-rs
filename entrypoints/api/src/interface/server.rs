@@ -7,7 +7,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::{
     interface::{
         health,
-        routes::{auth, image},
+        routes::{auth, file_convert},
     },
     shared::state::AppState,
 };
@@ -23,14 +23,19 @@ impl WebServer {
             .merge(SwaggerUi::new("/api/docs").url("/api/api-doc/openapi.json", ApiDoc::openapi()))
             .nest_service(
                 "/api",
-                Router::new().route("/", get(|| async { Redirect::permanent("/api/docs") })).nest_service(
-                    "/v1",
-                    Router::new()
-                        .route("/health", get(health::check))
-                        .with_state(state.clone())
-                        .nest_service("/auth", auth::gen_service(state.clone()))
-                        .nest_service("/image", image::gen_service(state.clone())),
-                ),
+                Router::new()
+                    .route("/", get(|| async { Redirect::permanent("/api/docs") }))
+                    .nest_service(
+                        "/v1",
+                        Router::new()
+                            .route("/health", get(health::check))
+                            .with_state(state.clone())
+                            .nest_service("/auth", auth::gen_service(state.clone()))
+                            .nest_service(
+                                "/file-convert",
+                                file_convert::gen_service(state.clone()),
+                            ),
+                    ),
             )
             .layer(cors);
 
@@ -41,8 +46,12 @@ impl WebServer {
             axum::serve(listener, app).await?;
         } else {
             // Run app on AWS Lambda
-            let app = tower::ServiceBuilder::new().layer(axum_aws_lambda::LambdaLayer::default()).service(app);
-            lambda_http::run(app).await.map_err(|_| anyhow::anyhow!("lambda_http run error"))?;
+            let app = tower::ServiceBuilder::new()
+                .layer(axum_aws_lambda::LambdaLayer::default())
+                .service(app);
+            lambda_http::run(app)
+                .await
+                .map_err(|_| anyhow::anyhow!("lambda_http run error"))?;
         }
 
         state.service.terminate().await?;
@@ -61,8 +70,8 @@ impl WebServer {
         auth::google::nonce,
         auth::google::register,
         auth::google::login,
-        image::convert::upload,
-        image::convert::status,
+        file_convert::image::upload,
+        file_convert::image::status,
     ),
     components(
         schemas(
@@ -71,10 +80,10 @@ impl WebServer {
             auth::google::NonceOutput,
             auth::google::RegisterInput,
             auth::google::LoginInput,
-            image::convert::UploadInput,
-            image::convert::UploadOutput,
-            image::convert::StatusInput,
-            image::convert::StatusOutput,
+            file_convert::image::UploadInput,
+            file_convert::image::UploadOutput,
+            file_convert::image::StatusInput,
+            file_convert::image::StatusOutput,
         )
     ),
     modifiers(&SecurityAddon),
@@ -88,9 +97,11 @@ impl utoipa::Modify for SecurityAddon {
         if let Some(components) = openapi.components.as_mut() {
             components.add_security_scheme(
                 "bearer_token",
-                utoipa::openapi::security::SecurityScheme::Http(utoipa::openapi::security::Http::new(
-                    utoipa::openapi::security::HttpAuthScheme::Bearer,
-                )),
+                utoipa::openapi::security::SecurityScheme::Http(
+                    utoipa::openapi::security::Http::new(
+                        utoipa::openapi::security::HttpAuthScheme::Bearer,
+                    ),
+                ),
             )
         }
     }

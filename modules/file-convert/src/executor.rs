@@ -1,52 +1,79 @@
-use std::{path::PathBuf, sync::Arc};
+use std::sync::Arc;
 
+use anyhow::Context;
 use omnius_core_cloud::aws::s3::S3Client;
+use tempfile::tempdir;
 
-use crate::{ImageConvertJobRepository, ImageConvertRequestParam, ImageConverter};
+use crate::{
+    FileConvertImageRequestParam, FileConvertJobRepository, FileConvertJobType, ImageConverter,
+};
 
-pub struct ImageConvertExecutor {
-    pub image_converter: Arc<dyn ImageConverter + Send + Sync>,
-    pub image_convert_job_repository: Arc<ImageConvertJobRepository>,
+pub struct FileConvertExecutor {
+    pub file_convert_job_repository: Arc<FileConvertJobRepository>,
     pub s3_client: Arc<dyn S3Client + Send + Sync>,
+    pub image_converter: Arc<dyn ImageConverter + Send + Sync>,
+    // pub meta_converters: Arc<dyn ImageConverter + Send + Sync>,
 }
 
-impl ImageConvertExecutor {
+impl FileConvertExecutor {
     pub async fn execute(&self, job_ids: &[String]) -> anyhow::Result<()> {
         for job_id in job_ids.iter() {
-            self.image_convert_job_repository.update_status_to_processing(job_id).await?;
+            self.file_convert_job_repository
+                .update_status_to_processing(job_id)
+                .await?;
 
             let res = self.execute_one(job_id).await;
 
             if let Err(e) = res {
-                self.image_convert_job_repository
+                self.file_convert_job_repository
                     .update_status_to_failed(job_id, e.to_string().as_str())
                     .await?;
                 continue;
             }
 
-            self.image_convert_job_repository.update_status_to_completed(job_id).await?;
+            self.file_convert_job_repository
+                .update_status_to_completed(job_id)
+                .await?;
         }
         Ok(())
     }
 
     async fn execute_one(&self, job_id: &str) -> anyhow::Result<()> {
-        let job = self.image_convert_job_repository.get_job(job_id).await?;
-        let param = job.param.ok_or_else(|| anyhow::anyhow!("param is not found"))?;
-        let param = serde_json::from_str::<ImageConvertRequestParam>(&param)?;
-        self.execute_image_convert(job_id, &param).await?;
+        let job = self.file_convert_job_repository.get_job(job_id).await?;
+        let working_dir = tempdir()?;
 
-        Ok(())
-    }
+        let in_path = working_dir.path().join(format!("/tmp/in_{}", job_id));
+        let out_path = working_dir.path().join(format!("/tmp/out_{}", job_id));
 
-    async fn execute_image_convert(&self, job_id: &str, param: &ImageConvertRequestParam) -> anyhow::Result<()> {
-        let in_file = PathBuf::from(format!("/tmp/in_{}.{}", job_id, param.input.typ.get_extension()));
-        let out_file = PathBuf::from(format!("/tmp/out_{}.{}", job_id, param.output.typ.get_extension()));
+        self.s3_client
+            .get_object(format!("in/{}", job_id).as_str(), &in_path)
+            .await
+            .context("Failed to download input file from S3")?;
 
-        self.s3_client.get_object(format!("in/{}", job_id).as_str(), &in_file).await?;
+        match &job.typ {
+            FileConvertJobType::Image => {
+                let param = job
+                    .param
+                    .ok_or_else(|| anyhow::anyhow!("param is not found"))?;
+                let param = serde_json::from_str::<FileConvertImageRequestParam>(&param)?;
 
-        self.image_converter.convert(&in_file, &out_file).await?;
+                self.image_converter
+                    .convert(
+                        in_path.as_path(),
+                        &param.in_type,
+                        out_path.as_path(),
+                        &param.out_type,
+                    )
+                    .await?;
+            }
+            FileConvertJobType::Meta => todo!(),
+            _ => todo!(),
+        }
 
-        self.s3_client.put_object(format!("out/{}", job_id).as_str(), &out_file).await?;
+        self.s3_client
+            .put_object(format!("out/{}", job_id).as_str(), &out_path)
+            .await
+            .context("Failed to upload output file to S3")?;
 
         Ok(())
     }
@@ -68,7 +95,10 @@ mod tests {
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{shared, ImageConvertJobCreator, ImageConverterMock, ImageType};
+    use crate::{
+        shared, FileConvertImageInputFileType, FileConvertImageOutputFileType,
+        FileConvertJobCreator, ImageConverterMock,
+    };
 
     use super::*;
 
@@ -85,7 +115,11 @@ mod tests {
                 .unwrap(),
         );
         let clock = Arc::new(ClockUtc {});
-        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(
+            ClockUtc,
+            RandomBytesProviderImpl::new(),
+            16,
+        )));
         let s3_client = Arc::new(S3ClientMock::new());
         s3_client
             .gen_put_presigned_uri_outputs
@@ -97,36 +131,55 @@ mod tests {
             .push_back("https://get.s3.example.com".to_string());
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
-        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
-            .await
-            .unwrap();
+        let migrator = PostgresMigrator::new(
+            &container.connection_string,
+            migrations_path,
+            "opxs-api",
+            "",
+        )
+        .await
+        .unwrap();
         migrator.migrate().await.unwrap();
 
-        let image_converter = Arc::new(ImageConverterMock::new());
-        let image_convert_job_repository = Arc::new(ImageConvertJobRepository {
+        let file_convert_job_repository = Arc::new(FileConvertJobRepository {
             db,
             clock: clock.clone(),
             tsid_provider: tsid_provider.clone(),
         });
 
-        let job_creator = ImageConvertJobCreator {
-            image_convert_job_repository: image_convert_job_repository.clone(),
+        let job_creator = FileConvertJobCreator {
+            file_convert_job_repository: file_convert_job_repository.clone(),
             clock: clock.clone(),
             s3_client: s3_client.clone(),
         };
         let job_id = tsid_provider.lock().gen().to_string();
-        let upload_url = job_creator.create_image_convert_job(&job_id, "test.png", &ImageType::Jpg).await.unwrap();
+        let param = FileConvertImageRequestParam {
+            file_stem: "test.png".to_string(),
+            in_type: FileConvertImageInputFileType::Jpg,
+            out_type: FileConvertImageOutputFileType::Png,
+        };
+        let upload_url = job_creator
+            .create_job(&job_id, &FileConvertJobType::Image, &param)
+            .await
+            .unwrap();
         println!("upload_url: {}", upload_url);
 
-        let executor = ImageConvertExecutor {
-            image_converter: image_converter.clone(),
-            image_convert_job_repository,
+        let image_converter = Arc::new(ImageConverterMock::new());
+        let executor = FileConvertExecutor {
+            file_convert_job_repository: file_convert_job_repository.clone(),
             s3_client: s3_client.clone(),
+            image_converter: image_converter.clone(),
         };
         executor.execute(&[job_id.clone()]).await.unwrap();
 
-        println!("{:?}", image_converter.convert_inputs.lock().first().unwrap());
-        assert_eq!(s3_client.get_object_inputs.lock().first().unwrap().key, format!("in/{}", job_id).as_str());
+        println!(
+            "{:?}",
+            image_converter.convert_inputs.lock().first().unwrap()
+        );
+        assert_eq!(
+            s3_client.get_object_inputs.lock().first().unwrap().key,
+            format!("in/{}", job_id).as_str()
+        );
         assert_eq!(
             s3_client.put_object_inputs.lock().first().unwrap().key,
             format!("out/{}", job_id).as_str()

@@ -33,7 +33,8 @@ impl Kdf {
                 let mut hash = vec![0; self.get_credential_len()];
                 pbkdf2::derive(
                     pbkdf2::PBKDF2_HMAC_SHA256,
-                    NonZeroU32::new(self.iterations).ok_or_else(|| anyhow::anyhow!("unexpected error"))?,
+                    NonZeroU32::new(self.iterations)
+                        .ok_or_else(|| anyhow::anyhow!("unexpected error"))?,
                     salt,
                     secret.as_bytes(),
                     &mut hash,
@@ -48,7 +49,8 @@ impl Kdf {
             KdfAlgorithm::Pbkdf2HmacSha256 => {
                 let result = pbkdf2::verify(
                     pbkdf2::PBKDF2_HMAC_SHA256,
-                    NonZeroU32::new(self.iterations).ok_or_else(|| anyhow::anyhow!("unexpected error"))?,
+                    NonZeroU32::new(self.iterations)
+                        .ok_or_else(|| anyhow::anyhow!("unexpected error"))?,
                     salt,
                     secret.as_bytes(),
                     derived_key,

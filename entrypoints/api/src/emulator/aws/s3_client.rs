@@ -66,7 +66,9 @@ impl S3ClientEmulator {
                 .route("/:key", put(Self::put_content))
                 .route("/:key/:file_name", get(Self::get_content))
                 .with_state(state);
-            let listener = tokio::net::TcpListener::bind(option.listen_addr).await.unwrap();
+            let listener = tokio::net::TcpListener::bind(option.listen_addr)
+                .await
+                .unwrap();
             let serve = axum::serve(listener, app).with_graceful_shutdown(async {
                 terminate_signal_receiver.await.ok();
             });
@@ -81,7 +83,10 @@ impl S3ClientEmulator {
         })
     }
 
-    async fn get_content(AxumPath((key, file_name)): AxumPath<(String, String)>, State(state): State<S3ClientEmulatorState>) -> impl IntoResponse {
+    async fn get_content(
+        AxumPath((key, file_name)): AxumPath<(String, String)>,
+        State(state): State<S3ClientEmulatorState>,
+    ) -> impl IntoResponse {
         let file_path = state.working_dir;
         let file_path = file_path.join(key);
         let body = match tokio::fs::File::open(file_path).await {
@@ -122,7 +127,11 @@ impl S3ClientEmulator {
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        state.put_event_sender.send(key).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        state
+            .put_event_sender
+            .send(key)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(())
     }
@@ -145,13 +154,28 @@ impl Terminable for S3ClientEmulator {
 
 #[async_trait]
 impl S3Client for S3ClientEmulator {
-    async fn gen_get_presigned_uri(&self, key: &str, _start_time: DateTime<Utc>, _expires_in: Duration, file_name: &str) -> anyhow::Result<String> {
+    async fn gen_get_presigned_uri(
+        &self,
+        key: &str,
+        _start_time: DateTime<Utc>,
+        _expires_in: Duration,
+        file_name: &str,
+    ) -> anyhow::Result<String> {
         let encoded_file_name = urlencoding::encode(file_name).to_string();
-        let url = self.option.base_url.join(&format!("{}/{}", key, encoded_file_name))?.to_string();
+        let url = self
+            .option
+            .base_url
+            .join(&format!("{}/{}", key, encoded_file_name))?
+            .to_string();
         Ok(url)
     }
 
-    async fn gen_put_presigned_uri(&self, key: &str, _start_time: DateTime<Utc>, _expires_in: Duration) -> anyhow::Result<String> {
+    async fn gen_put_presigned_uri(
+        &self,
+        key: &str,
+        _start_time: DateTime<Utc>,
+        _expires_in: Duration,
+    ) -> anyhow::Result<String> {
         let url = self.option.base_url.join(key)?.to_string();
         Ok(url)
     }
@@ -201,7 +225,9 @@ mod tests {
         let url = s3_client
             .gen_get_presigned_uri(
                 "get_test",
-                DateTime::parse_from_rfc3339("2000-01-01T00:00:00Z").unwrap().into(),
+                DateTime::parse_from_rfc3339("2000-01-01T00:00:00Z")
+                    .unwrap()
+                    .into(),
                 TimeDelta::zero(),
                 "test_name",
             )
@@ -229,7 +255,9 @@ mod tests {
         let url = s3_client
             .gen_put_presigned_uri(
                 "put_test",
-                DateTime::parse_from_rfc3339("2000-01-01T00:00:00Z").unwrap().into(),
+                DateTime::parse_from_rfc3339("2000-01-01T00:00:00Z")
+                    .unwrap()
+                    .into(),
                 TimeDelta::zero(),
             )
             .await?;

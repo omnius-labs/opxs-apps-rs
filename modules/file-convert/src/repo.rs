@@ -3,29 +3,39 @@ use std::sync::Arc;
 use chrono::Utc;
 use omnius_core_base::{clock::Clock, tsid::TsidProvider};
 use parking_lot::Mutex;
+use serde::Serialize;
 use sqlx::PgPool;
 
-use crate::{ImageConvertJob, ImageConvertJobStatus, ImageConvertRequestParam};
+use crate::{FileConvertJob, FileConvertJobStatus, FileConvertJobType};
 
-pub struct ImageConvertJobRepository {
+pub struct FileConvertJobRepository {
     pub db: Arc<PgPool>,
     pub clock: Arc<dyn Clock<Utc> + Send + Sync>,
     pub tsid_provider: Arc<Mutex<dyn TsidProvider + Send + Sync>>,
 }
 
-impl ImageConvertJobRepository {
-    pub async fn create_image_convert_job(&self, job_id: &str, param: &ImageConvertRequestParam) -> anyhow::Result<()> {
+impl FileConvertJobRepository {
+    pub async fn create_job<TParam>(
+        &self,
+        job_id: &str,
+        typ: &FileConvertJobType,
+        param: &TParam,
+    ) -> anyhow::Result<()>
+    where
+        TParam: ?Sized + Serialize,
+    {
         let now = self.clock.now();
 
         sqlx::query(
             r#"
-INSERT INTO image_convert_jobs (id, param, status, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5);
+INSERT INTO file_convert_jobs (id, type, param, status, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6);
         "#,
         )
         .bind(job_id)
+        .bind(typ)
         .bind(&serde_json::to_string(param)?)
-        .bind(ImageConvertJobStatus::Preparing)
+        .bind(FileConvertJobStatus::Preparing)
         .bind(now)
         .bind(now)
         .execute(self.db.as_ref())
@@ -34,11 +44,11 @@ INSERT INTO image_convert_jobs (id, param, status, created_at, updated_at)
         Ok(())
     }
 
-    pub async fn get_job(&self, id: &str) -> anyhow::Result<ImageConvertJob> {
-        let res: ImageConvertJob = sqlx::query_as(
+    pub async fn get_job(&self, id: &str) -> anyhow::Result<FileConvertJob> {
+        let res: FileConvertJob = sqlx::query_as(
             r#"
 SELECT *
-    FROM image_convert_jobs
+    FROM file_convert_jobs
     WHERE id = $1
 "#,
         )
@@ -50,26 +60,43 @@ SELECT *
     }
 
     pub async fn update_status_to_waiting(&self, job_id: &str) -> anyhow::Result<()> {
-        self.update_status(job_id, ImageConvertJobStatus::Preparing, ImageConvertJobStatus::Waiting)
-            .await
+        self.update_status(
+            job_id,
+            FileConvertJobStatus::Preparing,
+            FileConvertJobStatus::Waiting,
+        )
+        .await
     }
 
     pub async fn update_status_to_processing(&self, job_id: &str) -> anyhow::Result<()> {
-        self.update_status(job_id, ImageConvertJobStatus::Waiting, ImageConvertJobStatus::Processing)
-            .await
+        self.update_status(
+            job_id,
+            FileConvertJobStatus::Waiting,
+            FileConvertJobStatus::Processing,
+        )
+        .await
     }
 
     pub async fn update_status_to_completed(&self, job_id: &str) -> anyhow::Result<()> {
-        self.update_status(job_id, ImageConvertJobStatus::Processing, ImageConvertJobStatus::Completed)
-            .await
+        self.update_status(
+            job_id,
+            FileConvertJobStatus::Processing,
+            FileConvertJobStatus::Completed,
+        )
+        .await
     }
 
-    async fn update_status(&self, job_id: &str, old_status: ImageConvertJobStatus, new_status: ImageConvertJobStatus) -> anyhow::Result<()> {
+    async fn update_status(
+        &self,
+        job_id: &str,
+        old_status: FileConvertJobStatus,
+        new_status: FileConvertJobStatus,
+    ) -> anyhow::Result<()> {
         let now = self.clock.now();
 
         let res = sqlx::query(
             r#"
-UPDATE image_convert_jobs
+UPDATE file_convert_jobs
     SET status = $3, updated_at = $4
     WHERE id = $1 AND status = $2
 "#,
@@ -82,18 +109,22 @@ UPDATE image_convert_jobs
         .await?;
 
         if res.rows_affected() < 1 {
-            anyhow::bail!("no rows affected");
+            anyhow::bail!("job_id is not found");
         }
 
         Ok(())
     }
 
-    pub async fn update_status_to_failed(&self, job_id: &str, failed_reason: &str) -> anyhow::Result<()> {
+    pub async fn update_status_to_failed(
+        &self,
+        job_id: &str,
+        failed_reason: &str,
+    ) -> anyhow::Result<()> {
         let now = self.clock.now();
 
         let res = sqlx::query(
             r#"
-UPDATE image_convert_jobs
+UPDATE file_convert_jobs
     SET status = 'Failed', failed_reason = $2, updated_at = $3
     WHERE id = $1 AND status = 'Processing'
 "#,
@@ -105,7 +136,7 @@ UPDATE image_convert_jobs
         .await?;
 
         if res.rows_affected() < 1 {
-            anyhow::bail!("no rows affected");
+            anyhow::bail!("job_id is not found");
         }
 
         Ok(())

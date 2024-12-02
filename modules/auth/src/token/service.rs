@@ -29,10 +29,17 @@ impl TokenService {
         let refresh_token_expires_at = now + REFRESH_TOKEN_EXPIRES_IN;
 
         let sub = user_id.to_string();
-        let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, access_token_expires_at, now)?;
+        let access_token = jwt::sign(
+            &self.jwt_conf.secret.current,
+            &sub,
+            access_token_expires_at,
+            now,
+        )?;
         let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
 
-        self.token_repo.create_token(user_id, &refresh_token, &refresh_token_expires_at).await?;
+        self.token_repo
+            .create_token(user_id, &refresh_token, &refresh_token_expires_at)
+            .await?;
 
         Ok(AuthToken {
             access_token,
@@ -54,10 +61,17 @@ impl TokenService {
         let refresh_token_expires_at = now + REFRESH_TOKEN_EXPIRES_IN;
 
         let sub = user_id.to_string();
-        let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, access_token_expires_at, now)?;
+        let access_token = jwt::sign(
+            &self.jwt_conf.secret.current,
+            &sub,
+            access_token_expires_at,
+            now,
+        )?;
         let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
 
-        self.token_repo.create_token(&user_id, &refresh_token, &refresh_token_expires_at).await?;
+        self.token_repo
+            .create_token(&user_id, &refresh_token, &refresh_token_expires_at)
+            .await?;
 
         Ok(AuthToken {
             access_token,
@@ -101,9 +115,14 @@ mod tests {
         );
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
-        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
-            .await
-            .unwrap();
+        let migrator = PostgresMigrator::new(
+            &container.connection_string,
+            migrations_path,
+            "opxs-api",
+            "",
+        )
+        .await
+        .unwrap();
         migrator.migrate().await.unwrap();
 
         let clock = Arc::new(ClockUtc {});

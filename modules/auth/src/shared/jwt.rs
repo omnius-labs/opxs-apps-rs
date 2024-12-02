@@ -21,7 +21,12 @@ impl Claims {
     }
 }
 
-pub fn sign(secret: &str, sub: &str, exp: DateTime<Utc>, iat: DateTime<Utc>) -> Result<String, AppError> {
+pub fn sign(
+    secret: &str,
+    sub: &str,
+    exp: DateTime<Utc>,
+    iat: DateTime<Utc>,
+) -> Result<String, AppError> {
     Ok(jsonwebtoken::encode(
         &Header::default(),
         &Claims::new(sub, iat, exp),
@@ -32,9 +37,11 @@ pub fn sign(secret: &str, sub: &str, exp: DateTime<Utc>, iat: DateTime<Utc>) -> 
 pub fn verify(secret: &str, token: &str, now: DateTime<Utc>) -> Result<Claims, AppError> {
     let key = DecodingKey::from_secret(secret.as_bytes());
     let validation = Validation::default();
-    let claims: Claims = jsonwebtoken::decode(token, &key, &validation).map(|token| token.claims)?;
+    let claims: Claims =
+        jsonwebtoken::decode(token, &key, &validation).map(|token| token.claims)?;
 
-    let expired_at = DateTime::from_timestamp(claims.exp, 0).ok_or_else(|| AppError::AccessTokenExpired)?;
+    let expired_at =
+        DateTime::from_timestamp(claims.exp, 0).ok_or_else(|| AppError::AccessTokenExpired)?;
     if expired_at < now {
         return Err(AppError::AccessTokenExpired);
     }

@@ -15,7 +15,11 @@ pub struct WorldValidator {
 }
 
 impl WorldValidator {
-    pub async fn new(info: &AppInfo, postgres_url: &str, clock: Arc<dyn Clock<Utc> + Send + Sync>) -> anyhow::Result<Self> {
+    pub async fn new(
+        info: &AppInfo,
+        postgres_url: &str,
+        clock: Arc<dyn Clock<Utc> + Send + Sync>,
+    ) -> anyhow::Result<Self> {
         let db = PgPoolOptions::new()
             .max_connections(10)
             .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
@@ -59,7 +63,10 @@ CREATE TABLE IF NOT EXISTS _world (
     }
 
     pub async fn verify(&self) -> anyhow::Result<WorldValidatedStatus> {
-        let row: Result<PgRow, sqlx::Error> = sqlx::query("SELECT (value) FROM _world WHERE key = 'mode'").fetch_one(&self.db).await;
+        let row: Result<PgRow, sqlx::Error> =
+            sqlx::query("SELECT (value) FROM _world WHERE key = 'mode'")
+                .fetch_one(&self.db)
+                .await;
 
         match row {
             Ok(row) => {
@@ -155,7 +162,10 @@ mod tests {
         };
         let clock = Arc::new(ClockUtc {});
 
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock.clone()).await.unwrap();
+        let world_verifier =
+            WorldValidator::new(&info, &container.connection_string, clock.clone())
+                .await
+                .unwrap();
         let res = world_verifier.verify().await;
         assert_eq!(res.unwrap(), WorldValidatedStatus::Init);
 
@@ -167,7 +177,9 @@ mod tests {
             mode: RunMode::Local,
             git_tag: "test".to_string(),
         };
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
+        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock)
+            .await
+            .unwrap();
         let res = world_verifier.verify().await;
         assert!(res.is_err());
 
@@ -192,7 +204,9 @@ mod tests {
 
         let clock = Arc::new(ClockUtc {});
 
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
+        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock)
+            .await
+            .unwrap();
         let res = world_verifier.notify(&conf.notify.clone().unwrap()).await;
         println!("{:?}", res);
         assert!(res.is_ok());

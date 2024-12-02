@@ -14,7 +14,12 @@ pub struct GoogleAuthService {
 }
 
 impl GoogleAuthService {
-    pub async fn register(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AppError> {
+    pub async fn register(
+        &self,
+        auth_code: &str,
+        auth_redirect_uri: &str,
+        auth_nonce: &str,
+    ) -> Result<String, AppError> {
         let oauth2_token_result = self
             .oauth2_provider
             .get_oauth2_token(
@@ -28,16 +33,25 @@ impl GoogleAuthService {
         let id_token_claims = oauth2_token_result.id_token_claims;
 
         if auth_nonce != id_token_claims.nonce {
-            return Err(AppError::RegisterRejection(anyhow::anyhow!("Nonce mismatch error")));
+            return Err(AppError::RegisterRejection(anyhow::anyhow!(
+                "Nonce mismatch error"
+            )));
         }
 
-        if let Ok(user) = self.auth_repo.get_user("google", &id_token_claims.sub).await {
+        if let Ok(user) = self
+            .auth_repo
+            .get_user("google", &id_token_claims.sub)
+            .await
+        {
             return Ok(user.id);
         }
 
         let user_info = self.oauth2_provider.get_user_info(&access_token).await?;
 
-        let user_id = self.auth_repo.create_user(&user_info.name, "google", &id_token_claims.sub).await?;
+        let user_id = self
+            .auth_repo
+            .create_user(&user_info.name, "google", &id_token_claims.sub)
+            .await?;
 
         Ok(user_id)
     }
@@ -47,7 +61,12 @@ impl GoogleAuthService {
         Ok(())
     }
 
-    pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AppError> {
+    pub async fn login(
+        &self,
+        auth_code: &str,
+        auth_redirect_uri: &str,
+        auth_nonce: &str,
+    ) -> Result<String, AppError> {
         let oauth2_token_result = self
             .oauth2_provider
             .get_oauth2_token(
@@ -60,10 +79,15 @@ impl GoogleAuthService {
         let id_token_claims = oauth2_token_result.id_token_claims;
 
         if auth_nonce != id_token_claims.nonce {
-            return Err(AppError::LoginRejection(anyhow::anyhow!("Nonce mismatch error")));
+            return Err(AppError::LoginRejection(anyhow::anyhow!(
+                "Nonce mismatch error"
+            )));
         }
 
-        let user = self.auth_repo.get_user("google", &id_token_claims.sub).await?;
+        let user = self
+            .auth_repo
+            .get_user("google", &id_token_claims.sub)
+            .await?;
 
         Ok(user.id)
     }
@@ -73,7 +97,9 @@ impl GoogleAuthService {
 mod tests {
     use async_trait::async_trait;
     use chrono::Duration;
-    use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use omnius_core_base::{
+        clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl,
+    };
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
     use omnius_opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
@@ -101,7 +127,13 @@ mod tests {
         );
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
-        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "").await?;
+        let migrator = PostgresMigrator::new(
+            &container.connection_string,
+            migrations_path,
+            "opxs-api",
+            "",
+        )
+        .await?;
         migrator.migrate().await?;
 
         let access_token = "access_token";
@@ -118,7 +150,11 @@ mod tests {
         let client_secret = "client_secret";
 
         let clock = Arc::new(ClockUtc {});
-        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(
+            ClockUtc,
+            RandomBytesProviderImpl::new(),
+            16,
+        )));
         let oauth2_provider = Arc::new(GoogleOAuth2ProviderMock::new(
             OAuth2TokenResult {
                 access_token: access_token.to_string(),
@@ -159,19 +195,40 @@ mod tests {
         // register
         let user_id = auth_service.register(code, redirect_uri, nonce).await?;
         println!("{}", user_id);
-        assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.lock().code, code.to_string());
         assert_eq!(
-            *oauth2_provider.clone().get_oauth2_token_param.lock().redirect_uri,
+            *oauth2_provider.clone().get_oauth2_token_param.lock().code,
+            code.to_string()
+        );
+        assert_eq!(
+            *oauth2_provider
+                .clone()
+                .get_oauth2_token_param
+                .lock()
+                .redirect_uri,
             redirect_uri.to_string()
         );
-        assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.lock().client_id, client_id.to_string());
         assert_eq!(
-            *oauth2_provider.clone().get_oauth2_token_param.lock().client_secret,
+            *oauth2_provider
+                .clone()
+                .get_oauth2_token_param
+                .lock()
+                .client_id,
+            client_id.to_string()
+        );
+        assert_eq!(
+            *oauth2_provider
+                .clone()
+                .get_oauth2_token_param
+                .lock()
+                .client_secret,
             client_secret.to_string()
         );
 
         // login
-        assert_eq!(auth_service.login(code, redirect_uri, nonce).await?, user_id);
+        assert_eq!(
+            auth_service.login(code, redirect_uri, nonce).await?,
+            user_id
+        );
 
         // get user
         let user = auth_repo.get_user("google", provider_user_id).await?;
@@ -181,7 +238,10 @@ mod tests {
         assert!(auth_service.unregister(&user_id).await.is_ok());
 
         // get user
-        assert!(auth_repo.get_user("google", provider_user_id).await.is_err());
+        assert!(auth_repo
+            .get_user("google", provider_user_id)
+            .await
+            .is_err());
 
         Ok(())
     }

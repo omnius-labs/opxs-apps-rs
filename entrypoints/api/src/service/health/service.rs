@@ -49,7 +49,8 @@ mod tests {
         };
 
         let clock = Arc::new(ClockUtc {});
-        let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await?;
+        let world_verifier =
+            WorldValidator::new(&info, &container.connection_string, clock).await?;
         world_verifier.verify().await?;
 
         let db = Arc::new(

@@ -8,13 +8,13 @@ RUN dnf install -y \
     && rm -rf /var/cache/dnf/* \
     && dnf clean all
 
-ENV IMAGE_CONVERTER_VERSION=0.0.8
+ENV IMAGE_CONVERTER_VERSION=0.0.9
 
-RUN wget https://github.com/omnius-labs/file-converter-cs/releases/download/v${IMAGE_CONVERTER_VERSION}/file-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -P /app \
-    && unzip /app/file-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -d /app/file-converter \
-    && rm /app/file-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip
+RUN wget https://github.com/omnius-labs/image-converter-cs/releases/download/v${IMAGE_CONVERTER_VERSION}/image-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -P /app \
+    && unzip /app/image-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -d /app/image-converter \
+    && rm /app/image-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip
 
-ENV IMAGE_CONVERTER_DIR=/app/file-converter
+ENV IMAGE_CONVERTER_DIR=/app/image-converter
 
 COPY ./bin/omnius-opxs-batch-file-convert ${LAMBDA_RUNTIME_DIR}/bootstrap
 

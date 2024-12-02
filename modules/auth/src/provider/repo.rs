@@ -17,7 +17,12 @@ pub struct ProviderAuthRepo {
 }
 
 impl ProviderAuthRepo {
-    pub async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<String, AppError> {
+    pub async fn create_user(
+        &self,
+        name: &str,
+        provider_type: &str,
+        provider_user_id: &str,
+    ) -> Result<String, AppError> {
         let user_id = self.tsid_provider.lock().gen().to_string();
         let now = self.clock.now();
 
@@ -68,7 +73,10 @@ INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id, creat
         ];
 
         for query in queries {
-            query.execute(&mut *tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
+            query
+                .execute(&mut *tx)
+                .await
+                .map_err(|e| AppError::UnexpectedError(e.into()))?;
         }
 
         tx.commit().await?;
@@ -76,7 +84,11 @@ INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id, creat
         Ok(())
     }
 
-    pub async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AppError> {
+    pub async fn exist_user(
+        &self,
+        provider_type: &str,
+        provider_user_id: &str,
+    ) -> Result<bool, AppError> {
         let (existed,): (bool,) = sqlx::query_as(
             r#"
 SELECT EXISTS (
@@ -97,7 +109,11 @@ SELECT EXISTS (
         Ok(existed)
     }
 
-    pub async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AppError> {
+    pub async fn get_user(
+        &self,
+        provider_type: &str,
+        provider_user_id: &str,
+    ) -> Result<User, AppError> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT *

@@ -14,7 +14,10 @@ impl sqlx::Type<sqlx::Postgres> for EmailSendJobType {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobType {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    fn encode_by_ref(
+        &self,
+        buf: &mut sqlx::postgres::PgArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             EmailSendJobType::EmailConfirm => buf.extend_from_slice(b"EmailConfirm"),
             _ => buf.extend_from_slice(b"Unknown"),
@@ -24,7 +27,9 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobType {
 }
 
 impl sqlx::Decode<'_, sqlx::Postgres> for EmailSendJobType {
-    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    fn decode(
+        value: sqlx::postgres::PgValueRef<'_>,
+    ) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
         match value.as_str() {
             Ok("EmailConfirm") => Ok(EmailSendJobType::EmailConfirm),
             _ => Ok(EmailSendJobType::Unknown),
@@ -62,7 +67,10 @@ impl sqlx::Type<sqlx::Postgres> for EmailSendJobBatchStatus {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchStatus {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    fn encode_by_ref(
+        &self,
+        buf: &mut sqlx::postgres::PgArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             EmailSendJobBatchStatus::Preparing => buf.extend_from_slice(b"Preparing"),
             EmailSendJobBatchStatus::Waiting => buf.extend_from_slice(b"Waiting"),
@@ -78,7 +86,9 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchStatus {
 }
 
 impl sqlx::Decode<'_, sqlx::Postgres> for EmailSendJobBatchStatus {
-    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    fn decode(
+        value: sqlx::postgres::PgValueRef<'_>,
+    ) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
         match value.as_str() {
             Ok("Preparing") => Ok(EmailSendJobBatchStatus::Preparing),
             Ok("Waiting") => Ok(EmailSendJobBatchStatus::Waiting),
@@ -120,7 +130,10 @@ impl sqlx::Type<sqlx::Postgres> for EmailSendJobBatchDetailStatus {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    fn encode_by_ref(
+        &self,
+        buf: &mut sqlx::postgres::PgArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             EmailSendJobBatchDetailStatus::Preparing => buf.extend_from_slice(b"Preparing"),
             EmailSendJobBatchDetailStatus::Waiting => buf.extend_from_slice(b"Waiting"),
@@ -136,7 +149,9 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
 }
 
 impl sqlx::Decode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
-    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    fn decode(
+        value: sqlx::postgres::PgValueRef<'_>,
+    ) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
         match value.as_str() {
             Ok("Preparing") => Ok(EmailSendJobBatchDetailStatus::Preparing),
             Ok("Waiting") => Ok(EmailSendJobBatchDetailStatus::Waiting),

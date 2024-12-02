@@ -21,7 +21,12 @@ pub struct EmailAuthService {
 }
 
 impl EmailAuthService {
-    pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<String, AppError> {
+    pub async fn register(
+        &self,
+        name: &str,
+        email: &str,
+        password: &str,
+    ) -> Result<String, AppError> {
         if self.auth_repo.exist_user(email).await? {
             return Err(AppError::DuplicateEmail);
         }
@@ -53,7 +58,8 @@ impl EmailAuthService {
 
         let user = self.auth_repo.get_user(email).await?;
         let salt = hex::decode(user.salt).map_err(|e| AppError::UnexpectedError(e.into()))?;
-        let password_hash = hex::decode(user.password_hash).map_err(|e| AppError::UnexpectedError(e.into()))?;
+        let password_hash =
+            hex::decode(user.password_hash).map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         if !self.kdf.verify(password, &salt, &password_hash)? {
             return Err(AppError::WrongPassword);
@@ -82,7 +88,9 @@ mod tests {
     use sqlx::postgres::PgPoolOptions;
     use testresult::TestResult;
 
-    use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use omnius_core_base::{
+        clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl,
+    };
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
@@ -105,7 +113,13 @@ mod tests {
         );
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
-        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "").await?;
+        let migrator = PostgresMigrator::new(
+            &container.connection_string,
+            migrations_path,
+            "opxs-api",
+            "",
+        )
+        .await?;
         migrator.migrate().await?;
 
         let user_name = "user_name";
@@ -114,7 +128,11 @@ mod tests {
 
         let clock = Arc::new(ClockUtc {});
         let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
-        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(
+            ClockUtc,
+            RandomBytesProviderImpl::new(),
+            16,
+        )));
         let auth_repo = Arc::new(EmailAuthRepo {
             db,
             clock: clock.clone(),
@@ -140,8 +158,13 @@ mod tests {
         };
 
         // register
-        let token = auth_service.register(user_name, user_email, password).await?;
-        assert!(matches!(auth_service.login(user_email, password).await, Err(AppError::UserNotFound)));
+        let token = auth_service
+            .register(user_name, user_email, password)
+            .await?;
+        assert!(matches!(
+            auth_service.login(user_email, password).await,
+            Err(AppError::UserNotFound)
+        ));
         auth_service.confirm(&token).await?;
 
         // login
@@ -155,7 +178,10 @@ mod tests {
         assert!(auth_service.unregister(user.id.as_str()).await.is_ok());
 
         // login
-        assert!(matches!(auth_service.login(user_email, password).await, Err(AppError::UserNotFound)));
+        assert!(matches!(
+            auth_service.login(user_email, password).await,
+            Err(AppError::UserNotFound)
+        ));
 
         Ok(())
     }
