@@ -5,10 +5,11 @@ WORKDIR /app
 RUN dnf install -y \
     wget unzip \
     openssl-devel \
+    libicu-devel \
     && rm -rf /var/cache/dnf/* \
     && dnf clean all
 
-ENV IMAGE_CONVERTER_VERSION=0.0.9
+ENV IMAGE_CONVERTER_VERSION=0.0.10
 
 RUN wget https://github.com/omnius-labs/image-converter-cs/releases/download/v${IMAGE_CONVERTER_VERSION}/image-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -P /app \
     && unzip /app/image-converter-linux-x64-v${IMAGE_CONVERTER_VERSION}.zip -d /app/image-converter \

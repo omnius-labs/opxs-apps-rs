@@ -10,6 +10,7 @@
     "Deque",
     "dtolnay",
     "HMAC",
+    "jsonwebtoken",
     "nanos",
     "omnius",
     "oneshot",
@@ -26,6 +27,7 @@
     "testcontainers",
     "testkit",
     "testresult",
+    "thiserror",
     "Tsid",
     "urlencoding",
     "utoipa"
