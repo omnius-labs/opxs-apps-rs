@@ -102,8 +102,6 @@ impl IntoResponse for AppError {
             ),
         };
 
-        error!("{:?}", self);
-
         let payload = json!({"error_code": error_code.to_string()});
         (status_code, Json(payload)).into_response()
     }

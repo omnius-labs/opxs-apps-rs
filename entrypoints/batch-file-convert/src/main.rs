@@ -85,8 +85,9 @@ async fn handler(event: LambdaEvent<serde_json::Value>) -> Result<(), Error> {
                 let job_id = p
                     .file_name()
                     .ok_or_else(|| anyhow::anyhow!("file name is not found"))?
-                    .to_string_lossy();
-                job_ids.push(job_id.to_string());
+                    .to_string_lossy()
+                    .to_string();
+                job_ids.push(job_id);
             }
         }
     } else {

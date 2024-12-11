@@ -18,8 +18,11 @@ impl FileConvertJobRepository {
     pub async fn create_job<TParam>(
         &self,
         job_id: &str,
+        user_id: Option<&str>,
         typ: &FileConvertJobType,
         param: &TParam,
+        in_file_name: &str,
+        out_file_name: &str,
     ) -> anyhow::Result<()>
     where
         TParam: ?Sized + Serialize,
@@ -28,14 +31,17 @@ impl FileConvertJobRepository {
 
         sqlx::query(
             r#"
-INSERT INTO file_convert_jobs (id, type, param, status, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6);
+INSERT INTO file_convert_jobs (id, user_id, type, status, param, in_file_name, out_file_name, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
         "#,
         )
         .bind(job_id)
+        .bind(user_id)
         .bind(typ)
-        .bind(&serde_json::to_string(param)?)
         .bind(FileConvertJobStatus::Preparing)
+        .bind(&serde_json::to_string(param)?)
+        .bind(in_file_name)
+        .bind(out_file_name)
         .bind(now)
         .bind(now)
         .execute(self.db.as_ref())

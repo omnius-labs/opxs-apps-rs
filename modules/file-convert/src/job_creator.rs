@@ -22,14 +22,17 @@ impl FileConvertJobCreator {
     pub async fn create_job<TParam>(
         &self,
         job_id: &str,
+        user_id: Option<&str>,
         typ: &FileConvertJobType,
         param: &TParam,
+        in_file_name: &str,
+        out_file_name: &str,
     ) -> Result<String, AppError>
     where
         TParam: ?Sized + Serialize,
     {
         self.file_convert_job_repository
-            .create_job(job_id, typ, &param)
+            .create_job(job_id, user_id, typ, param, in_file_name, out_file_name)
             .await?;
 
         let now = self.clock.now();
@@ -49,9 +52,13 @@ impl FileConvertJobCreator {
     pub async fn get_download_url(
         &self,
         job_id: &str,
-        file_name: &str,
+        user_id: Option<&str>,
     ) -> Result<(FileConvertJobStatus, Option<String>), AppError> {
         let job = self.file_convert_job_repository.get_job(job_id).await?;
+
+        if job.user_id.as_deref() != user_id {
+            return Ok((job.status, None));
+        }
 
         if job.status != FileConvertJobStatus::Completed {
             return Ok((job.status, None));
@@ -65,7 +72,7 @@ impl FileConvertJobCreator {
                 format!("out/{}", job_id).as_str(),
                 now,
                 expires_in,
-                file_name,
+                &job.out_file_name,
             )
             .await?;
 

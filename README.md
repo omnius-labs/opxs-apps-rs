@@ -27,13 +27,19 @@ To run the Opxs API locally, you need to set up your environment first.
 
 ### Running Locally
 
-#### 1. Start the Opxs API:
+#### 1. Set environments
+
+```sh
+export IMAGE_CONVERTER_DIR="image_converter_dir_path"
+```
+
+#### 2. Start the Opxs API:
 
 ```sh
 RUN_MODE=local cargo make watch
 ```
 
-#### 2. Start PostgreSQL:
+#### 3. Start PostgreSQL:
 
 ```sh
 docker compose up --build

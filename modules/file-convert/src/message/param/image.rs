@@ -3,7 +3,6 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FileConvertImageRequestParam {
-    pub file_stem: String,
     pub in_type: FileConvertImageInputFileType,
     pub out_type: FileConvertImageOutputFileType,
 }

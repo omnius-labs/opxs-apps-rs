@@ -16,8 +16,10 @@ pub struct WebServer;
 
 impl WebServer {
     pub async fn serve(state: AppState) -> anyhow::Result<()> {
-        let cors = CorsLayer::new().allow_origin(tower_http::cors::Any);
-
+        let cors = CorsLayer::new()
+            .allow_origin(tower_http::cors::Any)
+            .allow_methods(tower_http::cors::Any)
+            .allow_headers(tower_http::cors::Any);
         let app = Router::new()
             .route("/", get(|| async { Redirect::permanent("/api/docs") }))
             .merge(SwaggerUi::new("/api/docs").url("/api/api-doc/openapi.json", ApiDoc::openapi()))

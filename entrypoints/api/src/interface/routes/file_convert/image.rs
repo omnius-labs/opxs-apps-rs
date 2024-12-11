@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
 
+use omnius_opxs_auth::shared::model::User;
 use omnius_opxs_base::AppError;
 use omnius_opxs_file_convert::{
     FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertImageRequestParam,
@@ -37,30 +38,37 @@ pub async fn upload(
 ) -> Result<Json<UploadOutput>, AppError> {
     let job_id = state.service.tsid_provider.lock().gen().to_string();
     let param = FileConvertImageRequestParam {
-        file_stem: input.file_stem,
         in_type: input.in_type,
         out_type: input.out_type,
     };
-    let upload_uri = state
+    let upload_url = state
         .service
         .image_convert_job_creator
-        .create_job(&job_id, &FileConvertJobType::Image, &param)
+        .create_job(
+            &job_id,
+            None,
+            &FileConvertJobType::Image,
+            &param,
+            &input.in_file_name,
+            &input.out_file_name,
+        )
         .await?;
 
-    Ok(Json(UploadOutput { job_id, upload_uri }))
+    Ok(Json(UploadOutput { job_id, upload_url }))
 }
 
 #[derive(Deserialize, ToSchema, Validate)]
 pub struct UploadInput {
-    pub file_stem: String,
+    pub in_file_name: String,
     pub in_type: FileConvertImageInputFileType,
+    pub out_file_name: String,
     pub out_type: FileConvertImageOutputFileType,
 }
 
 #[derive(Serialize, ToSchema, Validate)]
 pub struct UploadOutput {
     pub job_id: String,
-    pub upload_uri: String,
+    pub upload_url: String,
 }
 
 #[utoipa::path(
@@ -74,27 +82,27 @@ pub struct UploadOutput {
 pub async fn status(
     State(state): State<AppState>,
     input: Query<StatusInput>,
+    user: Option<User>,
 ) -> Result<Json<StatusOutput>, AppError> {
-    let (status, download_uri) = state
+    let (status, download_url) = state
         .service
         .image_convert_job_creator
-        .get_download_url(&input.job_id, &input.file_name)
+        .get_download_url(&input.job_id, user.map(|u| u.id).as_deref())
         .await?;
 
     Ok(Json(StatusOutput {
         status,
-        download_uri,
+        download_url,
     }))
 }
 
 #[derive(Deserialize, ToSchema, Validate)]
 pub struct StatusInput {
     pub job_id: String,
-    pub file_name: String,
 }
 
 #[derive(Serialize, ToSchema, Validate)]
 pub struct StatusOutput {
     pub status: FileConvertJobStatus,
-    pub download_uri: Option<String>,
+    pub download_url: Option<String>,
 }

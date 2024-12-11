@@ -3,6 +3,7 @@ use std::sync::Arc;
 use anyhow::Context;
 use omnius_core_cloud::aws::s3::S3Client;
 use tempfile::tempdir;
+use tracing::info;
 
 use crate::{
     FileConvertImageRequestParam, FileConvertJobRepository, FileConvertJobType, ImageConverter,
@@ -18,6 +19,8 @@ pub struct FileConvertExecutor {
 impl FileConvertExecutor {
     pub async fn execute(&self, job_ids: &[String]) -> anyhow::Result<()> {
         for job_id in job_ids.iter() {
+            info!("Start processing job: {}", job_id);
+
             self.file_convert_job_repository
                 .update_status_to_processing(job_id)
                 .await?;
@@ -42,8 +45,8 @@ impl FileConvertExecutor {
         let job = self.file_convert_job_repository.get_job(job_id).await?;
         let working_dir = tempdir()?;
 
-        let in_path = working_dir.path().join(format!("/tmp/in_{}", job_id));
-        let out_path = working_dir.path().join(format!("/tmp/out_{}", job_id));
+        let in_path = working_dir.path().join(format!("in_{}", job_id));
+        let out_path = working_dir.path().join(format!("out_{}", job_id));
 
         self.s3_client
             .get_object(format!("in/{}", job_id).as_str(), &in_path)
@@ -57,6 +60,8 @@ impl FileConvertExecutor {
                     .ok_or_else(|| anyhow::anyhow!("param is not found"))?;
                 let param = serde_json::from_str::<FileConvertImageRequestParam>(&param)?;
 
+                info!("Start converting image: {:?}", param);
+
                 self.image_converter
                     .convert(
                         in_path.as_path(),
@@ -65,6 +70,8 @@ impl FileConvertExecutor {
                         &param.out_type,
                     )
                     .await?;
+
+                info!("Finish converting image: {:?}", param);
             }
             FileConvertJobType::Meta => todo!(),
             _ => todo!(),
@@ -154,12 +161,18 @@ mod tests {
         };
         let job_id = tsid_provider.lock().gen().to_string();
         let param = FileConvertImageRequestParam {
-            file_stem: "test.png".to_string(),
             in_type: FileConvertImageInputFileType::Jpg,
             out_type: FileConvertImageOutputFileType::Png,
         };
         let upload_url = job_creator
-            .create_job(&job_id, &FileConvertJobType::Image, &param)
+            .create_job(
+                &job_id,
+                None,
+                &FileConvertJobType::Image,
+                &param,
+                "test.jpg",
+                "test.png",
+            )
             .await
             .unwrap();
         println!("upload_url: {}", upload_url);

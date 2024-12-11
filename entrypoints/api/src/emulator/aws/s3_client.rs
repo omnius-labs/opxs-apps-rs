@@ -8,7 +8,7 @@ use std::{
 use async_trait::async_trait;
 use axum::{
     body::Body,
-    extract::{Path as AxumPath, State},
+    extract::{Query, State},
     http::{header, StatusCode},
     response::IntoResponse,
     routing::{get, put},
@@ -24,6 +24,8 @@ use tokio::{
     task::JoinHandle,
 };
 use tokio_util::io::{ReaderStream, StreamReader};
+use tower_http::cors::CorsLayer;
+use tracing::info;
 use url::Url;
 
 use omnius_core_cloud::aws::s3::S3Client;
@@ -62,10 +64,15 @@ impl S3ClientEmulator {
             working_dir: option.working_dir.clone(),
         };
         let join_handle = tokio::spawn(async move {
+            let cors = CorsLayer::new()
+                .allow_origin(tower_http::cors::Any)
+                .allow_methods(tower_http::cors::Any)
+                .allow_headers(tower_http::cors::Any);
             let app = Router::new()
-                .route("/:key", put(Self::put_content))
-                .route("/:key/:file_name", get(Self::get_content))
-                .with_state(state);
+                .route("/", put(put_content))
+                .route("/", get(get_content))
+                .with_state(state)
+                .layer(cors);
             let listener = tokio::net::TcpListener::bind(option.listen_addr)
                 .await
                 .unwrap();
@@ -82,59 +89,74 @@ impl S3ClientEmulator {
             option,
         })
     }
+}
 
-    async fn get_content(
-        AxumPath((key, file_name)): AxumPath<(String, String)>,
-        State(state): State<S3ClientEmulatorState>,
-    ) -> impl IntoResponse {
-        let file_path = state.working_dir;
-        let file_path = file_path.join(key);
-        let body = match tokio::fs::File::open(file_path).await {
-            Ok(file) => Body::from_stream(ReaderStream::new(file)),
-            _ => return Err(StatusCode::NOT_FOUND),
-        };
+async fn get_content(
+    Query(params): Query<GetContentQuery>,
+    State(state): State<S3ClientEmulatorState>,
+) -> impl IntoResponse {
+    let file_path = state.working_dir;
+    let file_path = file_path.join(params.key.replace("/", "_"));
+    let body = match tokio::fs::File::open(file_path).await {
+        Ok(file) => Body::from_stream(ReaderStream::new(file)),
+        _ => return Err(StatusCode::NOT_FOUND),
+    };
 
-        let encoded_file_name = urlencoding::encode(&file_name).to_string();
-        let headers = [
-            (header::CONTENT_TYPE, "application/octet-stream".to_string()),
-            (
-                header::CONTENT_DISPOSITION,
-                format!("attachment; filename*=UTF-8''\"{encoded_file_name}\""),
-            ),
-        ];
-        Ok((headers, body))
-    }
+    let encoded_file_name = urlencoding::encode(&params.file_name).to_string();
+    let headers = [
+        (header::CONTENT_TYPE, "application/octet-stream".to_string()),
+        (
+            header::CONTENT_DISPOSITION,
+            format!("attachment; filename*=UTF-8''\"{encoded_file_name}\""),
+        ),
+    ];
+    Ok((headers, body))
+}
 
-    async fn put_content(
-        AxumPath(key): AxumPath<String>,
-        State(state): State<S3ClientEmulatorState>,
-        request: axum::extract::Request,
-    ) -> impl IntoResponse {
-        let stream = request
-            .into_body()
-            .into_data_stream()
-            .map_err(|err| io::Error::new(io::ErrorKind::Other, err));
-        let mut body_reader = StreamReader::new(stream);
+#[derive(serde::Deserialize)]
+struct GetContentQuery {
+    key: String,
+    file_name: String,
+}
 
-        let file_path = state.working_dir;
-        let file_path = file_path.join(&key);
-        let mut file_writer = match tokio::fs::File::create(file_path).await {
-            Ok(file) => BufWriter::new(file),
-            _ => return Err(StatusCode::NOT_FOUND),
-        };
+async fn put_content(
+    Query(params): Query<PutContentQuery>,
+    State(state): State<S3ClientEmulatorState>,
+    request: axum::extract::Request,
+) -> impl IntoResponse {
+    let stream = request
+        .into_body()
+        .into_data_stream()
+        .map_err(|err| io::Error::new(io::ErrorKind::Other, err));
+    let mut body_reader = StreamReader::new(stream);
 
-        tokio::io::copy(&mut body_reader, &mut file_writer)
-            .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    info!("put_content: key={}", params.key);
 
-        state
-            .put_event_sender
-            .send(key)
-            .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let file_path = state.working_dir;
+    let file_path = file_path.join(params.key.replace("/", "_"));
+    let mut file_writer = match tokio::fs::File::create(file_path).await {
+        Ok(file) => BufWriter::new(file),
+        _ => return Err(StatusCode::NOT_FOUND),
+    };
 
-        Ok(())
-    }
+    info!("put_content: key={}", params.key);
+
+    tokio::io::copy(&mut body_reader, &mut file_writer)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    state
+        .put_event_sender
+        .send(params.key)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(())
+}
+
+#[derive(serde::Deserialize)]
+struct PutContentQuery {
+    key: String,
 }
 
 #[async_trait]
@@ -161,13 +183,14 @@ impl S3Client for S3ClientEmulator {
         _expires_in: Duration,
         file_name: &str,
     ) -> anyhow::Result<String> {
+        let encoded_key = urlencoding::encode(key).to_string();
         let encoded_file_name = urlencoding::encode(file_name).to_string();
-        let url = self
-            .option
-            .base_url
-            .join(&format!("{}/{}", key, encoded_file_name))?
-            .to_string();
-        Ok(url)
+        let mut url = self.option.base_url.clone();
+        url.set_query(Some(&format!(
+            "key={}&file_name={}",
+            encoded_key, encoded_file_name
+        )));
+        Ok(url.to_string())
     }
 
     async fn gen_put_presigned_uri(
@@ -176,20 +199,22 @@ impl S3Client for S3ClientEmulator {
         _start_time: DateTime<Utc>,
         _expires_in: Duration,
     ) -> anyhow::Result<String> {
-        let url = self.option.base_url.join(key)?.to_string();
-        Ok(url)
+        let encoded_key = urlencoding::encode(key).to_string();
+        let mut url = self.option.base_url.clone();
+        url.set_query(Some(&format!("key={}", encoded_key)));
+        Ok(url.to_string())
     }
 
     async fn get_object(&self, key: &str, destination: &Path) -> anyhow::Result<()> {
         let file_path = PathBuf::from(&self.option.working_dir);
-        let file_path = file_path.join(key);
+        let file_path = file_path.join(key.replace("/", "_"));
         let _ = fs::copy(file_path, destination).await?;
         Ok(())
     }
 
     async fn put_object(&self, key: &str, source: &Path) -> anyhow::Result<()> {
         let file_path = PathBuf::from(&self.option.working_dir);
-        let file_path = file_path.join(key);
+        let file_path = file_path.join(key.replace("/", "_"));
         let _ = fs::copy(source, file_path).await?;
         Ok(())
     }

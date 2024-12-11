@@ -46,7 +46,7 @@ CREATE TABLE email_send_blocked_addresses (
     PRIMARY KEY(email_address, created_at)
 );
 
--- email_send_event_logs
+-- email_send_logs
 
 CREATE TABLE email_send_logs (
     message_id VARCHAR(255),

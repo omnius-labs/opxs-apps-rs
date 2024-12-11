@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
 use async_trait::async_trait;
 use aws_config::BehaviorVersion;
@@ -264,7 +264,14 @@ impl AppService {
                 };
 
                 loop {
-                    if let Some(job_id) = put_event_receiver.lock().await.recv().await {
+                    if let Some(key) = put_event_receiver.lock().await.recv().await {
+                        let p = Path::new(&key);
+                        let job_id = p
+                            .file_name()
+                            .ok_or_else(|| anyhow::anyhow!("file name is not found"))
+                            .unwrap()
+                            .to_string_lossy()
+                            .to_string();
                         if let Err(err) = executor.execute(&[job_id]).await {
                             error!("image convert error: {:?}", err);
                         }
