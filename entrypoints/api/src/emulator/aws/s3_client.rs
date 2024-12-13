@@ -107,7 +107,10 @@ async fn get_content(
         (header::CONTENT_TYPE, "application/octet-stream".to_string()),
         (
             header::CONTENT_DISPOSITION,
-            format!("attachment; filename*=UTF-8''\"{encoded_file_name}\""),
+            format!(
+                "attachment; filename=\"{}\"; filename*=UTF-8''{}",
+                &params.file_name, encoded_file_name
+            ),
         ),
     ];
     Ok((headers, body))
