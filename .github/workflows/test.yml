@@ -7,8 +7,8 @@ on:
       - "release/*"
     paths:
       - "**"
-      - "!/docs/**"
-      - "!/**.md"
+      - "!docs/**"
+      - "!**.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
