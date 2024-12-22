@@ -9,6 +9,7 @@ on:
     paths:
       - "**"
       - "!/docs/**"
+      - "!/**.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -27,10 +27,16 @@ To run the Opxs API locally, you need to set up your environment first.
 
 ### Running Locally
 
-#### 1. Set environments
+#### 1. Set the image converter directory path:
+
+Download the zip file from the following URL and place it in a local directory.
+
+https://github.com/omnius-labs/image-converter-cs/releases
+
+Set the path of the placed directory as an environment variable.
 
 ```sh
-export IMAGE_CONVERTER_DIR="image_converter_dir_path"
+export IMAGE_CONVERTER_DIR="image_converter_dir"
 ```
 
 #### 2. Start the Opxs API:
