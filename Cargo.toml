@@ -48,11 +48,11 @@ aws_lambda_events = { version = "0.15.1", default-features = false, features = [
     "sns",
     "sqs",
 ] }
-aws-config = "1.5.11"
-aws-sdk-secretsmanager = "1.55.0"
-aws-sdk-s3 = "1.66.0"
-aws-sdk-sqs = "1.51.0"
-aws-sdk-sesv2 = "1.58.0"
+aws-config = "1.5.12"
+aws-sdk-secretsmanager = "1.56.0"
+aws-sdk-s3 = "1.67.0"
+aws-sdk-sqs = "1.52.0"
+aws-sdk-sesv2 = "1.59.0"
 
 gcloud-sdk = { version = "0.25.8", features = [
     "google-cloud-secretmanager-v1",
@@ -60,7 +60,7 @@ gcloud-sdk = { version = "0.25.8", features = [
 
 rand = "0.8.5"
 rand_chacha = "0.3.1"
-reqwest = { version = "0.12.9", features = ["json"] }
+reqwest = { version = "0.12.11", features = ["json"] }
 anyhow = { version = "1.0.95", features = ["backtrace"] }
 async-trait = "0.1.83"
 axum = { version = "0.7.9", features = ["macros"] }
