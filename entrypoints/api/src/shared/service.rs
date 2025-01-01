@@ -26,17 +26,11 @@ use omnius_opxs_auth::{
     user::{UserRepo, UserService},
 };
 use omnius_opxs_base::{AppConfig, AppInfo};
-use omnius_opxs_email_send::{
-    EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobCreator, EmailSendJobRepository,
-};
-use omnius_opxs_file_convert::{
-    FileConvertExecutor, FileConvertJobCreator, FileConvertJobRepository, ImageConverterImpl,
-};
+use omnius_opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobCreator, EmailSendJobRepository};
+use omnius_opxs_file_convert::{FileConvertExecutor, FileConvertJobCreator, FileConvertJobRepository, ImageConverterImpl};
 
 use crate::{
-    emulator::aws::{
-        S3ClientEmulator, S3ClientEmulatorOption, SesSenderEmulator, SqsSenderEmulator,
-    },
+    emulator::aws::{S3ClientEmulator, S3ClientEmulatorOption, SesSenderEmulator, SqsSenderEmulator},
     service::health::{repo::WorldRepo, service::HealthService},
 };
 
@@ -63,18 +57,10 @@ pub struct AppService {
 }
 
 impl AppService {
-    pub async fn new_for_cloud(
-        info: &AppInfo,
-        conf: &AppConfig,
-        db: Arc<PgPool>,
-    ) -> anyhow::Result<Self> {
+    pub async fn new_for_cloud(info: &AppInfo, conf: &AppConfig, db: Arc<PgPool>) -> anyhow::Result<Self> {
         let clock = Arc::new(ClockUtc);
         let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
-        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(
-            ClockUtc,
-            RandomBytesProviderImpl::new(),
-            16,
-        )));
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
 
         let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
         let send_email_sqs_sender = Arc::new(SqsSenderImpl {
@@ -83,9 +69,7 @@ impl AppService {
             delay_seconds: None,
         });
         let image_convert_s3_client = Arc::new(S3ClientImpl {
-            client: aws_sdk_s3::Client::new(
-                &aws_config::load_defaults(BehaviorVersion::latest()).await,
-            ),
+            client: aws_sdk_s3::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
             bucket: conf
                 .image
                 .convert
@@ -165,18 +149,10 @@ impl AppService {
         })
     }
 
-    pub async fn new_for_local(
-        info: &AppInfo,
-        conf: &AppConfig,
-        db: Arc<PgPool>,
-    ) -> anyhow::Result<Self> {
+    pub async fn new_for_local(info: &AppInfo, conf: &AppConfig, db: Arc<PgPool>) -> anyhow::Result<Self> {
         let clock = Arc::new(ClockUtc);
         let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
-        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(
-            ClockUtc,
-            RandomBytesProviderImpl::new(),
-            16,
-        )));
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
 
         let mut terminables: Vec<Arc<dyn Terminable + Send + Sync>> = Vec::new();
         let mut join_handles: Vec<JoinHandle<()>> = Vec::new();
@@ -205,14 +181,13 @@ impl AppService {
 
                 loop {
                     if let Some(message) = message_receiver.lock().await.recv().await {
-                        let message =
-                            match serde_json::from_str::<EmailSendJobBatchSqsMessage>(&message) {
-                                Ok(message) => message,
-                                _ => {
-                                    error!("email send sqs message parse failed");
-                                    continue;
-                                }
-                            };
+                        let message = match serde_json::from_str::<EmailSendJobBatchSqsMessage>(&message) {
+                            Ok(message) => message,
+                            _ => {
+                                error!("email send sqs message parse failed");
+                                continue;
+                            }
+                        };
 
                         if let Err(err) = executor.execute(&[message]).await {
                             error!("email send execute error: {:?}", err);
@@ -254,11 +229,7 @@ impl AppService {
 
             let join_handle: JoinHandle<()> = tokio::spawn(async move {
                 let executor = FileConvertExecutor {
-                    file_convert_job_repository: Arc::new(FileConvertJobRepository {
-                        db,
-                        clock,
-                        tsid_provider,
-                    }),
+                    file_convert_job_repository: Arc::new(FileConvertJobRepository { db, clock, tsid_provider }),
                     s3_client,
                     image_converter: Arc::new(ImageConverterImpl),
                 };

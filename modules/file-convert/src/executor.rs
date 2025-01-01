@@ -5,9 +5,7 @@ use omnius_core_cloud::aws::s3::S3Client;
 use tempfile::tempdir;
 use tracing::info;
 
-use crate::{
-    FileConvertImageRequestParam, FileConvertJobRepository, FileConvertJobType, ImageConverter,
-};
+use crate::{FileConvertImageRequestParam, FileConvertJobRepository, FileConvertJobType, ImageConverter};
 
 pub struct FileConvertExecutor {
     pub file_convert_job_repository: Arc<FileConvertJobRepository>,
@@ -21,9 +19,7 @@ impl FileConvertExecutor {
         for job_id in job_ids.iter() {
             info!("Start processing job: {}", job_id);
 
-            self.file_convert_job_repository
-                .update_status_to_processing(job_id)
-                .await?;
+            self.file_convert_job_repository.update_status_to_processing(job_id).await?;
 
             let res = self.execute_one(job_id).await;
 
@@ -34,9 +30,7 @@ impl FileConvertExecutor {
                 continue;
             }
 
-            self.file_convert_job_repository
-                .update_status_to_completed(job_id)
-                .await?;
+            self.file_convert_job_repository.update_status_to_completed(job_id).await?;
         }
         Ok(())
     }
@@ -55,20 +49,13 @@ impl FileConvertExecutor {
 
         match &job.typ {
             FileConvertJobType::Image => {
-                let param = job
-                    .param
-                    .ok_or_else(|| anyhow::anyhow!("param is not found"))?;
+                let param = job.param.ok_or_else(|| anyhow::anyhow!("param is not found"))?;
                 let param = serde_json::from_str::<FileConvertImageRequestParam>(&param)?;
 
                 info!("Start converting image: {:?}", param);
 
                 self.image_converter
-                    .convert(
-                        in_path.as_path(),
-                        &param.in_type,
-                        out_path.as_path(),
-                        &param.out_type,
-                    )
+                    .convert(in_path.as_path(), &param.in_type, out_path.as_path(), &param.out_type)
                     .await?;
 
                 info!("Finish converting image: {:?}", param);
@@ -102,10 +89,7 @@ mod tests {
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{
-        shared, FileConvertImageInputFileType, FileConvertImageOutputFileType,
-        FileConvertJobCreator, ImageConverterMock,
-    };
+    use crate::{shared, FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertJobCreator, ImageConverterMock};
 
     use super::*;
 
@@ -122,11 +106,7 @@ mod tests {
                 .unwrap(),
         );
         let clock = Arc::new(ClockUtc {});
-        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(
-            ClockUtc,
-            RandomBytesProviderImpl::new(),
-            16,
-        )));
+        let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
         let s3_client = Arc::new(S3ClientMock::new());
         s3_client
             .gen_put_presigned_uri_outputs
@@ -138,14 +118,9 @@ mod tests {
             .push_back("https://get.s3.example.com".to_string());
 
         let migrations_path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../conf/migrations");
-        let migrator = PostgresMigrator::new(
-            &container.connection_string,
-            migrations_path,
-            "opxs-api",
-            "",
-        )
-        .await
-        .unwrap();
+        let migrator = PostgresMigrator::new(&container.connection_string, migrations_path, "opxs-api", "")
+            .await
+            .unwrap();
         migrator.migrate().await.unwrap();
 
         let file_convert_job_repository = Arc::new(FileConvertJobRepository {
@@ -165,14 +140,7 @@ mod tests {
             out_type: FileConvertImageOutputFileType::Png,
         };
         let upload_url = job_creator
-            .create_job(
-                &job_id,
-                None,
-                &FileConvertJobType::Image,
-                &param,
-                "test.jpg",
-                "test.png",
-            )
+            .create_job(&job_id, None, &FileConvertJobType::Image, &param, "test.jpg", "test.png")
             .await
             .unwrap();
         println!("upload_url: {}", upload_url);
@@ -185,14 +153,8 @@ mod tests {
         };
         executor.execute(&[job_id.clone()]).await.unwrap();
 
-        println!(
-            "{:?}",
-            image_converter.convert_inputs.lock().first().unwrap()
-        );
-        assert_eq!(
-            s3_client.get_object_inputs.lock().first().unwrap().key,
-            format!("in/{}", job_id).as_str()
-        );
+        println!("{:?}", image_converter.convert_inputs.lock().first().unwrap());
+        assert_eq!(s3_client.get_object_inputs.lock().first().unwrap().key, format!("in/{}", job_id).as_str());
         assert_eq!(
             s3_client.put_object_inputs.lock().first().unwrap().key,
             format!("out/{}", job_id).as_str()

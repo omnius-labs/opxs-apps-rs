@@ -6,10 +6,7 @@ use sqlx::PgPool;
 
 use crate::EmailSendJobBatchDetail;
 
-use super::{
-    EmailConfirmRequestParam, EmailSendJob, EmailSendJobBatch, EmailSendJobBatchDetailStatus,
-    EmailSendJobBatchStatus, EmailSendJobType,
-};
+use super::{EmailConfirmRequestParam, EmailSendJob, EmailSendJobBatch, EmailSendJobBatchDetailStatus, EmailSendJobBatchStatus, EmailSendJobType};
 
 pub struct EmailSendJobRepository {
     pub db: Arc<PgPool>,
@@ -17,11 +14,7 @@ pub struct EmailSendJobRepository {
 }
 
 impl EmailSendJobRepository {
-    pub async fn create_job(
-        &self,
-        job_id: &str,
-        param: &EmailConfirmRequestParam,
-    ) -> anyhow::Result<()> {
+    pub async fn create_job(&self, job_id: &str, param: &EmailConfirmRequestParam) -> anyhow::Result<()> {
         let now = self.clock.now();
 
         let mut tx = self.db.begin().await?;
@@ -106,11 +99,7 @@ SELECT *
         Ok(res)
     }
 
-    pub async fn get_job_batch_details(
-        &self,
-        job_id: &str,
-        batch_id: i32,
-    ) -> anyhow::Result<Vec<EmailSendJobBatchDetail>> {
+    pub async fn get_job_batch_details(&self, job_id: &str, batch_id: i32) -> anyhow::Result<Vec<EmailSendJobBatchDetail>> {
         let res: Vec<EmailSendJobBatchDetail> = sqlx::query_as(
             r#"
 SELECT *
@@ -126,13 +115,7 @@ SELECT *
         Ok(res)
     }
 
-    pub async fn set_message_id(
-        &self,
-        job_id: &str,
-        batch_id: i32,
-        email_address: &str,
-        message_id: &str,
-    ) -> anyhow::Result<()> {
+    pub async fn set_message_id(&self, job_id: &str, batch_id: i32, email_address: &str, message_id: &str) -> anyhow::Result<()> {
         let now = self.clock.now();
 
         sqlx::query(
@@ -154,20 +137,11 @@ UPDATE email_send_job_batch_details
     }
 
     pub async fn update_status_to_waiting(&self, job_id: &str) -> anyhow::Result<()> {
-        self.update_status_by_job_id(
-            job_id,
-            &EmailSendJobBatchDetailStatus::Preparing,
-            &EmailSendJobBatchDetailStatus::Waiting,
-        )
-        .await
+        self.update_status_by_job_id(job_id, &EmailSendJobBatchDetailStatus::Preparing, &EmailSendJobBatchDetailStatus::Waiting)
+            .await
     }
 
-    pub async fn update_status_to_processing(
-        &self,
-        job_id: &str,
-        batch_id: i32,
-        email_address: &str,
-    ) -> anyhow::Result<()> {
+    pub async fn update_status_to_processing(&self, job_id: &str, batch_id: i32, email_address: &str) -> anyhow::Result<()> {
         self.update_status_by_email_address(
             job_id,
             batch_id,

@@ -17,13 +17,7 @@ pub struct EmailAuthRepo {
 }
 
 impl EmailAuthRepo {
-    pub async fn create_user(
-        &self,
-        name: &str,
-        email: &str,
-        password_hash: &str,
-        salt: &str,
-    ) -> Result<String, AppError> {
+    pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<String, AppError> {
         let user_id = self.tsid_provider.lock().gen().to_string();
         let now = self.clock.now();
 
@@ -82,10 +76,7 @@ INSERT INTO user_auth_emails (user_id, email, password_hash, salt, created_at, u
         ];
 
         for query in queries {
-            query
-                .execute(&mut *tx)
-                .await
-                .map_err(|e| AppError::UnexpectedError(e.into()))?;
+            query.execute(&mut *tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
         }
 
         tx.commit().await?;
@@ -132,11 +123,7 @@ SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.u
         Ok(user)
     }
 
-    pub async fn update_email_verified(
-        &self,
-        email: &str,
-        email_verified: bool,
-    ) -> Result<(), AppError> {
+    pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError> {
         let now = self.clock.now();
 
         sqlx::query(

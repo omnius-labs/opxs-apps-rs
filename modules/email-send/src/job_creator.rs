@@ -24,13 +24,8 @@ impl EmailSendJobCreator {
             from_email_address: from_email_address.to_string(),
             email_confirm_url: email_confirm_url.to_string(),
         };
-        self.email_send_job_repository
-            .create_job(job_id, &param)
-            .await?;
-        let batches = self
-            .email_send_job_repository
-            .get_job_batches(job_id)
-            .await?;
+        self.email_send_job_repository.create_job(job_id, &param).await?;
+        let batches = self.email_send_job_repository.get_job_batches(job_id).await?;
 
         let messages: Vec<EmailSendJobBatchSqsMessage> = batches
             .iter()
@@ -40,14 +35,10 @@ impl EmailSendJobCreator {
             })
             .collect();
 
-        self.email_send_job_repository
-            .update_status_to_waiting(job_id)
-            .await?;
+        self.email_send_job_repository.update_status_to_waiting(job_id).await?;
 
         for m in messages.iter() {
-            self.sqs_sender
-                .send_message(&serde_json::to_string(m).unwrap())
-                .await?;
+            self.sqs_sender.send_message(&serde_json::to_string(m).unwrap()).await?;
         }
 
         Ok(())

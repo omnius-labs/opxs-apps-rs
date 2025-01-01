@@ -16,10 +16,7 @@ impl sqlx::Type<sqlx::Postgres> for FileConvertJobType {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for FileConvertJobType {
-    fn encode_by_ref(
-        &self,
-        buf: &mut sqlx::postgres::PgArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             FileConvertJobType::Image => buf.extend_from_slice(b"Image"),
             FileConvertJobType::Meta => buf.extend_from_slice(b"Meta"),
@@ -30,9 +27,7 @@ impl sqlx::Encode<'_, sqlx::Postgres> for FileConvertJobType {
 }
 
 impl sqlx::Decode<'_, sqlx::Postgres> for FileConvertJobType {
-    fn decode(
-        value: sqlx::postgres::PgValueRef<'_>,
-    ) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
         match value.as_str() {
             Ok("Image") => Ok(FileConvertJobType::Image),
             Ok("Meta") => Ok(FileConvertJobType::Meta),
@@ -59,10 +54,7 @@ impl sqlx::Type<sqlx::Postgres> for FileConvertJobStatus {
 }
 
 impl sqlx::Encode<'_, sqlx::Postgres> for FileConvertJobStatus {
-    fn encode_by_ref(
-        &self,
-        buf: &mut sqlx::postgres::PgArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             FileConvertJobStatus::Preparing => buf.extend_from_slice(b"Preparing"),
             FileConvertJobStatus::Waiting => buf.extend_from_slice(b"Waiting"),
@@ -77,9 +69,7 @@ impl sqlx::Encode<'_, sqlx::Postgres> for FileConvertJobStatus {
 }
 
 impl sqlx::Decode<'_, sqlx::Postgres> for FileConvertJobStatus {
-    fn decode(
-        value: sqlx::postgres::PgValueRef<'_>,
-    ) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
         match value.as_str() {
             Ok("Preparing") => Ok(FileConvertJobStatus::Preparing),
             Ok("Waiting") => Ok(FileConvertJobStatus::Waiting),

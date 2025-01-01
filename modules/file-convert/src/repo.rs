@@ -66,38 +66,21 @@ SELECT *
     }
 
     pub async fn update_status_to_waiting(&self, job_id: &str) -> anyhow::Result<()> {
-        self.update_status(
-            job_id,
-            FileConvertJobStatus::Preparing,
-            FileConvertJobStatus::Waiting,
-        )
-        .await
+        self.update_status(job_id, FileConvertJobStatus::Preparing, FileConvertJobStatus::Waiting)
+            .await
     }
 
     pub async fn update_status_to_processing(&self, job_id: &str) -> anyhow::Result<()> {
-        self.update_status(
-            job_id,
-            FileConvertJobStatus::Waiting,
-            FileConvertJobStatus::Processing,
-        )
-        .await
+        self.update_status(job_id, FileConvertJobStatus::Waiting, FileConvertJobStatus::Processing)
+            .await
     }
 
     pub async fn update_status_to_completed(&self, job_id: &str) -> anyhow::Result<()> {
-        self.update_status(
-            job_id,
-            FileConvertJobStatus::Processing,
-            FileConvertJobStatus::Completed,
-        )
-        .await
+        self.update_status(job_id, FileConvertJobStatus::Processing, FileConvertJobStatus::Completed)
+            .await
     }
 
-    async fn update_status(
-        &self,
-        job_id: &str,
-        old_status: FileConvertJobStatus,
-        new_status: FileConvertJobStatus,
-    ) -> anyhow::Result<()> {
+    async fn update_status(&self, job_id: &str, old_status: FileConvertJobStatus, new_status: FileConvertJobStatus) -> anyhow::Result<()> {
         let now = self.clock.now();
 
         let res = sqlx::query(
@@ -121,11 +104,7 @@ UPDATE file_convert_jobs
         Ok(())
     }
 
-    pub async fn update_status_to_failed(
-        &self,
-        job_id: &str,
-        failed_reason: &str,
-    ) -> anyhow::Result<()> {
+    pub async fn update_status_to_failed(&self, job_id: &str, failed_reason: &str) -> anyhow::Result<()> {
         let now = self.clock.now();
 
         let res = sqlx::query(

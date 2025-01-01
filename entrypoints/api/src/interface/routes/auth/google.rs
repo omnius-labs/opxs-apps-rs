@@ -61,11 +61,7 @@ pub async fn register(
         .ok_or_else(|| AppError::InvalidRequest(anyhow::anyhow!("Nonce not found")))?;
     let jar = jar.remove(Cookie::build("nonce"));
 
-    let user_id = state
-        .service
-        .google_auth
-        .register(&input.code, &input.redirect_uri, &nonce)
-        .await?;
+    let user_id = state.service.google_auth.register(&input.code, &input.redirect_uri, &nonce).await?;
 
     let auth_token = state.service.token.create(&user_id).await?;
 
@@ -85,21 +81,13 @@ pub struct RegisterInput {
         (status = 200, body = AuthToken)
     )
 )]
-pub async fn login(
-    State(state): State<AppState>,
-    jar: SignedCookieJar,
-    Json(input): Json<LoginInput>,
-) -> Result<Json<AuthToken>, AppError> {
+pub async fn login(State(state): State<AppState>, jar: SignedCookieJar, Json(input): Json<LoginInput>) -> Result<Json<AuthToken>, AppError> {
     let nonce = jar
         .get("nonce")
         .map(|cookie| cookie.value().to_owned())
         .ok_or_else(|| AppError::InvalidRequest(anyhow::anyhow!("Nonce not found")))?;
 
-    let user_id = state
-        .service
-        .google_auth
-        .login(&input.code, &input.redirect_uri, &nonce)
-        .await?;
+    let user_id = state.service.google_auth.login(&input.code, &input.redirect_uri, &nonce).await?;
 
     let auth_token = state.service.token.create(&user_id).await?;
 
@@ -120,10 +108,6 @@ pub struct LoginInput {
     )
 )]
 pub async fn unregister(State(state): State<AppState>, user: User) -> Result<StatusCode, AppError> {
-    state
-        .service
-        .google_auth
-        .unregister(user.id.as_str())
-        .await?;
+    state.service.google_auth.unregister(user.id.as_str()).await?;
     Ok(StatusCode::OK)
 }

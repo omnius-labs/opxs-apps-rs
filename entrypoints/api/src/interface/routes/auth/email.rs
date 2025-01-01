@@ -28,22 +28,11 @@ pub fn gen_service(state: AppState) -> Router {
         (status = 200)
     )
 )]
-pub async fn register(
-    State(state): State<AppState>,
-    ValidatedJson(input): ValidatedJson<RegisterInput>,
-) -> Result<StatusCode, AppError> {
-    let token = state
-        .service
-        .email_auth
-        .register(&input.name, &input.email, &input.password)
-        .await?;
+pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<StatusCode, AppError> {
+    let token = state.service.email_auth.register(&input.name, &input.email, &input.password).await?;
 
     let email_confirm_url = Url::parse_with_params(
-        format!(
-            "{}auth/register/email/confirm",
-            state.conf.web.origin.as_str()
-        )
-        .as_str(),
+        format!("{}auth/register/email/confirm", state.conf.web.origin.as_str()).as_str(),
         &[("token", token)],
     )?
     .to_string();
@@ -82,10 +71,7 @@ pub struct RegisterInput {
         (status = 200)
     )
 )]
-pub async fn confirm(
-    State(state): State<AppState>,
-    ValidatedJson(input): ValidatedJson<ConfirmInput>,
-) -> Result<Json<AuthToken>, AppError> {
+pub async fn confirm(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<ConfirmInput>) -> Result<Json<AuthToken>, AppError> {
     let user_id = state.service.email_auth.confirm(&input.token).await?;
     let auth_token = state.service.token.create(&user_id).await?;
 
@@ -105,11 +91,7 @@ pub struct ConfirmInput {
     )
 )]
 pub async fn unregister(State(state): State<AppState>, user: User) -> Result<StatusCode, AppError> {
-    state
-        .service
-        .email_auth
-        .unregister(user.id.as_str())
-        .await?;
+    state.service.email_auth.unregister(user.id.as_str()).await?;
     Ok(StatusCode::OK)
 }
 
@@ -121,15 +103,8 @@ pub async fn unregister(State(state): State<AppState>, user: User) -> Result<Sta
         (status = 200, body = AuthToken)
     )
 )]
-async fn login(
-    State(state): State<AppState>,
-    ValidatedJson(input): ValidatedJson<LoginInput>,
-) -> Result<Json<AuthToken>, AppError> {
-    let user_id = state
-        .service
-        .email_auth
-        .login(&input.email, &input.password)
-        .await?;
+async fn login(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<LoginInput>) -> Result<Json<AuthToken>, AppError> {
+    let user_id = state.service.email_auth.login(&input.email, &input.password).await?;
     let auth_token = state.service.token.create(&user_id).await?;
 
     Ok(Json(auth_token))

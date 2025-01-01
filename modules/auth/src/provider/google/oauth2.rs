@@ -8,13 +8,7 @@ use omnius_opxs_base::AppError;
 
 #[async_trait]
 pub trait GoogleOAuth2Provider {
-    async fn get_oauth2_token(
-        &self,
-        code: &str,
-        redirect_uri: &str,
-        client_id: &str,
-        client_secret: &str,
-    ) -> Result<OAuth2TokenResult, AppError>;
+    async fn get_oauth2_token(&self, code: &str, redirect_uri: &str, client_id: &str, client_secret: &str) -> Result<OAuth2TokenResult, AppError>;
     async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AppError>;
 }
 
@@ -22,13 +16,7 @@ pub struct GoogleOAuth2ProviderImpl;
 
 #[async_trait]
 impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
-    async fn get_oauth2_token(
-        &self,
-        code: &str,
-        redirect_uri: &str,
-        client_id: &str,
-        client_secret: &str,
-    ) -> Result<OAuth2TokenResult, AppError> {
+    async fn get_oauth2_token(&self, code: &str, redirect_uri: &str, client_id: &str, client_secret: &str) -> Result<OAuth2TokenResult, AppError> {
         let client = reqwest::Client::new();
         let res = client
             .post("https://accounts.google.com/o/oauth2/token")
@@ -44,20 +32,11 @@ impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
             .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         if res.status() != StatusCode::OK {
-            let message = res
-                .text()
-                .await
-                .map_err(|e| AppError::UnexpectedError(e.into()))?;
-            return Err(AppError::UnexpectedError(anyhow::anyhow!(
-                "google get token error: {}",
-                message
-            )));
+            let message = res.text().await.map_err(|e| AppError::UnexpectedError(e.into()))?;
+            return Err(AppError::UnexpectedError(anyhow::anyhow!("google get token error: {}", message)));
         }
 
-        let oauth2_token = res
-            .json::<OAuth2Token>()
-            .await
-            .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        let oauth2_token = res.json::<OAuth2Token>().await.map_err(|e| AppError::UnexpectedError(e.into()))?;
         Ok(OAuth2TokenResult {
             access_token: oauth2_token.access_token.clone(),
             id_token_claims: oauth2_token.id_token_claims()?,
@@ -74,20 +53,11 @@ impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
             .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
         if res.status() != StatusCode::OK {
-            let message = res
-                .text()
-                .await
-                .map_err(|e| AppError::UnexpectedError(e.into()))?;
-            return Err(AppError::UnexpectedError(anyhow::anyhow!(
-                "google get user info error: {}",
-                message
-            )));
+            let message = res.text().await.map_err(|e| AppError::UnexpectedError(e.into()))?;
+            return Err(AppError::UnexpectedError(anyhow::anyhow!("google get user info error: {}", message)));
         }
 
-        let user_info = res
-            .json::<UserInfo>()
-            .await
-            .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        let user_info = res.json::<UserInfo>().await.map_err(|e| AppError::UnexpectedError(e.into()))?;
         Ok(user_info)
     }
 }

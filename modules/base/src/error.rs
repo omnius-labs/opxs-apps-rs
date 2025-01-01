@@ -55,51 +55,28 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let (status_code, error_code) = match self {
-            AppError::SqlxError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ErrorCode::InternalServerError,
-            ),
+            AppError::SqlxError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
             AppError::JwtError(_) => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
-            AppError::TokioRecvError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ErrorCode::InternalServerError,
-            ),
-            AppError::AxumError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ErrorCode::InternalServerError,
-            ),
+            AppError::TokioRecvError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::AxumError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
             AppError::AxumTypedHeaderError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
-            AppError::AxumExtensionError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ErrorCode::InternalServerError,
-            ),
+            AppError::AxumExtensionError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
             AppError::AxumJsonRejection(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
             AppError::UrlParseError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
             AppError::ValidationError(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
 
             AppError::InvalidRequest(_) => (StatusCode::BAD_REQUEST, ErrorCode::BadRequest),
 
-            AppError::RegisterRejection(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ErrorCode::InternalServerError,
-            ),
-            AppError::LoginRejection(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ErrorCode::InternalServerError,
-            ),
+            AppError::RegisterRejection(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
+            AppError::LoginRejection(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
             AppError::AccessTokenExpired => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
             AppError::RefreshTokenNotFound => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
             AppError::UserNotFound => (StatusCode::NOT_FOUND, ErrorCode::UserNotFound),
             AppError::WrongPassword => (StatusCode::NOT_FOUND, ErrorCode::UserNotFound),
             AppError::DuplicateEmail => (StatusCode::CONFLICT, ErrorCode::DuplicateEmail),
-            AppError::EmailVerifyTokenExpired => {
-                (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized)
-            }
+            AppError::EmailVerifyTokenExpired => (StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized),
 
-            AppError::UnexpectedError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ErrorCode::InternalServerError,
-            ),
+            AppError::UnexpectedError(_) => (StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalServerError),
         };
 
         let payload = json!({"error_code": error_code.to_string()});

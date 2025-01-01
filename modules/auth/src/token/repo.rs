@@ -15,12 +15,7 @@ pub struct TokenRepo {
 }
 
 impl TokenRepo {
-    pub async fn create_token(
-        &self,
-        user_id: &str,
-        refresh_token: &str,
-        refresh_token_expires_at: &DateTime<Utc>,
-    ) -> Result<(), AppError> {
+    pub async fn create_token(&self, user_id: &str, refresh_token: &str, refresh_token_expires_at: &DateTime<Utc>) -> Result<(), AppError> {
         let now = self.clock.now();
         sqlx::query(
             r#"

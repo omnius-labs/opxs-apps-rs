@@ -42,22 +42,10 @@ mod tests {
         sqs_sender.send_message("test2").await?;
         sqs_sender.send_message("test3").await?;
 
-        let v: String = sqs_sender
-            .message_receiver
-            .lock()
-            .await
-            .recv()
-            .await
-            .unwrap();
+        let v: String = sqs_sender.message_receiver.lock().await.recv().await.unwrap();
         assert_eq!(v, "test1");
 
-        let v: String = sqs_sender
-            .message_receiver
-            .lock()
-            .await
-            .recv()
-            .await
-            .unwrap();
+        let v: String = sqs_sender.message_receiver.lock().await.recv().await.unwrap();
         assert_eq!(v, "test2");
 
         Ok(())

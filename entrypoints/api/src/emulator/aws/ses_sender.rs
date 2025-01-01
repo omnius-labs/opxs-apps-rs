@@ -8,13 +8,7 @@ pub struct SesSenderEmulator {}
 
 #[async_trait]
 impl SesSender for SesSenderEmulator {
-    async fn send_mail_simple_text(
-        &self,
-        to_address: &str,
-        from_address: &str,
-        subject: &str,
-        text_body: &str,
-    ) -> anyhow::Result<String> {
+    async fn send_mail_simple_text(&self, to_address: &str, from_address: &str, subject: &str, text_body: &str) -> anyhow::Result<String> {
         info!(
             target: "send_mail_simple_text",
             to_address,
@@ -44,13 +38,8 @@ mod tests {
     #[ignore]
     #[tokio::test]
     async fn send_test() -> TestResult {
-        let filter =
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=off"));
-        tracing_subscriber::fmt()
-            .with_env_filter(filter)
-            .with_target(false)
-            .json()
-            .init();
+        let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=off"));
+        tracing_subscriber::fmt().with_env_filter(filter).with_target(false).json().init();
 
         let ses_sender = SesSenderEmulator {};
         ses_sender

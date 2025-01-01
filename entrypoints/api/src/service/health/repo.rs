@@ -15,7 +15,6 @@ impl WorldRepo {
             .await
             .map_err(|e| AppError::UnexpectedError(e.into()))?;
 
-        row.try_get("value")
-            .map_err(|e| AppError::UnexpectedError(e.into()))
+        row.try_get("value").map_err(|e| AppError::UnexpectedError(e.into()))
     }
 }

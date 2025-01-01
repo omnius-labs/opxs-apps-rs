@@ -42,18 +42,12 @@ impl FileConvertJobCreator {
             .gen_put_presigned_uri(format!("in/{}", job_id).as_str(), now, expires_in)
             .await?;
 
-        self.file_convert_job_repository
-            .update_status_to_waiting(job_id)
-            .await?;
+        self.file_convert_job_repository.update_status_to_waiting(job_id).await?;
 
         Ok(upload_uri)
     }
 
-    pub async fn get_download_url(
-        &self,
-        job_id: &str,
-        user_id: Option<&str>,
-    ) -> Result<(FileConvertJobStatus, Option<String>), AppError> {
+    pub async fn get_download_url(&self, job_id: &str, user_id: Option<&str>) -> Result<(FileConvertJobStatus, Option<String>), AppError> {
         let job = self.file_convert_job_repository.get_job(job_id).await?;
 
         if job.user_id.as_deref() != user_id {
@@ -68,12 +62,7 @@ impl FileConvertJobCreator {
         let expires_in = Duration::minutes(10);
         let download_uri = self
             .s3_client
-            .gen_get_presigned_uri(
-                format!("out/{}", job_id).as_str(),
-                now,
-                expires_in,
-                &job.out_file_name,
-            )
+            .gen_get_presigned_uri(format!("out/{}", job_id).as_str(), now, expires_in, &job.out_file_name)
             .await?;
 
         Ok((job.status, Some(download_uri)))
