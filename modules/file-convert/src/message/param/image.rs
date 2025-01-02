@@ -23,6 +23,23 @@ pub enum FileConvertImageInputFileType {
     Svg,
 }
 
+impl FileConvertImageInputFileType {
+    pub fn to_extension(&self) -> &str {
+        match self {
+            FileConvertImageInputFileType::Unknown => "",
+            FileConvertImageInputFileType::Gif => "gif",
+            FileConvertImageInputFileType::Jpg => "jpg",
+            FileConvertImageInputFileType::Png => "png",
+            FileConvertImageInputFileType::WebP => "webp",
+            FileConvertImageInputFileType::Bmp => "bmp",
+            FileConvertImageInputFileType::Heif => "heif",
+            FileConvertImageInputFileType::Heic => "heic",
+            FileConvertImageInputFileType::Avif => "avif",
+            FileConvertImageInputFileType::Svg => "svg",
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum FileConvertImageOutputFileType {
@@ -32,8 +49,20 @@ pub enum FileConvertImageOutputFileType {
     #[serde(rename = "webp")]
     WebP,
     Bmp,
-    Heif,
-    Heic,
     Avif,
     Svg,
+}
+
+impl FileConvertImageOutputFileType {
+    pub fn to_extension(&self) -> &str {
+        match self {
+            FileConvertImageOutputFileType::Gif => "gif",
+            FileConvertImageOutputFileType::Jpg => "jpg",
+            FileConvertImageOutputFileType::Png => "png",
+            FileConvertImageOutputFileType::WebP => "webp",
+            FileConvertImageOutputFileType::Bmp => "bmp",
+            FileConvertImageOutputFileType::Avif => "avif",
+            FileConvertImageOutputFileType::Svg => "svg",
+        }
+    }
 }

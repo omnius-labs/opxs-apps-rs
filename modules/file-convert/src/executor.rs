@@ -37,37 +37,39 @@ impl FileConvertExecutor {
 
     async fn execute_one(&self, job_id: &str) -> anyhow::Result<()> {
         let job = self.file_convert_job_repository.get_job(job_id).await?;
-        let working_dir = tempdir()?;
-
-        let in_path = working_dir.path().join(format!("in_{}", job_id));
-        let out_path = working_dir.path().join(format!("out_{}", job_id));
-
-        self.s3_client
-            .get_object(format!("in/{}", job_id).as_str(), &in_path)
-            .await
-            .context("Failed to download input file from S3")?;
 
         match &job.typ {
             FileConvertJobType::Image => {
                 let param = job.param.ok_or_else(|| anyhow::anyhow!("param is not found"))?;
                 let param = serde_json::from_str::<FileConvertImageRequestParam>(&param)?;
 
+                let working_dir = tempdir()?;
+
+                let in_type = param.in_type.clone();
+                let in_path = working_dir.path().join(format!("in_{}", job_id)).with_extension(in_type.to_extension());
+                let out_type = param.out_type.clone();
+                let out_path = working_dir.path().join(format!("out_{}", job_id)).with_extension(out_type.to_extension());
+
+                self.s3_client
+                    .get_object(format!("in/{}", job_id).as_str(), &in_path)
+                    .await
+                    .context("Failed to download input file from S3")?;
+
                 info!("Start converting image: {:?}", param);
 
                 self.image_converter
-                    .convert(in_path.as_path(), &param.in_type, out_path.as_path(), &param.out_type)
+                    .convert(in_path.as_path(), &in_type, out_path.as_path(), &out_type)
                     .await?;
 
                 info!("Finish converting image: {:?}", param);
+
+                self.s3_client
+                    .put_object(format!("out/{}", job_id).as_str(), &out_path)
+                    .await
+                    .context("Failed to upload output file to S3")?;
             }
-            FileConvertJobType::Meta => todo!(),
             _ => todo!(),
         }
-
-        self.s3_client
-            .put_object(format!("out/{}", job_id).as_str(), &out_path)
-            .await
-            .context("Failed to upload output file to S3")?;
 
         Ok(())
     }

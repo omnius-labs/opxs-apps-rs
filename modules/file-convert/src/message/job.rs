@@ -6,7 +6,6 @@ use utoipa::ToSchema;
 pub enum FileConvertJobType {
     Unknown,
     Image,
-    Meta,
 }
 
 impl sqlx::Type<sqlx::Postgres> for FileConvertJobType {
@@ -19,7 +18,6 @@ impl sqlx::Encode<'_, sqlx::Postgres> for FileConvertJobType {
     fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         match self {
             FileConvertJobType::Image => buf.extend_from_slice(b"Image"),
-            FileConvertJobType::Meta => buf.extend_from_slice(b"Meta"),
             _ => buf.extend_from_slice(b"Unknown"),
         }
         Ok(sqlx::encode::IsNull::No)
@@ -30,7 +28,6 @@ impl sqlx::Decode<'_, sqlx::Postgres> for FileConvertJobType {
     fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
         match value.as_str() {
             Ok("Image") => Ok(FileConvertJobType::Image),
-            Ok("Meta") => Ok(FileConvertJobType::Meta),
             _ => Ok(FileConvertJobType::Unknown),
         }
     }
