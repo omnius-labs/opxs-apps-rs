@@ -4,13 +4,7 @@ use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::{
-    interface::{
-        health,
-        routes::{auth, file_convert},
-    },
-    shared::state::AppState,
-};
+use crate::{interface::features::*, shared::state::AppState};
 
 pub struct WebServer;
 
@@ -77,6 +71,9 @@ impl WebServer {
             file_convert::image::UploadOutput,
             file_convert::image::StatusInput,
             file_convert::image::StatusOutput,
+            omnius_opxs_file_convert::FileConvertJobStatus,
+            omnius_opxs_file_convert::FileConvertImageInputFileType,
+            omnius_opxs_file_convert::FileConvertImageOutputFileType,
         )
     ),
     modifiers(&SecurityAddon),

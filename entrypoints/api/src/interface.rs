@@ -1,6 +1,5 @@
 mod extractors;
-mod health;
-mod routes;
+mod features;
 mod server;
 
 pub use server::WebServer;
