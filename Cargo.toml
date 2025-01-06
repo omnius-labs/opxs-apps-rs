@@ -48,11 +48,11 @@ aws_lambda_events = { version = "0.15.1", default-features = false, features = [
     "sns",
     "sqs",
 ] }
-aws-config = "1.5.12"
-aws-sdk-secretsmanager = "1.56.0"
-aws-sdk-s3 = "1.67.0"
-aws-sdk-sqs = "1.52.0"
-aws-sdk-sesv2 = "1.59.0"
+aws-config = "1.5.13"
+aws-sdk-secretsmanager = "1.57.0"
+aws-sdk-s3 = "1.68.0"
+aws-sdk-sqs = "1.53.0"
+aws-sdk-sesv2 = "1.60.0"
 
 gcloud-sdk = { version = "0.25.8", features = [
     "google-cloud-secretmanager-v1",
@@ -60,9 +60,9 @@ gcloud-sdk = { version = "0.25.8", features = [
 
 rand = "0.8.5"
 rand_chacha = "0.3.1"
-reqwest = { version = "0.12.11", features = ["json"] }
+reqwest = { version = "0.12.12", features = ["json"] }
 anyhow = { version = "1.0.95", features = ["backtrace"] }
-async-trait = "0.1.83"
+async-trait = "0.1.84"
 axum = { version = "0.7.9", features = ["macros"] }
 axum-extra = { version = "0.9.6", features = [
     "cookie",
@@ -82,7 +82,7 @@ tokio-stream = "0.1.17"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
 uuid = { version = "1.11.0", features = ["serde", "v4"] }
-sqlx = { version = "0.8.2", features = [
+sqlx = { version = "0.8.3", features = [
     "postgres",
     "chrono",
     "json",
@@ -97,7 +97,7 @@ hex = "0.4.3"
 urlencoding = "2.1.3"
 hyper = "1.5"
 tower = "0.5"
-thiserror = "1.0.69"
+thiserror = "2.0.9"
 jsonwebtoken = "9.3.0"
 validator = { version = "0.18", features = ["derive"] }
 headers = "0.4.0"
@@ -113,4 +113,4 @@ parking_lot = "0.12.3"
 axum-aws-lambda = "0.9.0"
 lambda_http = "0.13.0"
 http = "1.2.0"
-tempfile = "3.14.0"
+tempfile = "3.15.0"
