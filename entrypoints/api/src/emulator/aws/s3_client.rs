@@ -16,7 +16,6 @@ use axum::{
 };
 use chrono::{DateTime, Duration, Utc};
 use futures::{FutureExt, TryStreamExt};
-use omnius_core_base::terminable::Terminable;
 use tokio::{
     fs,
     io::BufWriter,
@@ -27,6 +26,8 @@ use tokio_util::io::{ReaderStream, StreamReader};
 use tower_http::cors::CorsLayer;
 use tracing::info;
 use url::Url;
+
+use omnius_core_base::terminable::Terminable;
 
 use omnius_core_cloud::aws::s3::S3Client;
 
