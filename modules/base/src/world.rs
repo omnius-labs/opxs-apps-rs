@@ -140,7 +140,7 @@ mod tests {
     use omnius_core_base::clock::ClockUtc;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{shared, AppConfig, RunMode};
+    use crate::{AppConfig, RunMode, shared};
 
     use super::*;
 
@@ -185,8 +185,11 @@ mod tests {
             git_tag: "test".to_string(),
         };
 
-        env::set_var("AWS_PROFILE", "bews-dev");
-        env::set_var("AWS_REGION", "us-east-1");
+        unsafe {
+            env::set_var("AWS_PROFILE", "bews-dev");
+            env::set_var("AWS_REGION", "us-east-1");
+        }
+
         let conf = AppConfig::load(&info).await.unwrap();
         println!("{:?}", conf);
 

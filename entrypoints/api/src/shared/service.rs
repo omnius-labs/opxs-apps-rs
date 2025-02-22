@@ -6,7 +6,7 @@ use chrono::Utc;
 use futures::FutureExt;
 use parking_lot::Mutex;
 use sqlx::PgPool;
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 use tokio::{sync::Mutex as TokioMutex, task::JoinHandle};
 use tracing::error;
 

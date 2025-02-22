@@ -1,4 +1,4 @@
-use axum::{response::Redirect, routing::get, Router};
+use axum::{Router, response::Redirect, routing::get};
 use omnius_core_base::terminable::Terminable;
 use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;

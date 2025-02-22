@@ -91,7 +91,7 @@ mod tests {
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{shared, FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertJobCreator, ImageConverterMock};
+    use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertJobCreator, ImageConverterMock, shared};
 
     use super::*;
 
@@ -136,7 +136,7 @@ mod tests {
             clock: clock.clone(),
             s3_client: s3_client.clone(),
         };
-        let job_id = tsid_provider.lock().gen().to_string();
+        let job_id = tsid_provider.lock().create().to_string();
         let param = FileConvertImageRequestParam {
             in_type: FileConvertImageInputFileType::Jpg,
             out_type: FileConvertImageOutputFileType::Png,

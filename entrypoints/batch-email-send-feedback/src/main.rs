@@ -1,5 +1,5 @@
 use aws_lambda_events::event::sns::SnsEvent;
-use lambda_runtime::{run, service_fn, Error, LambdaEvent};
+use lambda_runtime::{Error, LambdaEvent, run, service_fn};
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 

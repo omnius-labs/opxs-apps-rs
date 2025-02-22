@@ -1,4 +1,4 @@
-use axum::{extract::State, Json};
+use axum::{Json, extract::State};
 use serde_json::Value;
 
 use omnius_opxs_base::AppError;

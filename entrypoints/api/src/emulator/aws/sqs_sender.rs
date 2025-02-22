@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use omnius_core_cloud::aws::sqs::SqsSender;
-use tokio::sync::{mpsc, Mutex as TokioMutex};
+use tokio::sync::{Mutex as TokioMutex, mpsc};
 
 pub struct SqsSenderEmulator {
     message_sender: mpsc::Sender<String>,

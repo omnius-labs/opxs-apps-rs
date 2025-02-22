@@ -1,4 +1,4 @@
-use axum::{extract::State, routing::post, Json, Router};
+use axum::{Json, Router, extract::State, routing::post};
 use hyper::StatusCode;
 use serde::Deserialize;
 use url::Url;
@@ -37,7 +37,7 @@ pub async fn register(State(state): State<AppState>, ValidatedJson(input): Valid
     )?
     .to_string();
 
-    let job_id = state.service.tsid_provider.lock().gen().to_string();
+    let job_id = state.service.tsid_provider.lock().create().to_string();
     state
         .service
         .email_send_job_creator

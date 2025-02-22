@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use omnius_opxs_base::{AppError, AppInfo};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use super::repo::WorldRepo;
 

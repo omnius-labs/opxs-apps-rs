@@ -3,7 +3,7 @@ use std::{path::Path, sync::Arc};
 use aws_config::BehaviorVersion;
 use aws_lambda_events::sqs::SqsEvent;
 use chrono::Duration;
-use lambda_runtime::{run, service_fn, Error, LambdaEvent};
+use lambda_runtime::{Error, LambdaEvent, run, service_fn};
 use parking_lot::Mutex;
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;

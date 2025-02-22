@@ -18,7 +18,7 @@ pub struct ProviderAuthRepo {
 
 impl ProviderAuthRepo {
     pub async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<String, AppError> {
-        let user_id = self.tsid_provider.lock().gen().to_string();
+        let user_id = self.tsid_provider.lock().create().to_string();
         let now = self.clock.now();
 
         let mut tx = self.db.begin().await?;

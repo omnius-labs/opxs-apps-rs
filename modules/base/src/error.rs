@@ -1,6 +1,6 @@
 use std::fmt;
 
-use axum::{http::StatusCode, response::IntoResponse, Json};
+use axum::{Json, http::StatusCode, response::IntoResponse};
 use serde::Serialize;
 use serde_json::json;
 use thiserror::Error;

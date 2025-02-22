@@ -1,12 +1,11 @@
 use axum::{
-    async_trait,
-    extract::{rejection::JsonRejection, FromRequest, FromRequestParts, Request},
+    Json, RequestPartsExt as _, async_trait,
+    extract::{FromRequest, FromRequestParts, Request, rejection::JsonRejection},
     http::request::Parts,
-    Json, RequestPartsExt as _,
 };
 use axum_extra::{
-    headers::{authorization::Bearer, Authorization},
     TypedHeader,
+    headers::{Authorization, authorization::Bearer},
 };
 
 use omnius_opxs_auth::shared::{jwt, model::User};

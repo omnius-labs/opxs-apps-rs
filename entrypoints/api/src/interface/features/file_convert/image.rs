@@ -1,7 +1,7 @@
 use axum::{
+    Json, Router,
     extract::{Query, State},
     routing::{get, post},
-    Json, Router,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -32,7 +32,7 @@ pub fn gen_service(state: AppState) -> Router {
     )
 )]
 pub async fn upload(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<UploadInput>) -> Result<Json<UploadOutput>, AppError> {
-    let job_id = state.service.tsid_provider.lock().gen().to_string();
+    let job_id = state.service.tsid_provider.lock().create().to_string();
     let param = FileConvertImageRequestParam {
         in_type: input.in_type,
         out_type: input.out_type,

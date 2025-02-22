@@ -2,7 +2,7 @@ pub mod email;
 pub mod google;
 pub mod token;
 
-use axum::{routing::get, Json, Router};
+use axum::{Json, Router, routing::get};
 
 use omnius_opxs_auth::shared::model::User;
 use omnius_opxs_base::AppError;

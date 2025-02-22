@@ -18,7 +18,7 @@ pub struct EmailAuthRepo {
 
 impl EmailAuthRepo {
     pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<String, AppError> {
-        let user_id = self.tsid_provider.lock().gen().to_string();
+        let user_id = self.tsid_provider.lock().create().to_string();
         let now = self.clock.now();
 
         let mut tx = self.db.begin().await?;

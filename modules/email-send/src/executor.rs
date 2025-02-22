@@ -88,7 +88,7 @@ mod tests {
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{shared, EmailSendJobCreator};
+    use crate::{EmailSendJobCreator, shared};
 
     use super::*;
 
@@ -117,7 +117,7 @@ mod tests {
 
         let send_email_sqs_sender = Arc::new(SqsSenderMock::new());
 
-        let job_id = tsid_provider.lock().gen().to_string();
+        let job_id = tsid_provider.lock().create().to_string();
         let job_creator = EmailSendJobCreator {
             email_send_job_repository: email_send_job_repository.clone(),
             sqs_sender: send_email_sqs_sender.clone(),

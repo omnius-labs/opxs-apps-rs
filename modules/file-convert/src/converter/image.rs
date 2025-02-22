@@ -1,7 +1,7 @@
 use std::{path::Path, process::Stdio};
 
 use async_trait::async_trait;
-use base64::{engine::general_purpose::URL_SAFE_NO_PAD as BASE64, Engine};
+use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD as BASE64};
 use serde::{Deserialize, Serialize};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -104,7 +104,9 @@ mod tests {
     #[ignore]
     #[tokio::test]
     async fn simple_test() {
-        env::set_var("IMAGE_CONVERTER_DIR", "/home/lyrise/repos/omnius-labs/image-converter-cs/pub/linux-x64");
+        unsafe {
+            env::set_var("IMAGE_CONVERTER_DIR", "/home/lyrise/repos/omnius-labs/image-converter-cs/pub/linux-x64");
+        }
         let base_path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/src/converter/test"));
         let input = base_path.join("test.avif");
         let output = base_path.join("test.png");
