@@ -2758,6 +2758,7 @@ dependencies = [
  "chrono",
  "omnius-core-testkit",
  "serial_test",
+ "sqlx",
  "testcontainers",
  "testresult",
  "tokio",

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
 
-use omnius_opxs_auth::shared::model::User;
+use omnius_opxs_auth::model::User;
 use omnius_opxs_base::AppError;
 use omnius_opxs_file_convert::{
     FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertImageRequestParam, FileConvertJobStatus, FileConvertJobType,

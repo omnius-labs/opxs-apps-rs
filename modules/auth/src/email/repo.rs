@@ -8,7 +8,7 @@ use omnius_core_base::{clock::Clock, tsid::TsidProvider};
 
 use omnius_opxs_base::AppError;
 
-use crate::shared::model::{EmailUser, UserAuthenticationType, UserRole};
+use crate::model::{EmailUser, UserAuthenticationType, UserRole};
 
 pub struct EmailAuthRepo {
     pub db: Arc<PgPool>,

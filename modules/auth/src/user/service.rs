@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use omnius_opxs_base::AppError;
 
-use crate::shared::model::User;
+use crate::model::User;
 
 use super::UserRepo;
 

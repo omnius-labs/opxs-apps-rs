@@ -82,15 +82,16 @@ mod tests {
     use testresult::TestResult;
 
     use crate::{
+        crypto,
         provider::{IdTokenClaims, OAuth2TokenResult, UserInfo},
-        shared,
+        shared::POSTGRES_VERSION,
     };
 
     use super::*;
 
     #[tokio::test]
     async fn simple_test() -> TestResult {
-        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
+        let container = PostgresContainer::new(POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()

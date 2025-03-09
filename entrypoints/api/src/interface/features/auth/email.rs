@@ -5,7 +5,7 @@ use url::Url;
 use utoipa::ToSchema;
 use validator::Validate;
 
-use omnius_opxs_auth::shared::model::{AuthToken, User};
+use omnius_opxs_auth::model::{AuthToken, User};
 use omnius_opxs_base::AppError;
 
 use crate::{interface::extractors::ValidatedJson, shared::state::AppState};

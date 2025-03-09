@@ -8,7 +8,7 @@ use axum_extra::{
     headers::{Authorization, authorization::Bearer},
 };
 
-use omnius_opxs_auth::shared::{jwt, model::User};
+use omnius_opxs_auth::{crypto::jwt, model::User};
 use omnius_opxs_base::AppError;
 use serde::de::DeserializeOwned;
 use validator::Validate;

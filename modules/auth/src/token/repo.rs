@@ -7,7 +7,7 @@ use omnius_core_base::clock::Clock;
 
 use omnius_opxs_base::AppError;
 
-use crate::shared::model::User;
+use crate::model::User;
 
 pub struct TokenRepo {
     pub db: Arc<PgPool>,

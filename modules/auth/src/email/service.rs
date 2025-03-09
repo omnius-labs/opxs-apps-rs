@@ -7,7 +7,7 @@ use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 use omnius_opxs_base::{AppError, JwtConfig};
 use parking_lot::Mutex;
 
-use crate::shared::{jwt, kdf::Kdf};
+use crate::crypto::{jwt, kdf::Kdf};
 
 use super::EmailAuthRepo;
 
@@ -88,13 +88,16 @@ mod tests {
 
     use omnius_opxs_base::JwtSecretConfig;
 
-    use crate::shared::{self, kdf::KdfAlgorithm};
+    use crate::{
+        crypto::{self, kdf::KdfAlgorithm},
+        shared::POSTGRES_VERSION,
+    };
 
     use super::*;
 
     #[tokio::test]
     async fn simple_test() -> TestResult {
-        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
+        let container = PostgresContainer::new(POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()

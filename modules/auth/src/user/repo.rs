@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 use omnius_opxs_base::AppError;
 
-use crate::shared::model::User;
+use crate::model::User;
 
 pub struct UserRepo {
     pub db: Arc<PgPool>,

@@ -4,7 +4,7 @@ pub mod token;
 
 use axum::{Json, Router, routing::get};
 
-use omnius_opxs_auth::shared::model::User;
+use omnius_opxs_auth::model::User;
 use omnius_opxs_base::AppError;
 
 use crate::shared::state::AppState;

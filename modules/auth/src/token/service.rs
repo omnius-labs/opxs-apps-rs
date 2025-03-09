@@ -7,7 +7,7 @@ use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
 use omnius_opxs_base::{AppError, JwtConfig};
 
-use crate::shared::{jwt, model::AuthToken};
+use crate::{crypto::jwt, model::AuthToken};
 
 use super::TokenRepo;
 
@@ -80,16 +80,17 @@ mod tests {
 
     use omnius_opxs_base::JwtSecretConfig;
 
-    use crate::shared::{
-        self,
+    use crate::{
+        crypto::{self},
         model::{UserAuthenticationType, UserRole},
+        shared::POSTGRES_VERSION,
     };
 
     use super::*;
 
     #[tokio::test]
     async fn simple_test() -> TestResult {
-        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
+        let container = PostgresContainer::new(POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()

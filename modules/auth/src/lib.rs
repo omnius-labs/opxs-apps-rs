@@ -1,5 +1,7 @@
+pub mod crypto;
 pub mod email;
+pub mod model;
 pub mod provider;
-pub mod shared;
+mod shared;
 pub mod token;
 pub mod user;

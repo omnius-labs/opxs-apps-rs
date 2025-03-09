@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use omnius_opxs_auth::shared::model::{AuthToken, User};
+use omnius_opxs_auth::model::{AuthToken, User};
 use omnius_opxs_base::AppError;
 
 use crate::shared::state::AppState;
