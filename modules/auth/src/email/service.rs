@@ -88,10 +88,7 @@ mod tests {
 
     use omnius_opxs_base::JwtSecretConfig;
 
-    use crate::{
-        crypto::{self, kdf::KdfAlgorithm},
-        shared::POSTGRES_VERSION,
-    };
+    use crate::{crypto::kdf::KdfAlgorithm, shared::POSTGRES_VERSION};
 
     use super::*;
 

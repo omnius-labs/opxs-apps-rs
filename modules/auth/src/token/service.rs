@@ -81,7 +81,6 @@ mod tests {
     use omnius_opxs_base::JwtSecretConfig;
 
     use crate::{
-        crypto::{self},
         model::{UserAuthenticationType, UserRole},
         shared::POSTGRES_VERSION,
     };

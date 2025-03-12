@@ -82,7 +82,6 @@ mod tests {
     use testresult::TestResult;
 
     use crate::{
-        crypto,
         provider::{IdTokenClaims, OAuth2TokenResult, UserInfo},
         shared::POSTGRES_VERSION,
     };
