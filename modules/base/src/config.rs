@@ -53,7 +53,13 @@ pub struct GoogleAuthConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EmailConfig {
     pub from_email_address: String,
+    pub sqs: Option<SqsConfig>,
     pub ses: Option<SesConfig>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SqsConfig {
+    pub queue_url: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -118,6 +124,7 @@ impl AppConfig {
                 },
                 email: EmailConfig {
                     from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
+                    sqs: None,
                     ses: None,
                 },
                 image: ImageConfig {
@@ -172,6 +179,9 @@ impl AppConfig {
                     },
                     email: EmailConfig {
                         from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
+                        sqs: Some(SqsConfig {
+                            queue_url: "https://sqs.us-east-1.amazonaws.com/464209738056/opxs-batch-email-send-sqs".to_string(),
+                        }),
                         ses: Some(SesConfig {
                             configuration_set_name: "opxs-email-send".to_string(),
                         }),

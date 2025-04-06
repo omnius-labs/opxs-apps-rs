@@ -65,11 +65,17 @@ impl AppService {
         let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
         let send_email_sqs_sender = Arc::new(SqsSenderImpl {
             client: aws_sdk_sqs::Client::new(&sdk_config),
-            queue_url: "opxs-batch-email-send-sqs".to_string(),
+            queue_url: conf
+                .email
+                .sqs
+                .as_ref()
+                .ok_or_else(|| Error::new(ErrorKind::NotFound).message("sqs config is not found"))?
+                .queue_url
+                .clone(),
             delay_seconds: None,
         });
         let image_convert_s3_client = Arc::new(S3ClientImpl {
-            client: aws_sdk_s3::Client::new(&aws_config::load_defaults(BehaviorVersion::latest()).await),
+            client: aws_sdk_s3::Client::new(&sdk_config),
             bucket: conf
                 .image
                 .convert
