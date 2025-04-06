@@ -180,7 +180,7 @@ impl AppConfig {
                     email: EmailConfig {
                         from_email_address: "Opxs <no-reply@opxs-dev.omnius-labs.com>".to_string(),
                         sqs: Some(SqsConfig {
-                            queue_url: "https://sqs.us-east-1.amazonaws.com/464209738056/opxs-batch-email-send-sqs".to_string(),
+                            queue_url: "opxs-batch-email-send-sqs".to_string(),
                         }),
                         ses: Some(SesConfig {
                             configuration_set_name: "opxs-email-send".to_string(),

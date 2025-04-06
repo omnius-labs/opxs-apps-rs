@@ -2,6 +2,8 @@
 /tmp
 /bin
 
+.envrc
+
 # Visual Studio Code
 .vscode/*
 !.vscode/tasks.json

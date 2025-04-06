@@ -1,5 +1,6 @@
 /tmp
 /target
+.envrc
 
 /refs/core-rs/tmp
 /refs/core-rs/target
