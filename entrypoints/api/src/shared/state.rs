@@ -7,6 +7,8 @@ use sqlx::{PgPool, postgres::PgPoolOptions};
 
 use omnius_opxs_base::{AppConfig, AppInfo, RunMode};
 
+use crate::Result;
+
 use super::service::AppService;
 
 #[derive(Clone)]
@@ -19,7 +21,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub async fn new(info: AppInfo, conf: AppConfig) -> anyhow::Result<Self> {
+    pub async fn new(info: AppInfo, conf: AppConfig) -> Result<Self> {
         let db = Arc::new(
             PgPoolOptions::new()
                 .max_connections(100)

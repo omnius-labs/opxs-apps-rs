@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
-use omnius_opxs_base::{AppError, AppInfo};
+use omnius_opxs_base::AppInfo;
 use serde_json::{Value, json};
 
 use super::repo::WorldRepo;
+
+use crate::Result;
 
 #[derive(Clone)]
 pub struct HealthService {
@@ -12,7 +14,7 @@ pub struct HealthService {
 }
 
 impl HealthService {
-    pub async fn check(&self) -> Result<Value, AppError> {
+    pub async fn check(&self) -> Result<Value> {
         let ret = json!({
             "mode": self.world_repo.get_mode().await?,
             "git_tag": self.info.git_tag,

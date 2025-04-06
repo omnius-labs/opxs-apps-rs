@@ -6,7 +6,7 @@ use parking_lot::Mutex;
 use serde::Serialize;
 use sqlx::PgPool;
 
-use crate::{FileConvertJob, FileConvertJobStatus, FileConvertJobType};
+use crate::{Error, ErrorKind, FileConvertJob, FileConvertJobStatus, FileConvertJobType, Result};
 
 pub struct FileConvertJobRepository {
     pub db: Arc<PgPool>,
@@ -23,7 +23,7 @@ impl FileConvertJobRepository {
         param: &TParam,
         in_file_name: &str,
         out_file_name: &str,
-    ) -> anyhow::Result<()>
+    ) -> Result<()>
     where
         TParam: ?Sized + Serialize,
     {
@@ -50,7 +50,7 @@ INSERT INTO file_convert_jobs (id, user_id, type, status, param, in_file_name, o
         Ok(())
     }
 
-    pub async fn get_job(&self, id: &str) -> anyhow::Result<FileConvertJob> {
+    pub async fn get_job(&self, id: &str) -> Result<FileConvertJob> {
         let res: FileConvertJob = sqlx::query_as(
             r#"
 SELECT *
@@ -65,22 +65,22 @@ SELECT *
         Ok(res)
     }
 
-    pub async fn update_status_to_waiting(&self, job_id: &str) -> anyhow::Result<()> {
+    pub async fn update_status_to_waiting(&self, job_id: &str) -> Result<()> {
         self.update_status(job_id, FileConvertJobStatus::Preparing, FileConvertJobStatus::Waiting)
             .await
     }
 
-    pub async fn update_status_to_processing(&self, job_id: &str) -> anyhow::Result<()> {
+    pub async fn update_status_to_processing(&self, job_id: &str) -> Result<()> {
         self.update_status(job_id, FileConvertJobStatus::Waiting, FileConvertJobStatus::Processing)
             .await
     }
 
-    pub async fn update_status_to_completed(&self, job_id: &str) -> anyhow::Result<()> {
+    pub async fn update_status_to_completed(&self, job_id: &str) -> Result<()> {
         self.update_status(job_id, FileConvertJobStatus::Processing, FileConvertJobStatus::Completed)
             .await
     }
 
-    async fn update_status(&self, job_id: &str, old_status: FileConvertJobStatus, new_status: FileConvertJobStatus) -> anyhow::Result<()> {
+    async fn update_status(&self, job_id: &str, old_status: FileConvertJobStatus, new_status: FileConvertJobStatus) -> Result<()> {
         let now = self.clock.now();
 
         let res = sqlx::query(
@@ -98,13 +98,13 @@ UPDATE file_convert_jobs
         .await?;
 
         if res.rows_affected() < 1 {
-            anyhow::bail!("job_id is not found");
+            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
         }
 
         Ok(())
     }
 
-    pub async fn update_status_to_failed(&self, job_id: &str, failed_reason: &str) -> anyhow::Result<()> {
+    pub async fn update_status_to_failed(&self, job_id: &str, failed_reason: &str) -> Result<()> {
         let now = self.clock.now();
 
         let res = sqlx::query(
@@ -121,7 +121,7 @@ UPDATE file_convert_jobs
         .await?;
 
         if res.rows_affected() < 1 {
-            anyhow::bail!("job_id is not found");
+            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
         }
 
         Ok(())

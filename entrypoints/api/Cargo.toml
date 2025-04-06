@@ -3,6 +3,7 @@ name = "omnius-opxs-api"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
+build = "build.rs"
 
 [features]
 stable-test = []
@@ -62,6 +63,7 @@ parking_lot = { workspace = true }
 axum-aws-lambda = { workspace = true }
 lambda_http = { workspace = true }
 tempfile = { workspace = true }
+backtrace = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }

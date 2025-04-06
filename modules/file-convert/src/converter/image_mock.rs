@@ -6,7 +6,7 @@ use std::{
 use async_trait::async_trait;
 use parking_lot::Mutex;
 
-use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType};
+use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType, Result};
 
 use super::ImageConverter;
 
@@ -30,7 +30,7 @@ impl ImageConverter for ImageConverterMock {
         in_type: &FileConvertImageInputFileType,
         out_path: &Path,
         out_type: &FileConvertImageOutputFileType,
-    ) -> anyhow::Result<()> {
+    ) -> Result<()> {
         self.convert_inputs.lock().push(ConvertInput {
             in_path: in_path.to_path_buf(),
             in_type: in_type.clone(),

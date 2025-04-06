@@ -6,9 +6,10 @@ use sqlx::PgPool;
 
 use omnius_core_base::{clock::Clock, tsid::TsidProvider};
 
-use omnius_opxs_base::AppError;
-
-use crate::model::{EmailUser, UserAuthenticationType, UserRole};
+use crate::{
+    Error, ErrorKind, Result,
+    model::{EmailUser, UserAuthenticationType, UserRole},
+};
 
 pub struct EmailAuthRepo {
     pub db: Arc<PgPool>,
@@ -17,7 +18,7 @@ pub struct EmailAuthRepo {
 }
 
 impl EmailAuthRepo {
-    pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<String, AppError> {
+    pub async fn create_user(&self, name: &str, email: &str, password_hash: &str, salt: &str) -> Result<String> {
         let user_id = self.tsid_provider.lock().create().to_string();
         let now = self.clock.now();
 
@@ -36,8 +37,7 @@ INSERT INTO users (id, name, authentication_type, role, created_at, updated_at)
         .bind(now)
         .bind(now)
         .execute(&mut *tx)
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         sqlx::query(
             r#"
@@ -58,15 +58,14 @@ INSERT INTO user_auth_emails (user_id, email, password_hash, salt, created_at, u
         .bind(now)
         .bind(now)
         .execute(&mut *tx)
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         tx.commit().await?;
 
         Ok(user_id)
     }
 
-    pub async fn delete_user(&self, id: &str) -> Result<(), AppError> {
+    pub async fn delete_user(&self, id: &str) -> Result<()> {
         let mut tx = self.db.begin().await?;
 
         let queries = vec![
@@ -76,7 +75,7 @@ INSERT INTO user_auth_emails (user_id, email, password_hash, salt, created_at, u
         ];
 
         for query in queries {
-            query.execute(&mut *tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
+            query.execute(&mut *tx).await?;
         }
 
         tx.commit().await?;
@@ -84,7 +83,7 @@ INSERT INTO user_auth_emails (user_id, email, password_hash, salt, created_at, u
         Ok(())
     }
 
-    pub async fn exist_user(&self, email: &str) -> Result<bool, AppError> {
+    pub async fn exist_user(&self, email: &str) -> Result<bool> {
         let (existed,): (bool,) = sqlx::query_as(
             r#"
 SELECT EXISTS (
@@ -98,13 +97,12 @@ SELECT EXISTS (
         )
         .bind(email)
         .fetch_one(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         Ok(existed)
     }
 
-    pub async fn get_user(&self, email: &str) -> Result<EmailUser, AppError> {
+    pub async fn get_user(&self, email: &str) -> Result<EmailUser> {
         let user: Option<EmailUser> = sqlx::query_as(
             r#"
 SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.updated_at
@@ -116,14 +114,13 @@ SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.u
         )
         .bind(email)
         .fetch_optional(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
-        let user = user.ok_or_else(|| AppError::UserNotFound)?;
+        let user = user.ok_or_else(|| Error::new(ErrorKind::NotFound).message("user not found"))?;
         Ok(user)
     }
 
-    pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<(), AppError> {
+    pub async fn update_email_verified(&self, email: &str, email_verified: bool) -> Result<()> {
         let now = self.clock.now();
 
         sqlx::query(
@@ -137,8 +134,7 @@ UPDATE user_auth_emails
         .bind(email_verified)
         .bind(now)
         .execute(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         Ok(())
     }

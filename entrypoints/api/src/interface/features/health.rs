@@ -1,9 +1,7 @@
 use axum::{Json, extract::State};
 use serde_json::Value;
 
-use omnius_opxs_base::AppError;
-
-use crate::shared::state::AppState;
+use crate::{Result, shared::state::AppState};
 
 #[utoipa::path(
     get,
@@ -13,7 +11,7 @@ use crate::shared::state::AppState;
     )
 )]
 #[allow(unused)]
-pub async fn check(State(state): State<AppState>) -> Result<Json<Value>, AppError> {
+pub async fn check(State(state): State<AppState>) -> Result<Json<Value>> {
     let ret = state.service.health.check().await?;
     Ok(Json(ret))
 }

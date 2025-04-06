@@ -16,6 +16,7 @@ use axum::{
 };
 use chrono::{DateTime, Duration, Utc};
 use futures::{FutureExt, TryStreamExt};
+use omnius_opxs_base::util::Terminable;
 use tokio::{
     fs,
     io::BufWriter,
@@ -24,12 +25,10 @@ use tokio::{
 };
 use tokio_util::io::{ReaderStream, StreamReader};
 use tower_http::cors::CorsLayer;
-use tracing::info;
+use tracing::{error, info};
 use url::Url;
 
-use omnius_core_base::terminable::Terminable;
-
-use omnius_core_cloud::aws::s3::S3Client;
+use omnius_core_cloud::{Result, aws::s3::S3Client};
 
 #[allow(unused)]
 #[derive(Debug, Clone)]
@@ -56,7 +55,7 @@ pub struct S3ClientEmulator {
 
 #[allow(unused)]
 impl S3ClientEmulator {
-    pub fn new(option: S3ClientEmulatorOption) -> anyhow::Result<Self> {
+    pub fn new(option: S3ClientEmulatorOption) -> Result<Self> {
         let (terminate_signal_sender, terminate_signal_receiver) = oneshot::channel::<()>();
         let (put_event_sender, put_event_receiver) = mpsc::channel::<String>(32);
 
@@ -87,6 +86,21 @@ impl S3ClientEmulator {
             join_handle: Box::new(TokioMutex::new(Some(join_handle))),
             option,
         })
+    }
+}
+
+#[async_trait]
+impl Terminable for S3ClientEmulator {
+    async fn terminate(&self) {
+        if let Some(sender) = self.terminate_signal_sender.lock().await.take() {
+            let _ = sender.send(());
+        }
+
+        if let Some(j) = self.join_handle.lock().await.take() {
+            if let Err(e) = j.fuse().await {
+                error!("{:?}", e);
+            }
+        }
     }
 }
 
@@ -156,23 +170,8 @@ struct PutContentQuery {
 }
 
 #[async_trait]
-impl Terminable for S3ClientEmulator {
-    async fn terminate(&self) -> anyhow::Result<()> {
-        if let Some(sender) = self.terminate_signal_sender.lock().await.take() {
-            let _ = sender.send(());
-        }
-
-        if let Some(j) = self.join_handle.lock().await.take() {
-            j.fuse().await?;
-        }
-
-        Ok(())
-    }
-}
-
-#[async_trait]
 impl S3Client for S3ClientEmulator {
-    async fn gen_get_presigned_uri(&self, key: &str, _start_time: DateTime<Utc>, _expires_in: Duration, file_name: &str) -> anyhow::Result<String> {
+    async fn gen_get_presigned_uri(&self, key: &str, _start_time: DateTime<Utc>, _expires_in: Duration, file_name: &str) -> Result<String> {
         let encoded_key = urlencoding::encode(key).to_string();
         let encoded_file_name = urlencoding::encode(file_name).to_string();
         let mut url = self.option.base_url.clone();
@@ -180,21 +179,21 @@ impl S3Client for S3ClientEmulator {
         Ok(url.to_string())
     }
 
-    async fn gen_put_presigned_uri(&self, key: &str, _start_time: DateTime<Utc>, _expires_in: Duration) -> anyhow::Result<String> {
+    async fn gen_put_presigned_uri(&self, key: &str, _start_time: DateTime<Utc>, _expires_in: Duration) -> Result<String> {
         let encoded_key = urlencoding::encode(key).to_string();
         let mut url = self.option.base_url.clone();
         url.set_query(Some(&format!("key={}", encoded_key)));
         Ok(url.to_string())
     }
 
-    async fn get_object(&self, key: &str, destination: &Path) -> anyhow::Result<()> {
+    async fn get_object(&self, key: &str, destination: &Path) -> Result<()> {
         let file_path = PathBuf::from(&self.option.working_dir);
         let file_path = file_path.join(key.replace("/", "_"));
         let _ = fs::copy(file_path, destination).await?;
         Ok(())
     }
 
-    async fn put_object(&self, key: &str, source: &Path) -> anyhow::Result<()> {
+    async fn put_object(&self, key: &str, source: &Path) -> Result<()> {
         let file_path = PathBuf::from(&self.option.working_dir);
         let file_path = file_path.join(key.replace("/", "_"));
         let _ = fs::copy(source, file_path).await?;

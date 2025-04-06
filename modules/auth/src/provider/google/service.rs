@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use omnius_opxs_base::{AppError, AuthConfig};
+use omnius_opxs_base::AuthConfig;
 
-use crate::provider::ProviderAuthRepo;
+use crate::{Error, ErrorKind, Result, provider::ProviderAuthRepo};
 
 use super::GoogleOAuth2Provider;
 
@@ -14,7 +14,7 @@ pub struct GoogleAuthService {
 }
 
 impl GoogleAuthService {
-    pub async fn register(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AppError> {
+    pub async fn register(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String> {
         let oauth2_token_result = self
             .oauth2_provider
             .get_oauth2_token(
@@ -28,7 +28,7 @@ impl GoogleAuthService {
         let id_token_claims = oauth2_token_result.id_token_claims;
 
         if auth_nonce != id_token_claims.nonce {
-            return Err(AppError::RegisterRejection(anyhow::anyhow!("Nonce mismatch error")));
+            return Err(Error::new(ErrorKind::Unauthorized).message("Nonce mismatch error"));
         }
 
         if let Ok(user) = self.auth_repo.get_user("google", &id_token_claims.sub).await {
@@ -42,12 +42,12 @@ impl GoogleAuthService {
         Ok(user_id)
     }
 
-    pub async fn unregister(&self, id: &str) -> Result<(), AppError> {
+    pub async fn unregister(&self, id: &str) -> Result<()> {
         self.auth_repo.delete_user(id).await?;
         Ok(())
     }
 
-    pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String, AppError> {
+    pub async fn login(&self, auth_code: &str, auth_redirect_uri: &str, auth_nonce: &str) -> Result<String> {
         let oauth2_token_result = self
             .oauth2_provider
             .get_oauth2_token(
@@ -60,7 +60,7 @@ impl GoogleAuthService {
         let id_token_claims = oauth2_token_result.id_token_claims;
 
         if auth_nonce != id_token_claims.nonce {
-            return Err(AppError::LoginRejection(anyhow::anyhow!("Nonce mismatch error")));
+            return Err(Error::new(ErrorKind::Unauthorized).message("Nonce mismatch error"));
         }
 
         let user = self.auth_repo.get_user("google", &id_token_claims.sub).await?;
@@ -73,18 +73,17 @@ impl GoogleAuthService {
 mod tests {
     use async_trait::async_trait;
     use chrono::Duration;
-    use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
-    use omnius_core_migration::postgres::PostgresMigrator;
-    use omnius_core_testkit::containers::postgres::PostgresContainer;
-    use omnius_opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig};
     use parking_lot::Mutex;
     use sqlx::postgres::PgPoolOptions;
     use testresult::TestResult;
 
-    use crate::{
-        provider::{IdTokenClaims, OAuth2TokenResult, UserInfo},
-        shared::POSTGRES_VERSION,
-    };
+    use omnius_core_base::{clock::ClockUtc, random_bytes::RandomBytesProviderImpl, tsid::TsidProviderImpl};
+    use omnius_core_migration::postgres::PostgresMigrator;
+    use omnius_core_testkit::containers::postgres::PostgresContainer;
+
+    use omnius_opxs_base::{GoogleAuthConfig, JwtConfig, JwtSecretConfig, shared::POSTGRES_VERSION};
+
+    use crate::provider::{IdTokenClaims, OAuth2TokenResult, UserInfo};
 
     use super::*;
 
@@ -220,13 +219,7 @@ mod tests {
 
     #[async_trait]
     impl GoogleOAuth2Provider for GoogleOAuth2ProviderMock {
-        async fn get_oauth2_token(
-            &self,
-            code: &str,
-            redirect_uri: &str,
-            client_id: &str,
-            client_secret: &str,
-        ) -> Result<OAuth2TokenResult, AppError> {
+        async fn get_oauth2_token(&self, code: &str, redirect_uri: &str, client_id: &str, client_secret: &str) -> Result<OAuth2TokenResult> {
             *self.get_oauth2_token_param.lock() = GetOauth2TokenParam {
                 code: code.to_string(),
                 redirect_uri: redirect_uri.to_string(),
@@ -236,7 +229,7 @@ mod tests {
             return Ok(self.get_oauth2_token_result.clone());
         }
 
-        async fn get_user_info(&self, access_token: &str) -> Result<UserInfo, AppError> {
+        async fn get_user_info(&self, access_token: &str) -> Result<UserInfo> {
             *self.get_user_info_param.lock() = access_token.to_string();
             return Ok(self.get_user_info_result.clone());
         }

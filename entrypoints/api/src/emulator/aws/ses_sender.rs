@@ -2,13 +2,13 @@ use async_trait::async_trait;
 use tracing::info;
 use uuid::Uuid;
 
-use omnius_core_cloud::aws::ses::SesSender;
+use omnius_core_cloud::{Result, aws::ses::SesSender};
 
 pub struct SesSenderEmulator {}
 
 #[async_trait]
 impl SesSender for SesSenderEmulator {
-    async fn send_mail_simple_text(&self, to_address: &str, from_address: &str, subject: &str, text_body: &str) -> anyhow::Result<String> {
+    async fn send_mail_simple_text(&self, to_address: &str, from_address: &str, subject: &str, text_body: &str) -> Result<String> {
         info!(
             target: "send_mail_simple_text",
             to_address,

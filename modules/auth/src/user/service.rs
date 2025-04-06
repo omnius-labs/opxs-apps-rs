@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use omnius_opxs_base::AppError;
-
-use crate::model::User;
+use crate::{Result, model::User};
 
 use super::UserRepo;
 
@@ -11,7 +9,7 @@ pub struct UserService {
 }
 
 impl UserService {
-    pub async fn get_user(&self, user_id: &str) -> Result<User, AppError> {
+    pub async fn get_user(&self, user_id: &str) -> Result<User> {
         let user = self.user_repo.get_user(user_id).await?;
         Ok(user)
     }

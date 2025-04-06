@@ -1,10 +1,11 @@
 use std::num::NonZeroU32;
 
-use anyhow::anyhow;
 use ring::{
     digest, pbkdf2,
     rand::{self, SecureRandom},
 };
+
+use crate::{Error, ErrorKind, Result};
 
 #[derive(Clone)]
 pub struct Kdf {
@@ -18,22 +19,22 @@ pub enum KdfAlgorithm {
 }
 
 impl Kdf {
-    pub fn gen_salt(&self) -> anyhow::Result<Vec<u8>> {
+    pub fn gen_salt(&self) -> Result<Vec<u8>> {
         let mut salt = vec![0; self.get_credential_len()];
 
         let rng = rand::SystemRandom::new();
-        rng.fill(&mut salt).map_err(|_| anyhow!("CryptoError"))?;
+        rng.fill(&mut salt)?;
 
         Ok(salt)
     }
 
-    pub fn derive(&self, secret: &str, salt: &[u8]) -> anyhow::Result<Vec<u8>> {
+    pub fn derive(&self, secret: &str, salt: &[u8]) -> Result<Vec<u8>> {
         match self.algorithm {
             KdfAlgorithm::Pbkdf2HmacSha256 => {
                 let mut hash = vec![0; self.get_credential_len()];
                 pbkdf2::derive(
                     pbkdf2::PBKDF2_HMAC_SHA256,
-                    NonZeroU32::new(self.iterations).ok_or_else(|| anyhow::anyhow!("unexpected error"))?,
+                    NonZeroU32::new(self.iterations).ok_or_else(|| Error::new(ErrorKind::UnexpectedError))?,
                     salt,
                     secret.as_bytes(),
                     &mut hash,
@@ -43,12 +44,12 @@ impl Kdf {
         }
     }
 
-    pub fn verify(&self, secret: &str, salt: &[u8], derived_key: &[u8]) -> anyhow::Result<bool> {
+    pub fn verify(&self, secret: &str, salt: &[u8], derived_key: &[u8]) -> Result<bool> {
         match self.algorithm {
             KdfAlgorithm::Pbkdf2HmacSha256 => {
                 let result = pbkdf2::verify(
                     pbkdf2::PBKDF2_HMAC_SHA256,
-                    NonZeroU32::new(self.iterations).ok_or_else(|| anyhow::anyhow!("unexpected error"))?,
+                    NonZeroU32::new(self.iterations).ok_or_else(|| Error::new(ErrorKind::UnexpectedError))?,
                     salt,
                     secret.as_bytes(),
                     derived_key,

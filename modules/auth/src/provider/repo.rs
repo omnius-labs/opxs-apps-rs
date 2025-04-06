@@ -6,9 +6,10 @@ use sqlx::PgPool;
 
 use omnius_core_base::{clock::Clock, tsid::TsidProvider};
 
-use omnius_opxs_base::AppError;
-
-use crate::model::{User, UserAuthenticationType, UserRole};
+use crate::{
+    Error, ErrorKind, Result,
+    model::{User, UserAuthenticationType, UserRole},
+};
 
 pub struct ProviderAuthRepo {
     pub db: Arc<PgPool>,
@@ -17,7 +18,7 @@ pub struct ProviderAuthRepo {
 }
 
 impl ProviderAuthRepo {
-    pub async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<String, AppError> {
+    pub async fn create_user(&self, name: &str, provider_type: &str, provider_user_id: &str) -> Result<String> {
         let user_id = self.tsid_provider.lock().create().to_string();
         let now = self.clock.now();
 
@@ -36,8 +37,7 @@ INSERT INTO users (id, name, authentication_type, role, created_at, updated_at)
         .bind(now)
         .bind(now)
         .execute(&mut *tx)
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         sqlx::query(
             r#"
@@ -50,15 +50,14 @@ INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id, creat
         .bind(provider_user_id)
         .bind(now)
         .execute(&mut *tx)
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         tx.commit().await?;
 
         Ok(user_id)
     }
 
-    pub async fn delete_user(&self, id: &str) -> Result<(), AppError> {
+    pub async fn delete_user(&self, id: &str) -> Result<()> {
         let mut tx = self.db.begin().await?;
 
         let queries = vec![
@@ -68,7 +67,7 @@ INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id, creat
         ];
 
         for query in queries {
-            query.execute(&mut *tx).await.map_err(|e| AppError::UnexpectedError(e.into()))?;
+            query.execute(&mut *tx).await?;
         }
 
         tx.commit().await?;
@@ -76,7 +75,7 @@ INSERT INTO user_auth_providers (user_id, provider_type, provider_user_id, creat
         Ok(())
     }
 
-    pub async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool, AppError> {
+    pub async fn exist_user(&self, provider_type: &str, provider_user_id: &str) -> Result<bool> {
         let (existed,): (bool,) = sqlx::query_as(
             r#"
 SELECT EXISTS (
@@ -91,13 +90,12 @@ SELECT EXISTS (
         .bind(provider_type)
         .bind(provider_user_id)
         .fetch_one(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         Ok(existed)
     }
 
-    pub async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User, AppError> {
+    pub async fn get_user(&self, provider_type: &str, provider_user_id: &str) -> Result<User> {
         let user: Option<User> = sqlx::query_as(
             r#"
 SELECT *
@@ -110,10 +108,9 @@ SELECT *
         .bind(provider_type)
         .bind(provider_user_id)
         .fetch_optional(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
-        let user = user.ok_or_else(|| AppError::UserNotFound)?;
+        let user = user.ok_or_else(|| Error::new(ErrorKind::NotFound).message("user not found"))?;
         Ok(user)
     }
 }

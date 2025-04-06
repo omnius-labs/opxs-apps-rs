@@ -4,7 +4,7 @@ use chrono::Utc;
 use omnius_core_base::clock::Clock;
 use sqlx::PgPool;
 
-use crate::EmailSendJobBatchDetail;
+use crate::{EmailSendJobBatchDetail, Error, ErrorKind, Result};
 
 use super::{EmailConfirmRequestParam, EmailSendJob, EmailSendJobBatch, EmailSendJobBatchDetailStatus, EmailSendJobBatchStatus, EmailSendJobType};
 
@@ -14,7 +14,7 @@ pub struct EmailSendJobRepository {
 }
 
 impl EmailSendJobRepository {
-    pub async fn create_job(&self, job_id: &str, param: &EmailConfirmRequestParam) -> anyhow::Result<()> {
+    pub async fn create_job(&self, job_id: &str, param: &EmailConfirmRequestParam) -> Result<()> {
         let now = self.clock.now();
 
         let mut tx = self.db.begin().await?;
@@ -69,7 +69,7 @@ INSERT INTO email_send_job_batch_details (job_id, batch_id, email_address, retry
         Ok(())
     }
 
-    pub async fn get_job(&self, id: &str) -> anyhow::Result<EmailSendJob> {
+    pub async fn get_job(&self, id: &str) -> Result<EmailSendJob> {
         let res: EmailSendJob = sqlx::query_as(
             r#"
 SELECT *
@@ -84,7 +84,7 @@ SELECT *
         Ok(res)
     }
 
-    pub async fn get_job_batches(&self, job_id: &str) -> anyhow::Result<Vec<EmailSendJobBatch>> {
+    pub async fn get_job_batches(&self, job_id: &str) -> Result<Vec<EmailSendJobBatch>> {
         let res: Vec<EmailSendJobBatch> = sqlx::query_as(
             r#"
 SELECT *
@@ -99,7 +99,7 @@ SELECT *
         Ok(res)
     }
 
-    pub async fn get_job_batch_details(&self, job_id: &str, batch_id: i32) -> anyhow::Result<Vec<EmailSendJobBatchDetail>> {
+    pub async fn get_job_batch_details(&self, job_id: &str, batch_id: i32) -> Result<Vec<EmailSendJobBatchDetail>> {
         let res: Vec<EmailSendJobBatchDetail> = sqlx::query_as(
             r#"
 SELECT *
@@ -115,7 +115,7 @@ SELECT *
         Ok(res)
     }
 
-    pub async fn set_message_id(&self, job_id: &str, batch_id: i32, email_address: &str, message_id: &str) -> anyhow::Result<()> {
+    pub async fn set_message_id(&self, job_id: &str, batch_id: i32, email_address: &str, message_id: &str) -> Result<()> {
         let now = self.clock.now();
 
         sqlx::query(
@@ -136,12 +136,12 @@ UPDATE email_send_job_batch_details
         Ok(())
     }
 
-    pub async fn update_status_to_waiting(&self, job_id: &str) -> anyhow::Result<()> {
+    pub async fn update_status_to_waiting(&self, job_id: &str) -> Result<()> {
         self.update_status_by_job_id(job_id, &EmailSendJobBatchDetailStatus::Preparing, &EmailSendJobBatchDetailStatus::Waiting)
             .await
     }
 
-    pub async fn update_status_to_processing(&self, job_id: &str, batch_id: i32, email_address: &str) -> anyhow::Result<()> {
+    pub async fn update_status_to_processing(&self, job_id: &str, batch_id: i32, email_address: &str) -> Result<()> {
         self.update_status_by_email_address(
             job_id,
             batch_id,
@@ -152,7 +152,7 @@ UPDATE email_send_job_batch_details
         .await
     }
 
-    pub async fn update_status_to_requested(&self, message_id: &str) -> anyhow::Result<()> {
+    pub async fn update_status_to_requested(&self, message_id: &str) -> Result<()> {
         self.update_status_by_message_id(
             message_id,
             &EmailSendJobBatchDetailStatus::Processing,
@@ -161,12 +161,7 @@ UPDATE email_send_job_batch_details
         .await
     }
 
-    async fn update_status_by_job_id(
-        &self,
-        job_id: &str,
-        old: &EmailSendJobBatchDetailStatus,
-        new: &EmailSendJobBatchDetailStatus,
-    ) -> anyhow::Result<()> {
+    async fn update_status_by_job_id(&self, job_id: &str, old: &EmailSendJobBatchDetailStatus, new: &EmailSendJobBatchDetailStatus) -> Result<()> {
         let mut tx = self.db.begin().await?;
         let now = self.clock.now();
 
@@ -185,7 +180,7 @@ UPDATE email_send_job_batches
         .await?;
 
         if res.rows_affected() < 1 {
-            anyhow::bail!("no rows affected");
+            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
         }
 
         let res = sqlx::query(
@@ -203,7 +198,7 @@ UPDATE email_send_job_batch_details
         .await?;
 
         if res.rows_affected() < 1 {
-            anyhow::bail!("no rows affected");
+            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
         }
 
         tx.commit().await?;
@@ -218,7 +213,7 @@ UPDATE email_send_job_batch_details
         email_address: &str,
         old: &EmailSendJobBatchDetailStatus,
         new: &EmailSendJobBatchDetailStatus,
-    ) -> anyhow::Result<()> {
+    ) -> Result<()> {
         let mut tx = self.db.begin().await?;
         let now = self.clock.now();
 
@@ -239,7 +234,7 @@ UPDATE email_send_job_batch_details
         .await?;
 
         if res.rows_affected() < 1 {
-            anyhow::bail!("no rows affected");
+            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
         }
 
         sqlx::query(
@@ -271,7 +266,7 @@ UPDATE email_send_job_batches
         message_id: &str,
         old: &EmailSendJobBatchDetailStatus,
         new: &EmailSendJobBatchDetailStatus,
-    ) -> anyhow::Result<()> {
+    ) -> Result<()> {
         let mut tx = self.db.begin().await?;
         let now = self.clock.now();
 
@@ -290,7 +285,7 @@ UPDATE email_send_job_batch_details
         .await?;
 
         if res.rows_affected() < 1 {
-            anyhow::bail!("no rows affected");
+            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
         }
 
         let (job_id, batch_id): (String, i32) = sqlx::query_as(

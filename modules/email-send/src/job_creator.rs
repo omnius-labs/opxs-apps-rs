@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use omnius_core_cloud::aws::sqs::SqsSender;
 
+use crate::Result;
+
 use super::{EmailConfirmRequestParam, EmailSendJobBatchSqsMessage, EmailSendJobRepository};
 
 pub struct EmailSendJobCreator {
@@ -17,7 +19,7 @@ impl EmailSendJobCreator {
         to_email_address: &str,
         from_email_address: &str,
         email_confirm_url: &str,
-    ) -> anyhow::Result<()> {
+    ) -> Result<()> {
         let param = EmailConfirmRequestParam {
             user_name: user_name.to_string(),
             to_email_address: to_email_address.to_string(),

@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
-use anyhow::Context;
 use omnius_core_cloud::aws::s3::S3Client;
 use tempfile::tempdir;
 use tracing::info;
 
-use crate::{FileConvertImageRequestParam, FileConvertJobRepository, FileConvertJobType, ImageConverter};
+use crate::{Error, ErrorKind, FileConvertImageRequestParam, FileConvertJobRepository, FileConvertJobType, ImageConverter, Result};
 
 pub struct FileConvertExecutor {
     pub file_convert_job_repository: Arc<FileConvertJobRepository>,
@@ -15,7 +14,7 @@ pub struct FileConvertExecutor {
 }
 
 impl FileConvertExecutor {
-    pub async fn execute(&self, job_ids: &[String]) -> anyhow::Result<()> {
+    pub async fn execute(&self, job_ids: &[String]) -> Result<()> {
         for job_id in job_ids.iter() {
             info!("Start processing job: {}", job_id);
 
@@ -35,12 +34,12 @@ impl FileConvertExecutor {
         Ok(())
     }
 
-    async fn execute_one(&self, job_id: &str) -> anyhow::Result<()> {
+    async fn execute_one(&self, job_id: &str) -> Result<()> {
         let job = self.file_convert_job_repository.get_job(job_id).await?;
 
         match &job.typ {
             FileConvertJobType::Image => {
-                let param = job.param.ok_or_else(|| anyhow::anyhow!("param is not found"))?;
+                let param = job.param.ok_or_else(|| Error::new(ErrorKind::NotFound).message("param is not found"))?;
                 let param = serde_json::from_str::<FileConvertImageRequestParam>(&param)?;
 
                 let working_dir = tempdir()?;
@@ -50,10 +49,7 @@ impl FileConvertExecutor {
                 let out_type = param.out_type.clone();
                 let out_path = working_dir.path().join(format!("out_{}", job_id)).with_extension(out_type.to_extension());
 
-                self.s3_client
-                    .get_object(format!("in/{}", job_id).as_str(), &in_path)
-                    .await
-                    .context("Failed to download input file from S3")?;
+                self.s3_client.get_object(format!("in/{}", job_id).as_str(), &in_path).await?;
 
                 info!("Start converting image: {:?}", param);
 
@@ -63,10 +59,7 @@ impl FileConvertExecutor {
 
                 info!("Finish converting image: {:?}", param);
 
-                self.s3_client
-                    .put_object(format!("out/{}", job_id).as_str(), &out_path)
-                    .await
-                    .context("Failed to upload output file to S3")?;
+                self.s3_client.put_object(format!("out/{}", job_id).as_str(), &out_path).await?;
             }
             _ => todo!(),
         }
@@ -91,13 +84,15 @@ mod tests {
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertJobCreator, ImageConverterMock, shared};
+    use omnius_opxs_base::shared::POSTGRES_VERSION;
+
+    use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertJobCreator, ImageConverterMock};
 
     use super::*;
 
     #[tokio::test]
     async fn simple_test() -> TestResult {
-        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
+        let container = PostgresContainer::new(POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()

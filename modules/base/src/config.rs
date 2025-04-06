@@ -1,7 +1,9 @@
+use std::env;
+
 use aws_config::BehaviorVersion;
 use omnius_core_cloud::aws::secrets::{SecretsReader, SecretsReaderImpl};
 
-use crate::AppInfo;
+use crate::{AppInfo, Error, ErrorKind, Result};
 
 use super::info::RunMode;
 
@@ -85,7 +87,7 @@ pub struct DiscordConfig {
 }
 
 impl AppConfig {
-    pub async fn load(info: &AppInfo) -> anyhow::Result<Self> {
+    pub async fn load(info: &AppInfo) -> Result<Self> {
         if info.mode == RunMode::Local {
             let postgres_url = format!(
                 "postgresql://{host}:{port}/{database}?user={user}&password={password}&application_name={app_name}",
@@ -110,8 +112,8 @@ impl AppConfig {
                         },
                     },
                     google: GoogleAuthConfig {
-                        client_id: "".to_string(),
-                        client_secret: "".to_string(),
+                        client_id: env::var("GOOGLE_AUTH_CLIENT_ID").unwrap_or_else(|_| "".to_string()),
+                        client_secret: env::var("GOOGLE_AUTH_CLIENT_SECRET").unwrap_or_else(|_| "".to_string()),
                     },
                 },
                 email: EmailConfig {
@@ -193,15 +195,15 @@ impl AppConfig {
 }
 
 trait ValueExt {
-    fn get_str(&self, name: &str) -> anyhow::Result<String>;
+    fn get_str(&self, name: &str) -> Result<String>;
 }
 
 impl ValueExt for serde_json::Value {
-    fn get_str(&self, name: &str) -> anyhow::Result<String> {
+    fn get_str(&self, name: &str) -> Result<String> {
         let res = self
             .get(name)
             .map(|n| n.as_str().unwrap_or_default().to_string())
-            .ok_or_else(|| anyhow::anyhow!("{name} is not found"))?;
+            .ok_or_else(|| Error::new(ErrorKind::NotFound).message(format!("{} is not found", name)))?;
         Ok(res)
     }
 }

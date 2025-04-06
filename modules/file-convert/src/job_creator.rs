@@ -6,9 +6,7 @@ use serde::Serialize;
 use omnius_core_base::clock::Clock;
 use omnius_core_cloud::aws::s3::S3Client;
 
-use omnius_opxs_base::AppError;
-
-use crate::{FileConvertJobStatus, FileConvertJobType};
+use crate::{FileConvertJobStatus, FileConvertJobType, Result};
 
 use super::FileConvertJobRepository;
 
@@ -27,7 +25,7 @@ impl FileConvertJobCreator {
         param: &TParam,
         in_file_name: &str,
         out_file_name: &str,
-    ) -> Result<String, AppError>
+    ) -> Result<String>
     where
         TParam: ?Sized + Serialize,
     {
@@ -47,7 +45,7 @@ impl FileConvertJobCreator {
         Ok(upload_uri)
     }
 
-    pub async fn get_download_url(&self, job_id: &str, user_id: Option<&str>) -> Result<(FileConvertJobStatus, Option<String>), AppError> {
+    pub async fn get_download_url(&self, job_id: &str, user_id: Option<&str>) -> Result<(FileConvertJobStatus, Option<String>)> {
         let job = self.file_convert_job_repository.get_job(job_id).await?;
 
         if job.user_id.as_deref() != user_id {

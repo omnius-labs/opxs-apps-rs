@@ -8,12 +8,11 @@ use utoipa::ToSchema;
 use validator::Validate;
 
 use omnius_opxs_auth::model::User;
-use omnius_opxs_base::AppError;
 use omnius_opxs_file_convert::{
     FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertImageRequestParam, FileConvertJobStatus, FileConvertJobType,
 };
 
-use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
+use crate::{Result, interface::extractors::ValidatedJson, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {
@@ -31,7 +30,7 @@ pub fn gen_service(state: AppState) -> Router {
         (status = 200, body = UploadOutput)
     )
 )]
-pub async fn upload(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<UploadInput>) -> Result<Json<UploadOutput>, AppError> {
+pub async fn upload(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<UploadInput>) -> Result<Json<UploadOutput>> {
     let job_id = state.service.tsid_provider.lock().create().to_string();
     let param = FileConvertImageRequestParam {
         in_type: input.in_type,
@@ -75,7 +74,7 @@ pub struct UploadOutput {
         (status = 200, body = StatusOutput)
     )
 )]
-pub async fn status(State(state): State<AppState>, input: Query<StatusInput>, user: Option<User>) -> Result<Json<StatusOutput>, AppError> {
+pub async fn status(State(state): State<AppState>, input: Query<StatusInput>, user: Option<User>) -> Result<Json<StatusOutput>> {
     let (status, download_url) = state
         .service
         .image_convert_job_creator

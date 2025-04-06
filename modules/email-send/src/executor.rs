@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use omnius_core_cloud::aws::ses::SesSender;
 
+use crate::{Error, ErrorKind, Result};
+
 use super::{EmailConfirmRequestParam, EmailSendJobBatchSqsMessage, EmailSendJobRepository, EmailSendJobType};
 
 pub struct EmailSendExecutor {
@@ -10,27 +12,27 @@ pub struct EmailSendExecutor {
 }
 
 impl EmailSendExecutor {
-    pub async fn execute(&self, ms: &[EmailSendJobBatchSqsMessage]) -> anyhow::Result<()> {
+    pub async fn execute(&self, ms: &[EmailSendJobBatchSqsMessage]) -> Result<()> {
         for m in ms.iter() {
             self.execute_one(m).await?;
         }
         Ok(())
     }
 
-    async fn execute_one(&self, m: &EmailSendJobBatchSqsMessage) -> anyhow::Result<()> {
+    async fn execute_one(&self, m: &EmailSendJobBatchSqsMessage) -> Result<()> {
         let job = self.email_send_job_repository.get_job(&m.job_id).await?;
 
         match job.typ {
             EmailSendJobType::EmailConfirm => {
-                let param = job.param.ok_or_else(|| anyhow::anyhow!("param is not found"))?;
+                let param = job.param.ok_or_else(|| Error::new(ErrorKind::NotFound).message("param is not found"))?;
                 let param = serde_json::from_str::<EmailConfirmRequestParam>(&param)?;
                 self.execute_email_confirm(&m.job_id, m.batch_id, &param).await
             }
-            _ => anyhow::bail!("invalid job type"),
+            _ => Err(Error::new(ErrorKind::UnsupportedType).message(format!("unsupported type: {:?}", job.typ))),
         }
     }
 
-    async fn execute_email_confirm(&self, job_id: &str, batch_id: i32, param: &EmailConfirmRequestParam) -> anyhow::Result<()> {
+    async fn execute_email_confirm(&self, job_id: &str, batch_id: i32, param: &EmailConfirmRequestParam) -> Result<()> {
         self.email_send_job_repository
             .update_status_to_processing(job_id, batch_id, &param.to_email_address)
             .await?;
@@ -88,13 +90,15 @@ mod tests {
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use crate::{EmailSendJobCreator, shared};
+    use omnius_opxs_base::shared::POSTGRES_VERSION;
+
+    use crate::EmailSendJobCreator;
 
     use super::*;
 
     #[tokio::test]
     async fn simple_test() -> TestResult {
-        let container = PostgresContainer::new(shared::POSTGRES_VERSION).await?;
+        let container = PostgresContainer::new(POSTGRES_VERSION).await?;
 
         let db = Arc::new(
             PgPoolOptions::new()

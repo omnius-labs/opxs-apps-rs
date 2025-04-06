@@ -6,7 +6,7 @@ use serde_json::json;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{PgPool, Row};
 
-use crate::{AppInfo, NotifyConfig};
+use crate::{AppInfo, Error, ErrorKind, NotifyConfig, Result};
 
 pub struct WorldValidator {
     info: AppInfo,
@@ -15,7 +15,7 @@ pub struct WorldValidator {
 }
 
 impl WorldValidator {
-    pub async fn new(info: &AppInfo, postgres_url: &str, clock: Arc<dyn Clock<Utc> + Send + Sync>) -> anyhow::Result<Self> {
+    pub async fn new(info: &AppInfo, postgres_url: &str, clock: Arc<dyn Clock<Utc> + Send + Sync>) -> Result<Self> {
         let db = PgPoolOptions::new()
             .max_connections(10)
             .idle_timeout(Some(Duration::minutes(15).to_std().unwrap()))
@@ -30,7 +30,7 @@ impl WorldValidator {
         })
     }
 
-    async fn init(db: &PgPool) -> anyhow::Result<()> {
+    async fn init(db: &PgPool) -> Result<()> {
         let sql = "
 SELECT EXISTS (
     SELECT FROM
@@ -58,14 +58,14 @@ CREATE TABLE IF NOT EXISTS _world (
         Ok(())
     }
 
-    pub async fn verify(&self) -> anyhow::Result<WorldValidatedStatus> {
-        let row: Result<PgRow, sqlx::Error> = sqlx::query("SELECT (value) FROM _world WHERE key = 'mode'").fetch_one(&self.db).await;
+    pub async fn verify(&self) -> Result<WorldValidatedStatus> {
+        let row: std::result::Result<PgRow, sqlx::Error> = sqlx::query("SELECT (value) FROM _world WHERE key = 'mode'").fetch_one(&self.db).await;
 
         match row {
             Ok(row) => {
                 let got_mode: String = row.get(0);
                 if self.info.mode.to_string() != got_mode {
-                    return Err(anyhow::anyhow!("World mismatch"));
+                    return Err(Error::new(ErrorKind::Mismatch).message(format!("world mismatch: expected: {}, found: {}", self.info.mode, got_mode)));
                 }
                 Ok(WorldValidatedStatus::Match)
             }
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS _world (
         }
     }
 
-    pub async fn notify(&self, conf: &NotifyConfig) -> anyhow::Result<()> {
+    pub async fn notify(&self, conf: &NotifyConfig) -> Result<()> {
         let now = self.clock.now();
         let res = sqlx::query(
             r#"

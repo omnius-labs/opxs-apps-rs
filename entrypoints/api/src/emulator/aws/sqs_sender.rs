@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use omnius_core_cloud::aws::sqs::SqsSender;
 use tokio::sync::{Mutex as TokioMutex, mpsc};
+
+use omnius_core_cloud::{Error, ErrorKind, Result, aws::sqs::SqsSender};
 
 pub struct SqsSenderEmulator {
     message_sender: mpsc::Sender<String>,
@@ -11,8 +12,11 @@ pub struct SqsSenderEmulator {
 
 #[async_trait]
 impl SqsSender for SqsSenderEmulator {
-    async fn send_message(&self, message: &str) -> anyhow::Result<()> {
-        self.message_sender.send(message.to_string()).await?;
+    async fn send_message(&self, message: &str) -> Result<()> {
+        self.message_sender
+            .send(message.to_string())
+            .await
+            .map_err(|_| Error::new(ErrorKind::IoError))?;
         Ok(())
     }
 }

@@ -1,13 +1,16 @@
 use std::sync::Arc;
 
 use chrono::{Duration, Utc};
+use parking_lot::Mutex;
 
 use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
-use omnius_opxs_base::{AppError, JwtConfig};
-use parking_lot::Mutex;
+use omnius_opxs_base::JwtConfig;
 
-use crate::crypto::{jwt, kdf::Kdf};
+use crate::{
+    Error, ErrorKind, Result,
+    crypto::{jwt, kdf::Kdf},
+};
 
 use super::EmailAuthRepo;
 
@@ -21,9 +24,9 @@ pub struct EmailAuthService {
 }
 
 impl EmailAuthService {
-    pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<String, AppError> {
+    pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<String> {
         if self.auth_repo.exist_user(email).await? {
-            return Err(AppError::DuplicateEmail);
+            return Err(Error::new(ErrorKind::Duplicated).message("duplicated email"));
         }
 
         let salt = self.kdf.gen_salt()?;
@@ -41,28 +44,28 @@ impl EmailAuthService {
         Ok(token)
     }
 
-    pub async fn unregister(&self, id: &str) -> Result<(), AppError> {
+    pub async fn unregister(&self, id: &str) -> Result<()> {
         self.auth_repo.delete_user(id).await?;
         Ok(())
     }
 
-    pub async fn login(&self, email: &str, password: &str) -> Result<String, AppError> {
+    pub async fn login(&self, email: &str, password: &str) -> Result<String> {
         if !self.auth_repo.exist_user(email).await? {
-            return Err(AppError::UserNotFound);
+            return Err(Error::new(ErrorKind::NotFound).message("user not found"));
         }
 
         let user = self.auth_repo.get_user(email).await?;
-        let salt = hex::decode(user.salt).map_err(|e| AppError::UnexpectedError(e.into()))?;
-        let password_hash = hex::decode(user.password_hash).map_err(|e| AppError::UnexpectedError(e.into()))?;
+        let salt = hex::decode(user.salt)?;
+        let password_hash = hex::decode(user.password_hash)?;
 
         if !self.kdf.verify(password, &salt, &password_hash)? {
-            return Err(AppError::WrongPassword);
+            return Err(Error::new(ErrorKind::Unauthorized).message("invalid password"));
         }
 
         Ok(user.id)
     }
 
-    pub async fn confirm(&self, token: &str) -> Result<String, AppError> {
+    pub async fn confirm(&self, token: &str) -> Result<String> {
         let now = self.clock.now();
         let claims = jwt::verify(&self.jwt_conf.secret.current, token, now)?;
 
@@ -86,9 +89,9 @@ mod tests {
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use omnius_opxs_base::JwtSecretConfig;
+    use omnius_opxs_base::{JwtSecretConfig, shared::POSTGRES_VERSION};
 
-    use crate::{crypto::kdf::KdfAlgorithm, shared::POSTGRES_VERSION};
+    use crate::crypto::kdf::KdfAlgorithm;
 
     use super::*;
 
@@ -111,6 +114,7 @@ mod tests {
         let user_name = "user_name";
         let user_email = "user_email";
         let password = "password";
+        let invalid_password = "invalid_password";
 
         let clock = Arc::new(ClockUtc {});
         let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
@@ -141,8 +145,13 @@ mod tests {
 
         // register
         let token = auth_service.register(user_name, user_email, password).await?;
-        assert!(matches!(auth_service.login(user_email, password).await, Err(AppError::UserNotFound)));
+        assert_eq!(*auth_service.login(user_email, password).await.unwrap_err().kind(), ErrorKind::NotFound);
         auth_service.confirm(&token).await?;
+
+        assert_eq!(
+            *auth_service.login(user_email, invalid_password).await.unwrap_err().kind(),
+            ErrorKind::Unauthorized
+        );
 
         // login
         assert!(auth_service.login(user_email, password).await.is_ok());
@@ -155,7 +164,7 @@ mod tests {
         assert!(auth_service.unregister(user.id.as_str()).await.is_ok());
 
         // login
-        assert!(matches!(auth_service.login(user_email, password).await, Err(AppError::UserNotFound)));
+        assert_eq!(*auth_service.login(user_email, password).await.unwrap_err().kind(), ErrorKind::NotFound);
 
         Ok(())
     }

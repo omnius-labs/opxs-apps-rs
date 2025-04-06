@@ -23,7 +23,6 @@ aws-sdk-sqs = { workspace = true }
 aws-sdk-sesv2 = { workspace = true }
 
 chrono = { workspace = true }
-anyhow = { workspace = true }
 async-trait = { workspace = true }
 axum = { workspace = true }
 axum-extra = { workspace = true }

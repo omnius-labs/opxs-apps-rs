@@ -7,6 +7,7 @@ pub enum ErrorKind {
     SerdeError,
     DatabaseError,
     HttpClientError,
+    CryptoError,
     UnexpectedError,
 
     AwsError,
@@ -14,7 +15,8 @@ pub enum ErrorKind {
 
     InvalidFormat,
     NotFound,
-    Mismatch,
+    TokenExpired,
+    Unauthorized,
     Duplicated,
 }
 
@@ -26,6 +28,7 @@ impl std::fmt::Display for ErrorKind {
             ErrorKind::SerdeError => write!(fmt, "serde error"),
             ErrorKind::DatabaseError => write!(fmt, "database error"),
             ErrorKind::HttpClientError => write!(fmt, "http client error"),
+            ErrorKind::CryptoError => write!(fmt, "crypto error"),
             ErrorKind::UnexpectedError => write!(fmt, "unexpected error"),
 
             ErrorKind::AwsError => write!(fmt, "AWS error"),
@@ -33,7 +36,8 @@ impl std::fmt::Display for ErrorKind {
 
             ErrorKind::InvalidFormat => write!(fmt, "invalid format"),
             ErrorKind::NotFound => write!(fmt, "not found"),
-            ErrorKind::Mismatch => write!(fmt, "mismatch"),
+            ErrorKind::TokenExpired => write!(fmt, "token expired"),
+            ErrorKind::Unauthorized => write!(fmt, "unauthorized"),
             ErrorKind::Duplicated => write!(fmt, "duplicated"),
         }
     }
@@ -136,6 +140,36 @@ impl From<sqlx::Error> for Error {
 impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
         Error::new(ErrorKind::HttpClientError).message("HTTP client error").source(e)
+    }
+}
+
+impl From<jsonwebtoken::errors::Error> for Error {
+    fn from(e: jsonwebtoken::errors::Error) -> Self {
+        Error::new(ErrorKind::InvalidFormat).message("Invalid JWT").source(e)
+    }
+}
+
+impl From<ring::error::Unspecified> for Error {
+    fn from(e: ring::error::Unspecified) -> Self {
+        Error::new(ErrorKind::CryptoError).message("Ring error").source(e)
+    }
+}
+
+impl From<hex::FromHexError> for Error {
+    fn from(e: hex::FromHexError) -> Self {
+        Error::new(ErrorKind::InvalidFormat).message("Hex decode error").source(e)
+    }
+}
+
+impl From<base64::DecodeError> for Error {
+    fn from(e: base64::DecodeError) -> Self {
+        Error::new(ErrorKind::InvalidFormat).message("Base64 decode error").source(e)
+    }
+}
+
+impl From<std::string::FromUtf8Error> for Error {
+    fn from(e: std::string::FromUtf8Error) -> Self {
+        Error::new(ErrorKind::InvalidFormat).message("UTF-8 decode error").source(e)
     }
 }
 

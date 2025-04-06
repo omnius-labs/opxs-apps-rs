@@ -9,17 +9,17 @@ use axum_extra::{
 };
 
 use omnius_opxs_auth::{crypto::jwt, model::User};
-use omnius_opxs_base::AppError;
+
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
-use crate::shared::state::AppState;
+use crate::{Error, shared::state::AppState};
 
 #[async_trait]
 impl FromRequestParts<AppState> for User {
-    type Rejection = AppError;
+    type Rejection = Error;
 
-    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> std::result::Result<Self, Self::Rejection> {
         let TypedHeader(Authorization(bearer)) = parts.extract::<TypedHeader<Authorization<Bearer>>>().await?;
 
         let access_token = bearer.token();
@@ -44,9 +44,9 @@ where
     T: DeserializeOwned + Validate,
     Json<T>: FromRequest<S, Rejection = JsonRejection>,
 {
-    type Rejection = AppError;
+    type Rejection = Error;
 
-    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request(req: Request, state: &S) -> std::result::Result<Self, Self::Rejection> {
         let Json(value) = Json::<T>::from_request(req, state).await?;
         value.validate()?;
         Ok(ValidatedJson(value))

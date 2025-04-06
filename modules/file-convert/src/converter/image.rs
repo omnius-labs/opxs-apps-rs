@@ -8,7 +8,7 @@ use tokio::{
     process::Command,
 };
 
-use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType};
+use crate::{Error, ErrorKind, FileConvertImageInputFileType, FileConvertImageOutputFileType, Result};
 
 #[async_trait]
 pub trait ImageConverter {
@@ -18,7 +18,7 @@ pub trait ImageConverter {
         in_type: &FileConvertImageInputFileType,
         out_path: &Path,
         out_type: &FileConvertImageOutputFileType,
-    ) -> anyhow::Result<()>;
+    ) -> Result<()>;
 }
 
 #[derive(Debug)]
@@ -32,8 +32,8 @@ impl ImageConverter for ImageConverterImpl {
         in_type: &FileConvertImageInputFileType,
         out_path: &Path,
         out_type: &FileConvertImageOutputFileType,
-    ) -> anyhow::Result<()> {
-        let image_converter_dir = std::env::var("IMAGE_CONVERTER_DIR").map_err(|_| anyhow::anyhow!("IMAGE_CONVERTER is not set"))?;
+    ) -> Result<()> {
+        let image_converter_dir = std::env::var("IMAGE_CONVERTER_DIR")?;
         let image_converter = Path::new(&image_converter_dir).join("Omnius.ImageConverter");
 
         let image_converter_option = ImageConverterOption {
@@ -50,36 +50,31 @@ impl ImageConverter for ImageConverterImpl {
             .stderr(Stdio::piped())
             .spawn()?;
 
-        let mut stdin = cmd.stdin.take().ok_or_else(|| anyhow::anyhow!("Failed to get to stdin"))?;
-        stdin
-            .write_all(image_converter_option.as_bytes())
-            .await
-            .map_err(|e| anyhow::anyhow!("Failed to write to stdin: {}", e))?;
-        stdin
-            .write_all(b"\n")
-            .await
-            .map_err(|e| anyhow::anyhow!("Failed to write newline to stdin: {}", e))?;
+        let mut stdin = cmd.stdin.take().ok_or_else(|| Error::new(ErrorKind::UnexpectedError))?;
+        stdin.write_all(image_converter_option.as_bytes()).await?;
+        stdin.write_all(b"\n").await?;
 
-        let mut stdout = cmd.stdout.take().ok_or_else(|| anyhow::anyhow!("Failed to get to stdout"))?;
+        let mut stdout = cmd.stdout.take().ok_or_else(|| Error::new(ErrorKind::UnexpectedError))?;
         let stdout_handle = tokio::spawn(async move {
             let mut v = String::new();
             stdout.read_to_string(&mut v).await.ok();
             v
         });
 
-        let mut stderr = cmd.stderr.take().ok_or_else(|| anyhow::anyhow!("Failed to get to stderr"))?;
+        let mut stderr = cmd.stderr.take().ok_or_else(|| Error::new(ErrorKind::UnexpectedError))?;
         let stderr_handle = tokio::spawn(async move {
             let mut v = String::new();
             stderr.read_to_string(&mut v).await.ok();
             v
         });
 
-        let (stdout_result, stderr_result) =
-            tokio::try_join!(stdout_handle, stderr_handle).map_err(|e| anyhow::anyhow!("Failed to read output: {}", e))?;
+        let (stdout_result, stderr_result) = tokio::try_join!(stdout_handle, stderr_handle)?;
 
         let status = cmd.wait().await?;
         if !status.success() {
-            anyhow::bail!("Process failed.\nstdout: {}\nstderr: {}", stdout_result, stderr_result);
+            return Err(
+                Error::new(ErrorKind::ProcessFailed).message(format!("Process failed.\nstdout: {}\nstderr: {}", stdout_result, stderr_result))
+            );
         }
 
         Ok(())

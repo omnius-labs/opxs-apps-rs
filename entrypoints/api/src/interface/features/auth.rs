@@ -5,9 +5,8 @@ pub mod token;
 use axum::{Json, Router, routing::get};
 
 use omnius_opxs_auth::model::User;
-use omnius_opxs_base::AppError;
 
-use crate::shared::state::AppState;
+use crate::{Result, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {
@@ -29,6 +28,6 @@ pub fn gen_service(state: AppState) -> Router {
         ("bearer_token" = [])
     )
 )]
-pub async fn me(user: User) -> Result<Json<User>, AppError> {
+pub async fn me(user: User) -> Result<Json<User>> {
     Ok(Json(user))
 }

@@ -5,9 +5,7 @@ use sqlx::PgPool;
 
 use omnius_core_base::clock::Clock;
 
-use omnius_opxs_base::AppError;
-
-use crate::model::User;
+use crate::{Error, ErrorKind, Result, model::User};
 
 pub struct TokenRepo {
     pub db: Arc<PgPool>,
@@ -15,7 +13,7 @@ pub struct TokenRepo {
 }
 
 impl TokenRepo {
-    pub async fn create_token(&self, user_id: &str, refresh_token: &str, refresh_token_expires_at: &DateTime<Utc>) -> Result<(), AppError> {
+    pub async fn create_token(&self, user_id: &str, refresh_token: &str, refresh_token_expires_at: &DateTime<Utc>) -> Result<()> {
         let now = self.clock.now();
         sqlx::query(
             r#"
@@ -29,13 +27,12 @@ INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, upda
         .bind(now)
         .bind(now)
         .execute(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         Ok(())
     }
 
-    pub async fn delete_token(&self, user_id: &str) -> Result<(), AppError> {
+    pub async fn delete_token(&self, user_id: &str) -> Result<()> {
         sqlx::query(
             r#"
 DELETE FROM refresh_tokens
@@ -44,13 +41,12 @@ DELETE FROM refresh_tokens
         )
         .bind(user_id)
         .execute(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         Ok(())
     }
 
-    pub async fn get_user_id(&self, refresh_token: &str) -> Result<String, AppError> {
+    pub async fn get_user_id(&self, refresh_token: &str) -> Result<String> {
         let now = self.clock.now();
         let user: Option<User> = sqlx::query_as(
             r#"
@@ -63,11 +59,10 @@ SELECT u.*
         .bind(refresh_token)
         .bind(now)
         .fetch_optional(self.db.as_ref())
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.into()))?;
+        .await?;
 
         if user.is_none() {
-            return Err(AppError::RefreshTokenNotFound);
+            return Err(Error::new(ErrorKind::NotFound).message("User not found"));
         }
 
         Ok(user.unwrap().id)

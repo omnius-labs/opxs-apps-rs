@@ -6,9 +6,8 @@ use utoipa::ToSchema;
 use validator::Validate;
 
 use omnius_opxs_auth::model::{AuthToken, User};
-use omnius_opxs_base::AppError;
 
-use crate::{interface::extractors::ValidatedJson, shared::state::AppState};
+use crate::{Error, ErrorKind, Result, interface::extractors::ValidatedJson, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {
@@ -28,8 +27,16 @@ pub fn gen_service(state: AppState) -> Router {
         (status = 200)
     )
 )]
-pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<StatusCode, AppError> {
-    let token = state.service.email_auth.register(&input.name, &input.email, &input.password).await?;
+pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<StatusCode> {
+    let token = match state.service.email_auth.register(&input.name, &input.email, &input.password).await {
+        Ok(value) => value,
+        Err(e) => {
+            if *e.kind() == omnius_opxs_auth::ErrorKind::Duplicated {
+                return Ok(StatusCode::OK);
+            }
+            return Err(e.into());
+        }
+    };
 
     let email_confirm_url = Url::parse_with_params(
         format!("{}auth/register/email/confirm", state.conf.web.origin.as_str()).as_str(),
@@ -71,7 +78,7 @@ pub struct RegisterInput {
         (status = 200)
     )
 )]
-pub async fn confirm(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<ConfirmInput>) -> Result<Json<AuthToken>, AppError> {
+pub async fn confirm(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<ConfirmInput>) -> Result<Json<AuthToken>> {
     let user_id = state.service.email_auth.confirm(&input.token).await?;
     let auth_token = state.service.token.create(&user_id).await?;
 
@@ -90,7 +97,7 @@ pub struct ConfirmInput {
         (status = 200)
     )
 )]
-pub async fn unregister(State(state): State<AppState>, user: User) -> Result<StatusCode, AppError> {
+pub async fn unregister(State(state): State<AppState>, user: User) -> Result<StatusCode> {
     state.service.email_auth.unregister(user.id.as_str()).await?;
     Ok(StatusCode::OK)
 }
@@ -103,8 +110,16 @@ pub async fn unregister(State(state): State<AppState>, user: User) -> Result<Sta
         (status = 200, body = AuthToken)
     )
 )]
-async fn login(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<LoginInput>) -> Result<Json<AuthToken>, AppError> {
-    let user_id = state.service.email_auth.login(&input.email, &input.password).await?;
+async fn login(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<LoginInput>) -> Result<Json<AuthToken>> {
+    let user_id = match state.service.email_auth.login(&input.email, &input.password).await {
+        Ok(value) => value,
+        Err(e) => {
+            if *e.kind() == omnius_opxs_auth::ErrorKind::NotFound {
+                return Err(Error::new(ErrorKind::Unauthorized));
+            }
+            return Err(e.into());
+        }
+    };
     let auth_token = state.service.token.create(&user_id).await?;
 
     Ok(Json(auth_token))

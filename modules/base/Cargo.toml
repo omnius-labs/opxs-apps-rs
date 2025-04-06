@@ -3,7 +3,6 @@ name = "omnius-opxs-base"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
-build = "build.rs"
 
 [features]
 stable-test = []
@@ -22,7 +21,6 @@ aws-sdk-sqs = { workspace = true }
 aws-sdk-sesv2 = { workspace = true }
 
 chrono = { workspace = true }
-anyhow = { workspace = true }
 async-trait = { workspace = true }
 axum = { workspace = true }
 axum-extra = { workspace = true }

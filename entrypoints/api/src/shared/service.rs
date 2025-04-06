@@ -13,7 +13,6 @@ use tracing::error;
 use omnius_core_base::{
     clock::{Clock, ClockUtc},
     random_bytes::{RandomBytesProvider, RandomBytesProviderImpl},
-    terminable::Terminable,
     tsid::{TsidProvider, TsidProviderImpl},
 };
 use omnius_core_cloud::aws::{s3::S3ClientImpl, sqs::SqsSenderImpl};
@@ -25,11 +24,12 @@ use omnius_opxs_auth::{
     token::{TokenRepo, TokenService},
     user::{UserRepo, UserService},
 };
-use omnius_opxs_base::{AppConfig, AppInfo};
+use omnius_opxs_base::{AppConfig, AppInfo, util::Terminable};
 use omnius_opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, EmailSendJobCreator, EmailSendJobRepository};
 use omnius_opxs_file_convert::{FileConvertExecutor, FileConvertJobCreator, FileConvertJobRepository, ImageConverterImpl};
 
 use crate::{
+    Error, ErrorKind, Result,
     emulator::aws::{S3ClientEmulator, S3ClientEmulatorOption, SesSenderEmulator, SqsSenderEmulator},
     service::health::{repo::WorldRepo, service::HealthService},
 };
@@ -57,7 +57,7 @@ pub struct AppService {
 }
 
 impl AppService {
-    pub async fn new_for_cloud(info: &AppInfo, conf: &AppConfig, db: Arc<PgPool>) -> anyhow::Result<Self> {
+    pub async fn new_for_cloud(info: &AppInfo, conf: &AppConfig, db: Arc<PgPool>) -> Result<Self> {
         let clock = Arc::new(ClockUtc);
         let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
         let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
@@ -75,7 +75,7 @@ impl AppService {
                 .convert
                 .s3
                 .as_ref()
-                .ok_or_else(|| anyhow::anyhow!("s3 config is not found"))?
+                .ok_or_else(|| Error::new(ErrorKind::NotFound).message("s3 config is not found"))?
                 .bucket
                 .clone(),
         });
@@ -149,7 +149,7 @@ impl AppService {
         })
     }
 
-    pub async fn new_for_local(info: &AppInfo, conf: &AppConfig, db: Arc<PgPool>) -> anyhow::Result<Self> {
+    pub async fn new_for_local(info: &AppInfo, conf: &AppConfig, db: Arc<PgPool>) -> Result<Self> {
         let clock = Arc::new(ClockUtc);
         let random_bytes_provider = Arc::new(Mutex::new(RandomBytesProviderImpl::new()));
         let tsid_provider = Arc::new(Mutex::new(TsidProviderImpl::new(ClockUtc, RandomBytesProviderImpl::new(), 16)));
@@ -313,20 +313,20 @@ impl AppService {
 
 #[async_trait]
 impl Terminable for AppService {
-    async fn terminate(&self) -> anyhow::Result<()> {
+    async fn terminate(&self) {
         if let Some(ts) = self.terminables.lock().await.take() {
             for t in ts {
-                t.terminate().await?;
+                t.terminate().await;
             }
         }
 
         if let Some(js) = self.join_handles.lock().await.take() {
             for j in js {
                 j.abort();
-                j.fuse().await?;
+                if let Err(e) = j.fuse().await {
+                    error!("{:?}", e);
+                }
             }
         }
-
-        Ok(())
     }
 }

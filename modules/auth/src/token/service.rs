@@ -5,9 +5,12 @@ use parking_lot::Mutex;
 
 use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 
-use omnius_opxs_base::{AppError, JwtConfig};
+use omnius_opxs_base::JwtConfig;
 
-use crate::{crypto::jwt, model::AuthToken};
+use crate::{
+    Result,
+    {crypto::jwt, model::AuthToken},
+};
 
 use super::TokenRepo;
 
@@ -22,7 +25,7 @@ pub struct TokenService {
 }
 
 impl TokenService {
-    pub async fn create(&self, user_id: &str) -> Result<AuthToken, AppError> {
+    pub async fn create(&self, user_id: &str) -> Result<AuthToken> {
         let now = self.clock.now();
 
         let access_token_expires_at = now + ACCESS_TOKEN_EXPIRES_IN;
@@ -42,11 +45,11 @@ impl TokenService {
         })
     }
 
-    pub async fn delete(&self, user_id: &str) -> Result<(), AppError> {
+    pub async fn delete(&self, user_id: &str) -> Result<()> {
         self.token_repo.delete_token(user_id).await
     }
 
-    pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken, AppError> {
+    pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken> {
         let now = self.clock.now();
         let user_id = self.token_repo.get_user_id(refresh_token).await?;
 
@@ -78,12 +81,9 @@ mod tests {
     use omnius_core_migration::postgres::PostgresMigrator;
     use omnius_core_testkit::containers::postgres::PostgresContainer;
 
-    use omnius_opxs_base::JwtSecretConfig;
+    use omnius_opxs_base::{JwtSecretConfig, shared::POSTGRES_VERSION};
 
-    use crate::{
-        model::{UserAuthenticationType, UserRole},
-        shared::POSTGRES_VERSION,
-    };
+    use crate::model::{UserAuthenticationType, UserRole};
 
     use super::*;
 

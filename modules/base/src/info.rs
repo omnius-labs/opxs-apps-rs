@@ -1,5 +1,7 @@
 use std::{env, fmt};
 
+use crate::{Error, ErrorKind, Result};
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RunMode {
     Local,
@@ -7,12 +9,12 @@ pub enum RunMode {
 }
 
 impl RunMode {
-    pub fn from_env() -> anyhow::Result<Self> {
+    pub fn from_env() -> Result<Self> {
         let mode = env::var("RUN_MODE")?;
         match mode.as_str() {
             "local" => Ok(RunMode::Local),
             "dev" => Ok(RunMode::Dev),
-            _ => anyhow::bail!("invalid RUN_MODE: {}", mode),
+            _ => Err(Error::new(ErrorKind::InvalidFormat).message(format!("invalid RUN_MODE: {}", mode))),
         }
     }
 }
@@ -34,7 +36,7 @@ pub struct AppInfo {
 }
 
 impl AppInfo {
-    pub fn new(app_name: &str, mode: RunMode) -> anyhow::Result<Self> {
+    pub fn new(app_name: &str, mode: RunMode) -> Result<Self> {
         let git_tag = option_env!("GIT_TAG").unwrap_or("unknown").to_string();
 
         Ok(Self {

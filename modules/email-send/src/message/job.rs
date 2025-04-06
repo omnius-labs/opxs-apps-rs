@@ -136,7 +136,7 @@ impl sqlx::Encode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
 }
 
 impl sqlx::Decode<'_, sqlx::Postgres> for EmailSendJobBatchDetailStatus {
-    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    fn decode(value: sqlx::postgres::PgValueRef<'_>) -> std::result::Result<Self, sqlx::error::BoxDynError> {
         match value.as_str() {
             Ok("Preparing") => Ok(EmailSendJobBatchDetailStatus::Preparing),
             Ok("Waiting") => Ok(EmailSendJobBatchDetailStatus::Waiting),

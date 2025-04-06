@@ -3,21 +3,21 @@ debug = 1
 
 [workspace]
 members = [
-    "./refs/core-rs/modules/base",
-    "./refs/core-rs/modules/cloud",
-    "./refs/core-rs/modules/image",
-    "./refs/core-rs/modules/migration",
-    "./refs/core-rs/modules/testkit",
+  "./refs/core-rs/modules/base",
+  "./refs/core-rs/modules/cloud",
+  "./refs/core-rs/modules/image",
+  "./refs/core-rs/modules/migration",
+  "./refs/core-rs/modules/testkit",
 
-    "./modules/auth",
-    "./modules/base",
-    "./modules/email-send",
-    "./modules/file-convert",
+  "./modules/auth",
+  "./modules/base",
+  "./modules/email-send",
+  "./modules/file-convert",
 
-    "./entrypoints/api",
-    "./entrypoints/batch-email-send",
-    "./entrypoints/batch-email-send-feedback",
-    "./entrypoints/batch-file-convert",
+  "./entrypoints/api",
+  "./entrypoints/batch-email-send",
+  "./entrypoints/batch-email-send-feedback",
+  "./entrypoints/batch-file-convert",
 ]
 exclude = ["refs/core-rs"]
 resolver = "2"
@@ -30,11 +30,11 @@ version = "0.1.0"
 [workspace.dependencies]
 omnius-core-base = { path = "./refs/core-rs/modules/base" }
 omnius-core-cloud = { path = "./refs/core-rs/modules/cloud", features = [
-    "aws",
+  "aws",
 ] }
 omnius-core-image = { path = "./refs/core-rs/modules/image" }
 omnius-core-migration = { path = "./refs/core-rs/modules/migration", features = [
-    "postgres",
+  "postgres",
 ] }
 omnius-core-testkit = { path = "./refs/core-rs/modules/testkit" }
 
@@ -45,9 +45,11 @@ omnius-opxs-file-convert = { path = "./modules/file-convert" }
 
 lambda_runtime = "0.13.0"
 aws_lambda_events = { version = "0.15.1", default-features = false, features = [
-    "sns",
-    "sqs",
+  "sns",
+  "sqs",
 ] }
+
+aws-smithy-runtime-api = "1.7.4"
 aws-config = "1.5.12"
 aws-sdk-secretsmanager = "1.56.0"
 aws-sdk-s3 = "1.67.0"
@@ -55,7 +57,7 @@ aws-sdk-sqs = "1.52.1"
 aws-sdk-sesv2 = "1.59.0"
 
 gcloud-sdk = { version = "0.25.8", features = [
-    "google-cloud-secretmanager-v1",
+  "google-cloud-secretmanager-v1",
 ] }
 
 rand = "0.8.5"
@@ -65,10 +67,10 @@ anyhow = { version = "1.0.95", features = ["backtrace"] }
 async-trait = "0.1.86"
 axum = { version = "0.7.9", features = ["macros"] }
 axum-extra = { version = "0.9.6", features = [
-    "cookie",
-    "cookie-signed",
-    "cookie-private",
-    "typed-header",
+  "cookie",
+  "cookie-signed",
+  "cookie-private",
+  "typed-header",
 ] }
 chrono = { version = "0.4.39", features = ["serde"] }
 config = "0.14.1"
@@ -83,13 +85,14 @@ tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
 uuid = { version = "1.13.1", features = ["serde", "v4"] }
 sqlx = { version = "0.8.3", features = [
-    "postgres",
-    "chrono",
-    "json",
-    "macros",
-    "runtime-tokio-rustls",
+  "postgres",
+  "sqlite",
+  "chrono",
+  "json",
+  "macros",
+  "runtime-tokio-rustls",
 ] }
-tower-http = { version = "0.6.2", features = ["cors"] }
+tower-http = { version = "0.6.2", features = ["cors", "trace", "request-id"] }
 utoipa = "4.2.3"
 utoipa-swagger-ui = { version = "7.1.0", features = ["axum"] }
 ring = "0.17.9"
@@ -114,3 +117,4 @@ axum-aws-lambda = "0.9.0"
 lambda_http = "0.13.0"
 http = "1.2.0"
 tempfile = "3.17.0"
+backtrace = "0.3.74"

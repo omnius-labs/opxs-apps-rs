@@ -3,7 +3,7 @@ use std::{path::Path, sync::Arc};
 use aws_config::BehaviorVersion;
 use aws_lambda_events::sqs::SqsEvent;
 use chrono::Duration;
-use lambda_runtime::{Error, LambdaEvent, run, service_fn};
+use lambda_runtime::{LambdaEvent, run, service_fn};
 use parking_lot::Mutex;
 use sqlx::postgres::PgPoolOptions;
 use tracing::info;
@@ -17,7 +17,7 @@ use omnius_opxs_file_convert::{FileConvertExecutor, FileConvertJobRepository, Im
 
 const APP_NAME: &str = "opxs-batch-file-convert";
 
-async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
+async fn handler_sub(job_ids: &[String]) -> std::result::Result<(), lambda_runtime::Error> {
     let mode = RunMode::from_env()?;
     let info = AppInfo::new(APP_NAME, mode)?;
     info!("info: {}", info);
@@ -50,7 +50,7 @@ async fn handler_sub(job_ids: &[String]) -> Result<(), Error> {
     Ok(())
 }
 
-async fn handler(event: LambdaEvent<serde_json::Value>) -> Result<(), Error> {
+async fn handler(event: LambdaEvent<serde_json::Value>) -> std::result::Result<(), lambda_runtime::Error> {
     let (event, _context) = event.into_parts();
 
     let mut job_ids: Vec<String> = Vec::new();
@@ -89,7 +89,7 @@ async fn handler(event: LambdaEvent<serde_json::Value>) -> Result<(), Error> {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> std::result::Result<(), lambda_runtime::Error> {
     if cfg!(debug_assertions) {
         let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=off"));
         tracing_subscriber::fmt().with_env_filter(filter).with_target(false).init();

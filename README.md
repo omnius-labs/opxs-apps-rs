@@ -27,7 +27,13 @@ To run the Opxs API locally, you need to set up your environment first.
 
 ### Running Locally
 
-#### 1. Set the image converter directory path:
+#### 1. Start PostgreSQL:
+
+```sh
+docker compose up --build
+```
+
+#### 2. Set the image converter directory path:
 
 Download the zip file from the following URL and place it in a local directory.
 
@@ -36,19 +42,15 @@ https://github.com/omnius-labs/image-converter-cs/releases
 Set the path of the placed directory as an environment variable.
 
 ```sh
-export IMAGE_CONVERTER_DIR="image_converter_dir"
+export IMAGE_CONVERTER_DIR="xxx"
+export GOOGLE_AUTH_CLIENT_ID="xxx"
+export GOOGLE_AUTH_CLIENT_SECRET="xxx"
 ```
 
-#### 2. Start the Opxs API:
+#### 3. Start the Opxs API:
 
 ```sh
 RUN_MODE=local cargo make watch
-```
-
-#### 3. Start PostgreSQL:
-
-```sh
-docker compose up --build
 ```
 
 Access the API documentation locally at:

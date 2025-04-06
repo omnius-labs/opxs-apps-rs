@@ -11,9 +11,12 @@ use omnius_opxs_base::{AppConfig, AppInfo, RunMode, WorldValidator};
 use crate::shared::state::AppState;
 
 mod emulator;
+mod error;
 mod interface;
 mod service;
 mod shared;
+
+pub use error::*;
 
 const APP_NAME: &str = "opxs-api";
 

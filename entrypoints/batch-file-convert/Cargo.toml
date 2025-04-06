@@ -3,6 +3,7 @@ name = "omnius-opxs-batch-file-convert"
 version = { workspace = true }
 edition = { workspace = true }
 authors = { workspace = true }
+build = "build.rs"
 
 [features]
 stable-test = []
