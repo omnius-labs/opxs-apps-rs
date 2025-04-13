@@ -10,7 +10,7 @@ use validator::Validate;
 
 use omnius_opxs_auth::model::{AuthToken, User};
 
-use crate::{Result, interface::extractors::ValidatedJson, shared::state::AppState};
+use crate::{interface::extractors::ValidatedJson, prelude::*, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {

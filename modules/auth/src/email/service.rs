@@ -8,8 +8,8 @@ use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 use omnius_opxs_base::JwtConfig;
 
 use crate::{
-    Error, ErrorKind, Result,
     crypto::{jwt, kdf::Kdf},
+    prelude::*,
 };
 
 use super::EmailAuthRepo;

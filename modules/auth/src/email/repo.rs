@@ -7,8 +7,8 @@ use sqlx::PgPool;
 use omnius_core_base::{clock::Clock, tsid::TsidProvider};
 
 use crate::{
-    Error, ErrorKind, Result,
     model::{EmailUser, UserAuthenticationType, UserRole},
+    prelude::*,
 };
 
 pub struct EmailAuthRepo {

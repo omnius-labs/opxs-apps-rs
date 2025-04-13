@@ -8,7 +8,7 @@ use tokio::{
     process::Command,
 };
 
-use crate::{Error, ErrorKind, FileConvertImageInputFileType, FileConvertImageOutputFileType, Result};
+use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType, prelude::*};
 
 #[async_trait]
 pub trait ImageConverter {

@@ -7,8 +7,8 @@ use sqlx::PgPool;
 use omnius_core_base::{clock::Clock, tsid::TsidProvider};
 
 use crate::{
-    Error, ErrorKind, Result,
     model::{User, UserAuthenticationType, UserRole},
+    prelude::*,
 };
 
 pub struct ProviderAuthRepo {

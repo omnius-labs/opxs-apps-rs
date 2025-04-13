@@ -6,7 +6,7 @@ use serde::Serialize;
 use omnius_core_base::clock::Clock;
 use omnius_core_cloud::aws::s3::S3Client;
 
-use crate::{FileConvertJobStatus, FileConvertJobType, Result};
+use crate::{FileConvertJobStatus, FileConvertJobType, prelude::*};
 
 use super::FileConvertJobRepository;
 

@@ -8,7 +8,7 @@ use omnius_core_base::{clock::Clock, random_bytes::RandomBytesProvider};
 use omnius_opxs_base::JwtConfig;
 
 use crate::{
-    Result,
+    prelude::*,
     {crypto::jwt, model::AuthToken},
 };
 

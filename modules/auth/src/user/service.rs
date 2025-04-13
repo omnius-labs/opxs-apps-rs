@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{Result, model::User};
+use crate::{model::User, prelude::*};
 
 use super::UserRepo;
 

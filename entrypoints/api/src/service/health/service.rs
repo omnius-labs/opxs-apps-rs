@@ -5,7 +5,7 @@ use serde_json::{Value, json};
 
 use super::repo::WorldRepo;
 
-use crate::Result;
+use crate::prelude::*;
 
 #[derive(Clone)]
 pub struct HealthService {

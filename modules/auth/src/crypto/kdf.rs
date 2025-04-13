@@ -5,7 +5,7 @@ use ring::{
     rand::{self, SecureRandom},
 };
 
-use crate::{Error, ErrorKind, Result};
+use crate::prelude::*;
 
 #[derive(Clone)]
 pub struct Kdf {

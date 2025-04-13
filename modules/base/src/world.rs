@@ -6,7 +6,7 @@ use serde_json::json;
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{PgPool, Row};
 
-use crate::{AppInfo, Error, ErrorKind, NotifyConfig, Result};
+use crate::{AppInfo, NotifyConfig, prelude::*};
 
 pub struct WorldValidator {
     info: AppInfo,

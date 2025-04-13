@@ -3,8 +3,6 @@ use backtrace::Backtrace;
 use serde::Serialize;
 use serde_json::json;
 
-pub type Result<T> = std::result::Result<T, Error>;
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
     IoError,

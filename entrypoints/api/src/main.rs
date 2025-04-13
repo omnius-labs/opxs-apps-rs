@@ -13,10 +13,17 @@ use crate::shared::state::AppState;
 mod emulator;
 mod error;
 mod interface;
+mod prelude;
 mod service;
 mod shared;
 
+mod result {
+    #[allow(unused)]
+    pub type Result<T> = std::result::Result<T, crate::error::Error>;
+}
+
 pub use error::*;
+pub use result::*;
 
 const APP_NAME: &str = "opxs-api";
 

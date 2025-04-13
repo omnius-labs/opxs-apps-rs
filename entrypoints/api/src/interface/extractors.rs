@@ -13,7 +13,7 @@ use omnius_opxs_auth::{crypto::jwt, model::User};
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
-use crate::{Error, shared::state::AppState};
+use crate::{prelude::*, shared::state::AppState};
 
 #[async_trait]
 impl FromRequestParts<AppState> for User {

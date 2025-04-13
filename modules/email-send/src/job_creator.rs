@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use omnius_core_cloud::aws::sqs::SqsSender;
 
-use crate::Result;
+use crate::prelude::*;
 
 use super::{EmailConfirmRequestParam, EmailSendJobBatchSqsMessage, EmailSendJobRepository};
 

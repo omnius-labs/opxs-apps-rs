@@ -4,7 +4,7 @@ use reqwest::StatusCode;
 use serde::Deserialize;
 use serde_json::json;
 
-use crate::{Error, ErrorKind, Result};
+use crate::prelude::*;
 
 #[async_trait]
 pub trait GoogleOAuth2Provider {

@@ -3,7 +3,7 @@ use std::path::Path;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
-use crate::{FileConvertMetaInputFileType, FileConvertMetaOutputFileType, Result};
+use crate::{FileConvertMetaInputFileType, FileConvertMetaOutputFileType, prelude::*};
 
 #[async_trait]
 pub trait MetaConverter {

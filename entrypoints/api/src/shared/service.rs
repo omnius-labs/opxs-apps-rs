@@ -29,8 +29,8 @@ use omnius_opxs_email_send::{EmailSendExecutor, EmailSendJobBatchSqsMessage, Ema
 use omnius_opxs_file_convert::{FileConvertExecutor, FileConvertJobCreator, FileConvertJobRepository, ImageConverterImpl};
 
 use crate::{
-    Error, ErrorKind, Result,
     emulator::aws::{S3ClientEmulator, S3ClientEmulatorOption, SesSenderEmulator, SqsSenderEmulator},
+    prelude::*,
     service::health::{repo::WorldRepo, service::HealthService},
 };
 

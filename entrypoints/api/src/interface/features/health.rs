@@ -1,7 +1,7 @@
 use axum::{Json, extract::State};
 use serde_json::Value;
 
-use crate::{Result, shared::state::AppState};
+use crate::{prelude::*, shared::state::AppState};
 
 #[utoipa::path(
     get,

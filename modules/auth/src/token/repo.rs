@@ -5,7 +5,7 @@ use sqlx::PgPool;
 
 use omnius_core_base::clock::Clock;
 
-use crate::{Error, ErrorKind, Result, model::User};
+use crate::{model::User, prelude::*};
 
 pub struct TokenRepo {
     pub db: Arc<PgPool>,

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sqlx::PgPool;
 
-use crate::{Error, ErrorKind, Result, model::User};
+use crate::{model::User, prelude::*};
 
 pub struct UserRepo {
     pub db: Arc<PgPool>,

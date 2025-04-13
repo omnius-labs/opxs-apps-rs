@@ -6,7 +6,7 @@ use std::{
 use async_trait::async_trait;
 use parking_lot::Mutex;
 
-use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType, Result};
+use crate::{FileConvertImageInputFileType, FileConvertImageOutputFileType, prelude::*};
 
 use super::ImageConverter;
 

@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use crate::{EmailSendJobRepository, SesNotification};
-
-use crate::Result;
+use crate::{EmailSendJobRepository, SesNotification, prelude::*};
 
 #[allow(dead_code)]
 pub struct EmailSendFeedback {

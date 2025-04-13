@@ -7,7 +7,7 @@ use sqlx::{PgPool, postgres::PgPoolOptions};
 
 use omnius_opxs_base::{AppConfig, AppInfo, RunMode};
 
-use crate::Result;
+use crate::prelude::*;
 
 use super::service::AppService;
 

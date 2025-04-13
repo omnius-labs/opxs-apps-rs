@@ -14,7 +14,7 @@ use omnius_core_base::hook_err;
 
 use omnius_opxs_auth::model::{AuthToken, User};
 
-use crate::{Error, ErrorKind, Result, shared::state::AppState};
+use crate::{prelude::*, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {

@@ -12,7 +12,7 @@ use omnius_opxs_file_convert::{
     FileConvertImageInputFileType, FileConvertImageOutputFileType, FileConvertImageRequestParam, FileConvertJobStatus, FileConvertJobType,
 };
 
-use crate::{Result, interface::extractors::ValidatedJson, shared::state::AppState};
+use crate::{interface::extractors::ValidatedJson, prelude::*, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {

@@ -18,7 +18,7 @@ use tracing::Span;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::{Error, ErrorKind, Result, interface::features::*, shared::state::AppState};
+use crate::{interface::features::*, prelude::*, shared::state::AppState};
 
 pub struct WebServer;
 

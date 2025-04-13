@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sqlx::{PgPool, Row};
 
-use crate::{Error, ErrorKind, Result};
+use crate::prelude::*;
 
 pub struct WorldRepo {
     pub db: Arc<PgPool>,

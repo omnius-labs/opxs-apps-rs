@@ -4,7 +4,7 @@ use chrono::Utc;
 use omnius_core_base::clock::Clock;
 use sqlx::PgPool;
 
-use crate::{EmailSendJobBatchDetail, Error, ErrorKind, Result};
+use crate::{EmailSendJobBatchDetail, prelude::*};
 
 use super::{EmailConfirmRequestParam, EmailSendJob, EmailSendJobBatch, EmailSendJobBatchDetailStatus, EmailSendJobBatchStatus, EmailSendJobType};
 

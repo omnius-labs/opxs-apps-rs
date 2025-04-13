@@ -6,7 +6,7 @@ use parking_lot::Mutex;
 use serde::Serialize;
 use sqlx::PgPool;
 
-use crate::{Error, ErrorKind, FileConvertJob, FileConvertJobStatus, FileConvertJobType, Result};
+use crate::{FileConvertJob, FileConvertJobStatus, FileConvertJobType, prelude::*};
 
 pub struct FileConvertJobRepository {
     pub db: Arc<PgPool>,

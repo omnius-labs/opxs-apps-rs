@@ -6,7 +6,7 @@ use axum::{Json, Router, routing::get};
 
 use omnius_opxs_auth::model::User;
 
-use crate::{Result, shared::state::AppState};
+use crate::{prelude::*, shared::state::AppState};
 
 #[allow(unused)]
 pub fn gen_service(state: AppState) -> Router {

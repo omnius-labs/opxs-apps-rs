@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use omnius_opxs_base::AuthConfig;
 
-use crate::{Error, ErrorKind, Result, provider::ProviderAuthRepo};
+use crate::{prelude::*, provider::ProviderAuthRepo};
 
 use super::GoogleOAuth2Provider;
 
