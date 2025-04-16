@@ -40,7 +40,6 @@ sqlx = { workspace = true }
 tower-http = { workspace = true }
 utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
-config = { workspace = true }
 ring = { workspace = true }
 hex = { workspace = true }
 urlencoding = { workspace = true }

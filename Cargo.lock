@@ -2957,7 +2957,6 @@ dependencies = [
  "axum-extra",
  "base64 0.22.1",
  "chrono",
- "config",
  "futures",
  "futures-util",
  "headers",
