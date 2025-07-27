@@ -16,7 +16,6 @@ use axum::{
 };
 use chrono::{DateTime, Duration, Utc};
 use futures::{FutureExt, TryStreamExt};
-use omnius_opxs_base::util::Terminable;
 use tokio::{
     fs,
     io::BufWriter,
@@ -29,6 +28,7 @@ use tracing::{error, info};
 use url::Url;
 
 use omnius_core_cloud::{Result, aws::s3::S3Client};
+use omnius_opxs_base::util::Terminable;
 
 #[allow(unused)]
 #[derive(Debug, Clone)]
