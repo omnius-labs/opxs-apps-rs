@@ -5,10 +5,6 @@
     "author": "Lyrise",
     "license": "MIT",
     "files": ["openapi.yml"],
-    "publishConfig": {
-        "access": "public" ,
-        "registry": "https://npm.pkg.github.com"
-    },
     "devDependencies": {
         "@openapitools/openapi-generator-cli": "^2.21.4"
     }
