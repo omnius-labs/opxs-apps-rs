@@ -1,11 +1,13 @@
 {
-    "name": "@omnius-labs/opxs-openapi",
-    "version": "0.0.1",
-    "description": "",
     "author": "Lyrise",
-    "license": "MIT",
-    "files": ["openapi.yml"],
+    "description": "",
     "devDependencies": {
         "@openapitools/openapi-generator-cli": "^2.21.4"
-    }
+    },
+    "files": [
+        "openapi.yml"
+    ],
+    "license": "MIT",
+    "name": "@omnius-labs/opxs-openapi",
+    "version": "0.0.2"
 }
