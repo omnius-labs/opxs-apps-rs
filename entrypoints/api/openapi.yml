@@ -1,0 +1,240 @@
+openapi: 3.1.0
+info:
+  title: omnius-opxs-api
+  contact:
+    name: Lyrise
+    email: lyrise1984@gmail.com
+  version: 0.0.1
+paths:
+  "/api/health":
+    get:
+      tags:
+      - health
+      operationId: check
+      responses:
+        '200':
+          description: ''
+  "/api/v1/auth/email/login":
+    post:
+      tags:
+      - auth::email
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoginInput"
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AuthToken"
+  "/api/v1/auth/email/register":
+    post:
+      tags:
+      - auth::email
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RegisterInput"
+        required: true
+      responses:
+        '200':
+          description: ''
+  "/api/v1/auth/google/login":
+    post:
+      tags:
+      - auth::google
+      operationId: login
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AuthToken"
+  "/api/v1/auth/google/nonce":
+    get:
+      tags:
+      - auth::google
+      operationId: nonce
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/NonceOutput"
+  "/api/v1/auth/google/register":
+    post:
+      tags:
+      - auth::google
+      operationId: register
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AuthToken"
+  "/api/v1/auth/me":
+    get:
+      tags:
+      - auth
+      operationId: me
+      responses:
+        '200':
+          description: ''
+      security:
+      - bearer_token: []
+  "/api/v1/file-convert/image/status":
+    get:
+      tags:
+      - file_convert::image
+      operationId: status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/StatusInput"
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StatusOutput"
+  "/api/v1/file-convert/image/upload":
+    post:
+      tags:
+      - file_convert::image
+      operationId: upload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UploadInput"
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/UploadOutput"
+
+components:
+  securitySchemes:
+    bearer_token:
+      type: http
+      scheme: bearer
+  schemas:
+    LoginInput:
+      type: object
+      required:
+      - redirect_uri
+      - code
+      properties:
+        code:
+          type: string
+        redirect_uri:
+          type: string
+    NonceOutput:
+      type: object
+      required:
+      - value
+      properties:
+        value:
+          type: string
+    RegisterInput:
+      type: object
+      required:
+      - redirect_uri
+      - code
+      properties:
+        code:
+          type: string
+        redirect_uri:
+          type: string
+    StatusInput:
+      type: object
+      required:
+      - job_id
+      properties:
+        job_id:
+          type: string
+    StatusOutput:
+      type: object
+      required:
+      - status
+      properties:
+        download_url:
+          type: string
+          nullable: true
+        status:
+          "$ref": "#/components/schemas/FileConvertJobStatus"
+    FileConvertJobStatus:
+      type: string
+      enum:
+      - Unknown
+      - Preparing
+      - Waiting
+      - Processing
+      - Completed
+      - Rejected
+      - Failed
+    UploadInput:
+      type: object
+      required:
+      - in_file_name
+      - in_type
+      - out_file_name
+      - out_type
+      properties:
+        in_file_name:
+          type: string
+        in_type:
+          "$ref": "#/components/schemas/FileConvertImageInputFileType"
+        out_file_name:
+          type: string
+        out_type:
+          "$ref": "#/components/schemas/FileConvertImageOutputFileType"
+    FileConvertImageInputFileType:
+      type: string
+      enum:
+      - unknown
+      - gif
+      - jpg
+      - png
+      - webp
+      - bmp
+      - heif
+      - heic
+      - avif
+      - svg
+    UploadOutput:
+      type: object
+      required:
+      - job_id
+      - upload_url
+      properties:
+        job_id:
+          type: string
+        upload_url:
+          type: string
+    FileConvertImageOutputFileType:
+      type: string
+      enum:
+      - gif
+      - jpg
+      - png
+      - webp
+      - bmp
+      - avif
+      - svg

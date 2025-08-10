@@ -11,6 +11,7 @@
         "dtolnay",
         "HMAC",
         "jsonwebtoken",
+        "Lyrise",
         "nanos",
         "omnius",
         "oneshot",
