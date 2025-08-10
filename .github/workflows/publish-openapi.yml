@@ -1,0 +1,24 @@
+name: publish-openapi
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: true
+          cache-dependency-path: ./entrypoints/api/package-lock.json
+      - name: Publish
+        working-directory: ./entrypoints/api/
+        run: |
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
