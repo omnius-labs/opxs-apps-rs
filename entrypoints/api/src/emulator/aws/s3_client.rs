@@ -134,10 +134,7 @@ async fn put_content(
     State(state): State<S3ClientEmulatorState>,
     request: axum::extract::Request,
 ) -> impl IntoResponse {
-    let stream = request
-        .into_body()
-        .into_data_stream()
-        .map_err(|err| io::Error::new(io::ErrorKind::Other, err));
+    let stream = request.into_body().into_data_stream().map_err(io::Error::other);
     let mut body_reader = StreamReader::new(stream);
 
     info!("put_content: key={}", params.key);
@@ -175,14 +172,14 @@ impl S3Client for S3ClientEmulator {
         let encoded_key = urlencoding::encode(key).to_string();
         let encoded_file_name = urlencoding::encode(file_name).to_string();
         let mut url = self.option.base_url.clone();
-        url.set_query(Some(&format!("key={}&file_name={}", encoded_key, encoded_file_name)));
+        url.set_query(Some(&format!("key={encoded_key}&file_name={encoded_file_name}")));
         Ok(url.to_string())
     }
 
     async fn gen_put_presigned_uri(&self, key: &str, _start_time: DateTime<Utc>, _expires_in: Duration) -> Result<String> {
         let encoded_key = urlencoding::encode(key).to_string();
         let mut url = self.option.base_url.clone();
-        url.set_query(Some(&format!("key={}", encoded_key)));
+        url.set_query(Some(&format!("key={encoded_key}")));
         Ok(url.to_string())
     }
 
@@ -240,7 +237,7 @@ mod tests {
         let http_client = reqwest::Client::new();
         let content = http_client.get(url).send().await?.text().await?;
 
-        println!("{}", content);
+        println!("{content}");
 
         Ok(())
     }
@@ -268,7 +265,7 @@ mod tests {
         let _ = http_client.put(url).body("put hello world").send().await?;
         let content = fs::read_to_string("/tmp/put_test").await?;
 
-        println!("{}", content);
+        println!("{content}");
 
         Ok(())
     }
@@ -298,7 +295,7 @@ mod tests {
 
         let content = fs::read_to_string(&out_file_path).await?;
 
-        println!("{}", content);
+        println!("{content}");
 
         Ok(())
     }
@@ -328,7 +325,7 @@ mod tests {
 
         let content = fs::read_to_string(working_dir.path().join("key")).await?;
 
-        println!("{}", content);
+        println!("{content}");
 
         Ok(())
     }

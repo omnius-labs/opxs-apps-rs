@@ -1,5 +1,5 @@
 use axum::{
-    Json, RequestPartsExt as _, async_trait,
+    Json, RequestPartsExt as _,
     extract::{FromRequest, FromRequestParts, Request, rejection::JsonRejection},
     http::request::Parts,
 };
@@ -14,7 +14,6 @@ use omnius_opxs_auth::{crypto::jwt, model::User};
 
 use crate::{prelude::*, shared::state::AppState};
 
-#[async_trait]
 impl FromRequestParts<AppState> for User {
     type Rejection = ApiErrorCode;
 
@@ -54,7 +53,6 @@ impl FromRequestParts<AppState> for User {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedJson<T>(pub T);
 
-#[async_trait]
 impl<T, S> FromRequest<S> for ValidatedJson<T>
 where
     S: Send + Sync,

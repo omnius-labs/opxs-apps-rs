@@ -16,7 +16,7 @@ impl RunMode {
             "dev" => Ok(RunMode::Dev),
             _ => Err(Error::builder()
                 .kind(ErrorKind::InvalidFormat)
-                .message(format!("invalid RUN_MODE: {}", mode))
+                .message(format!("invalid RUN_MODE: {mode}"))
                 .build()),
         }
     }

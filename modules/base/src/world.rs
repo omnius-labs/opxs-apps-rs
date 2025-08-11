@@ -194,13 +194,13 @@ mod tests {
         }
 
         let conf = AppConfig::load(&info).await.unwrap();
-        println!("{:?}", conf);
+        println!("{conf:?}");
 
         let clock = Arc::new(ClockUtc {});
 
         let world_verifier = WorldValidator::new(&info, &container.connection_string, clock).await.unwrap();
         let res = world_verifier.notify(&conf.notify.clone().unwrap()).await;
-        println!("{:?}", res);
+        println!("{res:?}");
         assert!(res.is_ok());
 
         let res = world_verifier.notify(&conf.notify.unwrap()).await;

@@ -17,14 +17,13 @@ impl TokenRepo {
         let now = self.clock.now();
         sqlx::query(
             r#"
-INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5);
+INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at)
+    VALUES ($1, $2, $3, $4);
 "#,
         )
         .bind(refresh_token)
         .bind(user_id)
         .bind(refresh_token_expires_at)
-        .bind(now)
         .bind(now)
         .execute(self.db.as_ref())
         .await?;
@@ -45,14 +44,13 @@ INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, upda
 
         sqlx::query(
             r#"
-INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5);
+INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at)
+    VALUES ($1, $2, $3, $4);
 "#,
         )
         .bind(refresh_token)
         .bind(user_id)
         .bind(refresh_token_expires_at)
-        .bind(now)
         .bind(now)
         .execute(&mut *tx)
         .await?;

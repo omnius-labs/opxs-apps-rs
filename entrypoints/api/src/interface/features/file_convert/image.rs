@@ -36,7 +36,7 @@ pub fn gen_service(state: AppState) -> Router {
         ("bearer_token" = [])
     )
 )]
-pub async fn upload(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<UploadInput>) -> ApiResult<Json<UploadOutput>> {
+pub async fn upload(State(state): State<AppState>, user: User, ValidatedJson(input): ValidatedJson<UploadInput>) -> ApiResult<Json<UploadOutput>> {
     let job_id = state.service.tsid_provider.lock().create().to_string();
     let param = FileConvertImageRequestParam {
         in_type: input.in_type,
@@ -47,7 +47,7 @@ pub async fn upload(State(state): State<AppState>, ValidatedJson(input): Validat
         .image_convert_job_creator
         .create_job(
             &job_id,
-            None,
+            &user.id,
             &FileConvertJobType::Image,
             &param,
             &input.in_file_name,
@@ -93,13 +93,8 @@ pub struct UploadOutput {
         ("bearer_token" = [])
     )
 )]
-pub async fn status(State(state): State<AppState>, input: Query<StatusInput>, user: Option<User>) -> ApiResult<Json<StatusOutput>> {
-    let (status, download_url) = match state
-        .service
-        .image_convert_job_creator
-        .get_download_url(&input.job_id, user.map(|u| u.id).as_deref())
-        .await
-    {
+pub async fn status(State(state): State<AppState>, input: Query<StatusInput>, user: User) -> ApiResult<Json<StatusOutput>> {
+    let (status, download_url) = match state.service.image_convert_job_creator.get_download_url(&input.job_id, &user.id).await {
         Ok(v) => v,
         Err(e) => {
             warn!(error = ?e);

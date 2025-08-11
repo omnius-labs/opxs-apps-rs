@@ -18,7 +18,7 @@ impl FileConvertJobRepository {
     pub async fn create_job<TParam>(
         &self,
         job_id: &str,
-        user_id: Option<&str>,
+        user_id: &str,
         typ: &FileConvertJobType,
         param: &TParam,
         in_file_name: &str,
@@ -55,10 +55,25 @@ INSERT INTO file_convert_jobs (id, user_id, type, status, param, in_file_name, o
             r#"
 SELECT *
     FROM file_convert_jobs
-    WHERE id = $1
+    WHERE id = $1"#,
+        )
+        .bind(id)
+        .fetch_one(self.db.as_ref())
+        .await?;
+
+        Ok(res)
+    }
+
+    pub async fn get_job_by_user_id(&self, id: &str, user_id: &str) -> Result<FileConvertJob> {
+        let res: FileConvertJob = sqlx::query_as(
+            r#"
+SELECT *
+    FROM file_convert_jobs
+    WHERE id = $1, user_id = $2
 "#,
         )
         .bind(id)
+        .bind(user_id)
         .fetch_one(self.db.as_ref())
         .await?;
 

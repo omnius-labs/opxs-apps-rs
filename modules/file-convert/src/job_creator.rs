@@ -20,7 +20,7 @@ impl FileConvertJobCreator {
     pub async fn create_job<TParam>(
         &self,
         job_id: &str,
-        user_id: Option<&str>,
+        user_id: &str,
         typ: &FileConvertJobType,
         param: &TParam,
         in_file_name: &str,
@@ -37,7 +37,7 @@ impl FileConvertJobCreator {
         let expires_in = Duration::minutes(5);
         let upload_uri = self
             .s3_client
-            .gen_put_presigned_uri(format!("in/{}", job_id).as_str(), now, expires_in)
+            .gen_put_presigned_uri(format!("in/{job_id}").as_str(), now, expires_in)
             .await?;
 
         self.file_convert_job_repository.update_status_to_waiting(job_id).await?;
@@ -45,12 +45,8 @@ impl FileConvertJobCreator {
         Ok(upload_uri)
     }
 
-    pub async fn get_download_url(&self, job_id: &str, user_id: Option<&str>) -> Result<(FileConvertJobStatus, Option<String>)> {
-        let job = self.file_convert_job_repository.get_job(job_id).await?;
-
-        if job.user_id.as_deref() != user_id {
-            return Ok((job.status, None));
-        }
+    pub async fn get_download_url(&self, job_id: &str, user_id: &str) -> Result<(FileConvertJobStatus, Option<String>)> {
+        let job = self.file_convert_job_repository.get_job_by_user_id(job_id, user_id).await?;
 
         if job.status != FileConvertJobStatus::Completed {
             return Ok((job.status, None));
@@ -60,7 +56,7 @@ impl FileConvertJobCreator {
         let expires_in = Duration::minutes(10);
         let download_uri = self
             .s3_client
-            .gen_get_presigned_uri(format!("out/{}", job_id).as_str(), now, expires_in, &job.out_file_name)
+            .gen_get_presigned_uri(format!("out/{job_id}").as_str(), now, expires_in, &job.out_file_name)
             .await?;
 
         Ok((job.status, Some(download_uri)))

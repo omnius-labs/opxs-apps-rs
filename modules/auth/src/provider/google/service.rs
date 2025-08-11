@@ -157,7 +157,7 @@ mod tests {
 
         // register
         let user_id = auth_service.register(code, redirect_uri, nonce).await?;
-        println!("{}", user_id);
+        println!("{user_id}");
         assert_eq!(*oauth2_provider.clone().get_oauth2_token_param.lock().code, code.to_string());
         assert_eq!(
             *oauth2_provider.clone().get_oauth2_token_param.lock().redirect_uri,

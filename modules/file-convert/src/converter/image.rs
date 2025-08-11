@@ -83,7 +83,7 @@ impl ImageConverter for ImageConverterImpl {
         if !status.success() {
             return Err(Error::builder()
                 .kind(ErrorKind::ProcessFailed)
-                .message(format!("Process failed.\nstdout: {}\nstderr: {}", stdout_result, stderr_result))
+                .message(format!("Process failed.\nstdout: {stdout_result}\nstderr: {stderr_result}"))
                 .build());
         }
 

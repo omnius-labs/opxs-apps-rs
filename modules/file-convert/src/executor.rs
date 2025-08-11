@@ -47,11 +47,11 @@ impl FileConvertExecutor {
                 let working_dir = tempdir()?;
 
                 let in_type = param.in_type.clone();
-                let in_path = working_dir.path().join(format!("in_{}", job_id)).with_extension(in_type.to_extension());
+                let in_path = working_dir.path().join(format!("in_{job_id}")).with_extension(in_type.to_extension());
                 let out_type = param.out_type.clone();
-                let out_path = working_dir.path().join(format!("out_{}", job_id)).with_extension(out_type.to_extension());
+                let out_path = working_dir.path().join(format!("out_{job_id}")).with_extension(out_type.to_extension());
 
-                self.s3_client.get_object(format!("in/{}", job_id).as_str(), &in_path).await?;
+                self.s3_client.get_object(format!("in/{job_id}").as_str(), &in_path).await?;
 
                 info!("Start converting image: {:?}", param);
 
@@ -61,7 +61,7 @@ impl FileConvertExecutor {
 
                 info!("Finish converting image: {:?}", param);
 
-                self.s3_client.put_object(format!("out/{}", job_id).as_str(), &out_path).await?;
+                self.s3_client.put_object(format!("out/{job_id}").as_str(), &out_path).await?;
             }
             _ => todo!(),
         }
@@ -139,10 +139,10 @@ mod tests {
             out_type: FileConvertImageOutputFileType::Png,
         };
         let upload_url = job_creator
-            .create_job(&job_id, None, &FileConvertJobType::Image, &param, "test.jpg", "test.png")
+            .create_job(&job_id, "test_user_id", &FileConvertJobType::Image, &param, "test.jpg", "test.png")
             .await
             .unwrap();
-        println!("upload_url: {}", upload_url);
+        println!("upload_url: {upload_url}");
 
         let image_converter = Arc::new(ImageConverterMock::new());
         let executor = FileConvertExecutor {
@@ -153,11 +153,8 @@ mod tests {
         executor.execute(&[job_id.clone()]).await.unwrap();
 
         println!("{:?}", image_converter.convert_inputs.lock().first().unwrap());
-        assert_eq!(s3_client.get_object_inputs.lock().first().unwrap().key, format!("in/{}", job_id).as_str());
-        assert_eq!(
-            s3_client.put_object_inputs.lock().first().unwrap().key,
-            format!("out/{}", job_id).as_str()
-        );
+        assert_eq!(s3_client.get_object_inputs.lock().first().unwrap().key, format!("in/{job_id}").as_str());
+        assert_eq!(s3_client.put_object_inputs.lock().first().unwrap().key, format!("out/{job_id}").as_str());
 
         Ok(())
     }

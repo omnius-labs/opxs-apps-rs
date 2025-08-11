@@ -82,7 +82,7 @@ impl sqlx::Decode<'_, sqlx::Postgres> for FileConvertJobStatus {
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct FileConvertJob {
     pub id: String,
-    pub user_id: Option<String>,
+    pub user_id: String,
     #[sqlx(rename = "type")]
     pub typ: FileConvertJobType,
     pub status: FileConvertJobStatus,

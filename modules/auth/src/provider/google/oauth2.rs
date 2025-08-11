@@ -34,7 +34,7 @@ impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
             let message = res.text().await?;
             return Err(Error::builder()
                 .kind(ErrorKind::GcpError)
-                .message(format!("get oauth2 token error: {}", message))
+                .message(format!("get oauth2 token error: {message}"))
                 .build());
         }
 
@@ -57,7 +57,7 @@ impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
             let message = res.text().await?;
             return Err(Error::builder()
                 .kind(ErrorKind::GcpError)
-                .message(format!("get user info error: {}", message))
+                .message(format!("get user info error: {message}"))
                 .build());
         }
 
