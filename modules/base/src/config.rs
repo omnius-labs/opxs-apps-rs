@@ -211,10 +211,12 @@ trait ValueExt {
 
 impl ValueExt for serde_json::Value {
     fn get_str(&self, name: &str) -> Result<String> {
-        let res = self
-            .get(name)
-            .map(|n| n.as_str().unwrap_or_default().to_string())
-            .ok_or_else(|| Error::new(ErrorKind::NotFound).message(format!("{} is not found", name)))?;
+        let res = self.get(name).map(|n| n.as_str().unwrap_or_default().to_string()).ok_or_else(|| {
+            Error::builder()
+                .kind(ErrorKind::NotFound)
+                .message(format!("{} is not found", name))
+                .build()
+        })?;
         Ok(res)
     }
 }

@@ -1,17 +1,65 @@
 name: build-and-deploy-dev
 
 on:
-  workflow_run:
-    workflows: ["test"]
-    types:
-      - completed
+  push:
+    branches:
+      - "main"
+    paths:
+      - "**"
+      - "!docs/**"
+      - "!**.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Setup rust toolchain
+        uses: dtolnay/rust-toolchain@1.81.0
+        with:
+          components: clippy, rustfmt
+      - name: Setup cargo make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: latest
+      - name: Setup rust cache
+        uses: Swatinem/rust-cache@v2.8.0
+        with:
+          shared-key: lint
+      - name: Lint
+        run: cargo make lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Setup rust toolchain
+        uses: dtolnay/rust-toolchain@1.81.0
+        with:
+          components: clippy, rustfmt
+      - name: Setup cargo make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: latest
+      - name: Setup rust cache
+        uses: Swatinem/rust-cache@v2.8.0
+        with:
+          shared-key: test
+      - name: Test
+        run: cargo test --features "stable-test"
   build-and-deploy:
+    needs: [lint, test]
     runs-on: ubuntu-latest
     if: github.ref_name == 'main' && github.event.workflow_run.conclusion == 'success'
     steps:

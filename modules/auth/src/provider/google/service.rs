@@ -28,7 +28,7 @@ impl GoogleAuthService {
         let id_token_claims = oauth2_token_result.id_token_claims;
 
         if auth_nonce != id_token_claims.nonce {
-            return Err(Error::new(ErrorKind::Unauthorized).message("Nonce mismatch error"));
+            return Err(Error::builder().kind(ErrorKind::Unauthorized).message("Nonce mismatch error").build());
         }
 
         if let Ok(user) = self.auth_repo.get_user("google", &id_token_claims.sub).await {
@@ -60,7 +60,7 @@ impl GoogleAuthService {
         let id_token_claims = oauth2_token_result.id_token_claims;
 
         if auth_nonce != id_token_claims.nonce {
-            return Err(Error::new(ErrorKind::Unauthorized).message("Nonce mismatch error"));
+            return Err(Error::builder().kind(ErrorKind::Unauthorized).message("Nonce mismatch error").build());
         }
 
         let user = self.auth_repo.get_user("google", &id_token_claims.sub).await?;

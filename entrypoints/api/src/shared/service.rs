@@ -69,7 +69,7 @@ impl AppService {
                 .email
                 .sqs
                 .as_ref()
-                .ok_or_else(|| Error::new(ErrorKind::NotFound).message("sqs config is not found"))?
+                .ok_or_else(|| Error::builder().kind(ErrorKind::NotFound).message("sqs config is not found").build())?
                 .queue_url
                 .clone(),
             delay_seconds: None,
@@ -81,7 +81,7 @@ impl AppService {
                 .convert
                 .s3
                 .as_ref()
-                .ok_or_else(|| Error::new(ErrorKind::NotFound).message("s3 config is not found"))?
+                .ok_or_else(|| Error::builder().kind(ErrorKind::NotFound).message("s3 config is not found").build())?
                 .bucket
                 .clone(),
         });

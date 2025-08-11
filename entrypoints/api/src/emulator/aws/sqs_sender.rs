@@ -5,6 +5,8 @@ use tokio::sync::{Mutex as TokioMutex, mpsc};
 
 use omnius_core_cloud::{Error, ErrorKind, Result, aws::sqs::SqsSender};
 
+use crate::prelude::*;
+
 pub struct SqsSenderEmulator {
     message_sender: mpsc::Sender<String>,
     pub message_receiver: Arc<TokioMutex<mpsc::Receiver<String>>>,
@@ -16,7 +18,7 @@ impl SqsSender for SqsSenderEmulator {
         self.message_sender
             .send(message.to_string())
             .await
-            .map_err(|_| Error::new(ErrorKind::IoError))?;
+            .map_err(|_| Error::builder().kind(ErrorKind::IoError).build())?;
         Ok(())
     }
 }

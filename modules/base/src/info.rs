@@ -14,7 +14,10 @@ impl RunMode {
         match mode.as_str() {
             "local" => Ok(RunMode::Local),
             "dev" => Ok(RunMode::Dev),
-            _ => Err(Error::new(ErrorKind::InvalidFormat).message(format!("invalid RUN_MODE: {}", mode))),
+            _ => Err(Error::builder()
+                .kind(ErrorKind::InvalidFormat)
+                .message(format!("invalid RUN_MODE: {}", mode))
+                .build()),
         }
     }
 }

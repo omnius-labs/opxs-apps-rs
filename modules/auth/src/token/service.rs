@@ -49,9 +49,9 @@ impl TokenService {
         self.token_repo.delete_token(user_id).await
     }
 
-    pub async fn refresh(&self, refresh_token: &str) -> Result<AuthToken> {
+    pub async fn refresh(&self, old_refresh_token: &str) -> Result<AuthToken> {
         let now = self.clock.now();
-        let user_id = self.token_repo.get_user_id(refresh_token).await?;
+        let user_id = self.token_repo.get_user_id(old_refresh_token).await?;
 
         let access_token_expires_at = now + ACCESS_TOKEN_EXPIRES_IN;
         let refresh_token_expires_at = now + REFRESH_TOKEN_EXPIRES_IN;
@@ -60,7 +60,9 @@ impl TokenService {
         let access_token = jwt::sign(&self.jwt_conf.secret.current, &sub, access_token_expires_at, now)?;
         let refresh_token = hex::encode(self.random_bytes_provider.lock().get_bytes(32));
 
-        self.token_repo.create_token(&user_id, &refresh_token, &refresh_token_expires_at).await?;
+        self.token_repo
+            .create_token_and_delete_token(&user_id, &refresh_token, &refresh_token_expires_at, old_refresh_token)
+            .await?;
 
         Ok(AuthToken {
             access_token,

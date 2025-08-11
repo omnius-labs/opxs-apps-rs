@@ -116,7 +116,7 @@ SELECT u.id, u.name, u.role, e.email, e.password_hash, e.salt, u.created_at, u.u
         .fetch_optional(self.db.as_ref())
         .await?;
 
-        let user = user.ok_or_else(|| Error::new(ErrorKind::NotFound).message("user not found"))?;
+        let user = user.ok_or_else(|| Error::builder().kind(ErrorKind::NotFound).message("user not found").build())?;
         Ok(user)
     }
 

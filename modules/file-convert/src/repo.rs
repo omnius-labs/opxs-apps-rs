@@ -98,7 +98,7 @@ UPDATE file_convert_jobs
         .await?;
 
         if res.rows_affected() < 1 {
-            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
+            return Err(Error::builder().kind(ErrorKind::DatabaseError).message("no rows affected").build());
         }
 
         Ok(())
@@ -121,7 +121,7 @@ UPDATE file_convert_jobs
         .await?;
 
         if res.rows_affected() < 1 {
-            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
+            return Err(Error::builder().kind(ErrorKind::DatabaseError).message("no rows affected").build());
         }
 
         Ok(())

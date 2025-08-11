@@ -21,31 +21,39 @@ pub fn gen_service(state: AppState) -> Router {
 
 #[utoipa::path(
     post,
+    tag = "auth",
+    operation_id = "authEmailRegister",
     path = "/api/v1/auth/email/register",
     request_body = RegisterInput,
     responses(
-        (status = 200)
+        (status = 200),
+        (status = 500, body = ApiErrorMessage)
     )
 )]
-pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> Result<StatusCode> {
+pub async fn register(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<RegisterInput>) -> ApiResult<StatusCode> {
     let token = match state.service.email_auth.register(&input.name, &input.email, &input.password).await {
-        Ok(value) => value,
+        Ok(v) => v,
+        Err(e) if *e.kind() == omnius_opxs_auth::ErrorKind::Duplicated => return Ok(StatusCode::OK),
         Err(e) => {
-            if *e.kind() == omnius_opxs_auth::ErrorKind::Duplicated {
-                return Ok(StatusCode::OK);
-            }
-            return Err(e.into());
+            warn!(error = ?e);
+            return Err(ApiErrorCode::InternalServerError);
         }
     };
 
-    let email_confirm_url = Url::parse_with_params(
+    let email_confirm_url = match Url::parse_with_params(
         format!("{}auth/register/email/confirm", state.conf.web.origin.as_str()).as_str(),
         &[("token", token)],
-    )?
-    .to_string();
+    ) {
+        Ok(v) => v.to_string(),
+        Err(e) => {
+            warn!(error = ?e);
+            return Err(ApiErrorCode::InternalServerError);
+        }
+    };
 
     let job_id = state.service.tsid_provider.lock().create().to_string();
-    state
+
+    if let Err(e) = state
         .service
         .email_send_job_creator
         .create_job(
@@ -55,7 +63,11 @@ pub async fn register(State(state): State<AppState>, ValidatedJson(input): Valid
             &state.conf.email.from_email_address,
             &email_confirm_url,
         )
-        .await?;
+        .await
+    {
+        warn!(error = ?e);
+        return Err(ApiErrorCode::InternalServerError);
+    }
 
     Ok(StatusCode::OK)
 }
@@ -72,15 +84,31 @@ pub struct RegisterInput {
 
 #[utoipa::path(
     post,
+    tag = "auth",
+    operation_id = "authEmailConfirm",
     path = "/api/v1/auth/email/confirm",
     request_body = RegisterInput,
     responses(
-        (status = 200)
+        (status = 200),
+        (status = 500, body = ApiErrorMessage)
     )
 )]
-pub async fn confirm(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<ConfirmInput>) -> Result<Json<AuthToken>> {
-    let user_id = state.service.email_auth.confirm(&input.token).await?;
-    let auth_token = state.service.token.create(&user_id).await?;
+pub async fn confirm(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<ConfirmInput>) -> ApiResult<Json<AuthToken>> {
+    let user_id = match state.service.email_auth.confirm(&input.token).await {
+        Ok(v) => v,
+        Err(e) => {
+            warn!(error = ?e);
+            return Err(ApiErrorCode::InternalServerError);
+        }
+    };
+
+    let auth_token = match state.service.token.create(&user_id).await {
+        Ok(v) => v,
+        Err(e) => {
+            warn!(error = ?e);
+            return Err(ApiErrorCode::InternalServerError);
+        }
+    };
 
     Ok(Json(auth_token))
 }
@@ -91,36 +119,54 @@ pub struct ConfirmInput {
 }
 #[utoipa::path(
     post,
+    tag = "auth",
+    operation_id = "authEmailUnregister",
     path = "/api/v1/auth/email/unregister",
     request_body = RegisterInput,
     responses(
-        (status = 200)
+        (status = 200),
+        (status = 500, body = ApiErrorMessage)
+    ),
+    security(
+        ("bearer_token" = [])
     )
 )]
-pub async fn unregister(State(state): State<AppState>, user: User) -> Result<StatusCode> {
-    state.service.email_auth.unregister(user.id.as_str()).await?;
+pub async fn unregister(State(state): State<AppState>, user: User) -> ApiResult<StatusCode> {
+    if let Err(e) = state.service.email_auth.unregister(user.id.as_str()).await {
+        warn!(error = ?e);
+        return Err(ApiErrorCode::InternalServerError);
+    }
+
     Ok(StatusCode::OK)
 }
 
 #[utoipa::path(
     post,
+    tag = "auth",
+    operation_id = "authEmailLogin",
     path = "/api/v1/auth/email/login",
     request_body = LoginInput,
     responses(
-        (status = 200, body = AuthToken)
+        (status = 200, body = AuthToken),
+        (status = 500, body = ApiErrorMessage)
     )
 )]
-async fn login(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<LoginInput>) -> Result<Json<AuthToken>> {
+async fn login(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<LoginInput>) -> ApiResult<Json<AuthToken>> {
     let user_id = match state.service.email_auth.login(&input.email, &input.password).await {
-        Ok(value) => value,
+        Ok(v) => v,
         Err(e) => {
-            if *e.kind() == omnius_opxs_auth::ErrorKind::NotFound {
-                return Err(Error::new(ErrorKind::Unauthorized));
-            }
-            return Err(e.into());
+            warn!(error = ?e);
+            return Err(ApiErrorCode::Unauthorized);
         }
     };
-    let auth_token = state.service.token.create(&user_id).await?;
+
+    let auth_token = match state.service.token.create(&user_id).await {
+        Ok(v) => v,
+        Err(e) => {
+            warn!(error = ?e);
+            return Err(ApiErrorCode::InternalServerError);
+        }
+    };
 
     Ok(Json(auth_token))
 }

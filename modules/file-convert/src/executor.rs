@@ -39,7 +39,9 @@ impl FileConvertExecutor {
 
         match &job.typ {
             FileConvertJobType::Image => {
-                let param = job.param.ok_or_else(|| Error::new(ErrorKind::NotFound).message("param is not found"))?;
+                let param = job
+                    .param
+                    .ok_or_else(|| Error::builder().kind(ErrorKind::NotFound).message("param is not found").build())?;
                 let param = serde_json::from_str::<FileConvertImageRequestParam>(&param)?;
 
                 let working_dir = tempdir()?;

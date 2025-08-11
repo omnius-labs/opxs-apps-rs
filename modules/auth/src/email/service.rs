@@ -26,7 +26,7 @@ pub struct EmailAuthService {
 impl EmailAuthService {
     pub async fn register(&self, name: &str, email: &str, password: &str) -> Result<String> {
         if self.auth_repo.exist_user(email).await? {
-            return Err(Error::new(ErrorKind::Duplicated).message("duplicated email"));
+            return Err(Error::builder().kind(ErrorKind::Duplicated).message("duplicated email").build());
         }
 
         let salt = self.kdf.gen_salt()?;
@@ -51,7 +51,7 @@ impl EmailAuthService {
 
     pub async fn login(&self, email: &str, password: &str) -> Result<String> {
         if !self.auth_repo.exist_user(email).await? {
-            return Err(Error::new(ErrorKind::NotFound).message("user not found"));
+            return Err(Error::builder().kind(ErrorKind::NotFound).message("user not found").build());
         }
 
         let user = self.auth_repo.get_user(email).await?;
@@ -59,7 +59,7 @@ impl EmailAuthService {
         let password_hash = hex::decode(user.password_hash)?;
 
         if !self.kdf.verify(password, &salt, &password_hash)? {
-            return Err(Error::new(ErrorKind::Unauthorized).message("invalid password"));
+            return Err(Error::builder().kind(ErrorKind::Unauthorized).message("invalid password").build());
         }
 
         Ok(user.id)

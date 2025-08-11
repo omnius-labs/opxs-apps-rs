@@ -50,18 +50,27 @@ impl ImageConverter for ImageConverterImpl {
             .stderr(Stdio::piped())
             .spawn()?;
 
-        let mut stdin = cmd.stdin.take().ok_or_else(|| Error::new(ErrorKind::UnexpectedError))?;
+        let mut stdin = cmd
+            .stdin
+            .take()
+            .ok_or_else(|| Error::builder().kind(ErrorKind::UnexpectedError).build())?;
         stdin.write_all(image_converter_option.as_bytes()).await?;
         stdin.write_all(b"\n").await?;
 
-        let mut stdout = cmd.stdout.take().ok_or_else(|| Error::new(ErrorKind::UnexpectedError))?;
+        let mut stdout = cmd
+            .stdout
+            .take()
+            .ok_or_else(|| Error::builder().kind(ErrorKind::UnexpectedError).build())?;
         let stdout_handle = tokio::spawn(async move {
             let mut v = String::new();
             stdout.read_to_string(&mut v).await.ok();
             v
         });
 
-        let mut stderr = cmd.stderr.take().ok_or_else(|| Error::new(ErrorKind::UnexpectedError))?;
+        let mut stderr = cmd
+            .stderr
+            .take()
+            .ok_or_else(|| Error::builder().kind(ErrorKind::UnexpectedError).build())?;
         let stderr_handle = tokio::spawn(async move {
             let mut v = String::new();
             stderr.read_to_string(&mut v).await.ok();
@@ -72,9 +81,10 @@ impl ImageConverter for ImageConverterImpl {
 
         let status = cmd.wait().await?;
         if !status.success() {
-            return Err(
-                Error::new(ErrorKind::ProcessFailed).message(format!("Process failed.\nstdout: {}\nstderr: {}", stdout_result, stderr_result))
-            );
+            return Err(Error::builder()
+                .kind(ErrorKind::ProcessFailed)
+                .message(format!("Process failed.\nstdout: {}\nstderr: {}", stdout_result, stderr_result))
+                .build());
         }
 
         Ok(())

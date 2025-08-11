@@ -24,11 +24,16 @@ impl EmailSendExecutor {
 
         match job.typ {
             EmailSendJobType::EmailConfirm => {
-                let param = job.param.ok_or_else(|| Error::new(ErrorKind::NotFound).message("param is not found"))?;
+                let param = job
+                    .param
+                    .ok_or_else(|| Error::builder().kind(ErrorKind::NotFound).message("param is not found").build())?;
                 let param = serde_json::from_str::<EmailConfirmRequestParam>(&param)?;
                 self.execute_email_confirm(&m.job_id, m.batch_id, &param).await
             }
-            _ => Err(Error::new(ErrorKind::UnsupportedType).message(format!("unsupported type: {:?}", job.typ))),
+            _ => Err(Error::builder()
+                .kind(ErrorKind::UnsupportedType)
+                .message(format!("unsupported type: {:?}", job.typ))
+                .build()),
         }
     }
 

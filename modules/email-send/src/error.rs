@@ -1,5 +1,96 @@
+use std::backtrace::Backtrace;
+
+use omnius_core_base::error::{OmniError, OmniErrorBuilder};
+
+pub struct Error {
+    kind: ErrorKind,
+    message: Option<String>,
+    source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    backtrace: Option<Backtrace>,
+}
+
+pub struct ErrorBuilder {
+    inner: Error,
+}
+
+impl Error {
+    pub fn builder() -> ErrorBuilder {
+        ErrorBuilder {
+            inner: Self {
+                kind: ErrorKind::Unknown,
+                message: None,
+                source: None,
+                backtrace: None,
+            },
+        }
+    }
+}
+
+impl OmniError for Error {
+    type ErrorKind = ErrorKind;
+
+    fn kind(&self) -> &Self::ErrorKind {
+        &self.kind
+    }
+
+    fn message(&self) -> Option<&str> {
+        self.message.as_deref()
+    }
+
+    fn backtrace(&self) -> Option<&Backtrace> {
+        self.backtrace.as_ref()
+    }
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.source.as_ref().map(|s| &**s as &(dyn std::error::Error + 'static))
+    }
+}
+
+impl std::fmt::Debug for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        OmniError::fmt(self, f)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        OmniError::fmt(self, f)
+    }
+}
+
+impl OmniErrorBuilder<Error> for ErrorBuilder {
+    type ErrorKind = ErrorKind;
+
+    fn kind(mut self, kind: Self::ErrorKind) -> Self {
+        self.inner.kind = kind;
+        self
+    }
+
+    fn message<S: Into<String>>(mut self, message: S) -> Self {
+        self.inner.message = Some(message.into());
+        self
+    }
+
+    fn source<E: Into<Box<dyn std::error::Error + Send + Sync>>>(mut self, source: E) -> Self {
+        self.inner.source = Some(source.into());
+        self
+    }
+
+    fn backtrace(mut self) -> Self {
+        self.inner.backtrace = Some(Backtrace::capture());
+        self
+    }
+
+    fn build(self) -> Error {
+        self.inner
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
+    Unknown,
     IoError,
     TimeError,
     SerdeError,
@@ -22,7 +113,8 @@ pub enum ErrorKind {
 impl std::fmt::Display for ErrorKind {
     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ErrorKind::IoError => write!(fmt, "I/O error"),
+            ErrorKind::Unknown => write!(fmt, "unknown"),
+            ErrorKind::IoError => write!(fmt, "io error"),
             ErrorKind::TimeError => write!(fmt, "time conversion error"),
             ErrorKind::SerdeError => write!(fmt, "serde error"),
             ErrorKind::DatabaseError => write!(fmt, "database error"),
@@ -30,8 +122,8 @@ impl std::fmt::Display for ErrorKind {
             ErrorKind::CryptoError => write!(fmt, "crypto error"),
             ErrorKind::UnexpectedError => write!(fmt, "unexpected error"),
 
-            ErrorKind::AwsError => write!(fmt, "AWS error"),
-            ErrorKind::GcpError => write!(fmt, "GCP error"),
+            ErrorKind::AwsError => write!(fmt, "aws error"),
+            ErrorKind::GcpError => write!(fmt, "gcp error"),
 
             ErrorKind::InvalidFormat => write!(fmt, "invalid format"),
             ErrorKind::NotFound => write!(fmt, "not found"),
@@ -43,81 +135,33 @@ impl std::fmt::Display for ErrorKind {
     }
 }
 
-pub struct Error {
-    kind: ErrorKind,
-    message: Option<String>,
-    source: Option<Box<dyn std::error::Error + Send + Sync>>,
-}
-
-impl Error {
-    pub fn new(kind: ErrorKind) -> Self {
-        Self {
-            kind,
-            message: None,
-            source: None,
-        }
-    }
-
-    pub fn message<S: Into<String>>(mut self, message: S) -> Self {
-        self.message = Some(message.into());
-        self
-    }
-
-    pub fn source<E: Into<Box<dyn std::error::Error + Send + Sync>>>(mut self, source: E) -> Self {
-        self.source = Some(source.into());
-        self
-    }
-
-    pub fn kind(&self) -> &ErrorKind {
-        &self.kind
-    }
-}
-
-impl std::fmt::Debug for Error {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(fmt, "{}", self)
-    }
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(message) = &self.message {
-            write!(fmt, "{}: {}", self.kind, message)
-        } else {
-            write!(fmt, "{}", self.kind)
-        }
-    }
-}
-
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        self.source.as_ref().map(|s| &**s as &(dyn std::error::Error + 'static))
-    }
-}
-
 impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Error {
-        Error::new(ErrorKind::IoError).message("I/O error").source(e)
+        Error::builder().kind(ErrorKind::IoError).message("io error").source(e).build()
     }
 }
 
 impl From<std::num::ParseIntError> for Error {
     fn from(e: std::num::ParseIntError) -> Error {
-        Error::new(ErrorKind::InvalidFormat).message("Int parse error").source(e)
+        Error::builder()
+            .kind(ErrorKind::InvalidFormat)
+            .message("int parse error")
+            .source(e)
+            .build()
     }
 }
 
 impl From<serde_json::Error> for Error {
     fn from(e: serde_json::Error) -> Self {
-        Error::new(ErrorKind::SerdeError).message("Serde json error").source(e)
+        Error::builder().kind(ErrorKind::SerdeError).message("serde json error").source(e).build()
     }
 }
 
 impl From<std::env::VarError> for Error {
     fn from(e: std::env::VarError) -> Self {
         match e {
-            std::env::VarError::NotPresent => Error::new(ErrorKind::NotFound).message("Not found env var"),
-            std::env::VarError::NotUnicode(_) => Error::new(ErrorKind::InvalidFormat).message("Invalid utf-8"),
+            std::env::VarError::NotPresent => Error::builder().kind(ErrorKind::NotFound).message("not found env var").build(),
+            std::env::VarError::NotUnicode(_) => Error::builder().kind(ErrorKind::InvalidFormat).message("invalid utf-8").build(),
         }
     }
 }
@@ -128,62 +172,89 @@ impl From<sqlx::Error> for Error {
             sqlx::Error::Database(db_err) => {
                 // PostgreSQLの一意性制約違反エラーコード: 23505
                 if db_err.code().as_deref() == Some("23505") {
-                    return Error::new(ErrorKind::Duplicated).message("Unique constraint violation").source(e);
+                    return Error::builder()
+                        .kind(ErrorKind::Duplicated)
+                        .message("unique constraint violation")
+                        .source(e)
+                        .build();
                 }
-                Error::new(ErrorKind::DatabaseError).message("Database operation failed").source(e)
+                Error::builder()
+                    .kind(ErrorKind::DatabaseError)
+                    .message("database operation failed")
+                    .source(e)
+                    .build()
             }
-            _ => Error::new(ErrorKind::DatabaseError).message("Database operation failed").source(e),
+            _ => Error::builder()
+                .kind(ErrorKind::DatabaseError)
+                .message("database operation failed")
+                .source(e)
+                .build(),
         }
     }
 }
 
 impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
-        Error::new(ErrorKind::HttpClientError).message("HTTP client error").source(e)
+        Error::builder()
+            .kind(ErrorKind::HttpClientError)
+            .message("http client error")
+            .source(e)
+            .build()
     }
 }
 
 impl From<jsonwebtoken::errors::Error> for Error {
     fn from(e: jsonwebtoken::errors::Error) -> Self {
-        Error::new(ErrorKind::InvalidFormat).message("Invalid JWT").source(e)
+        Error::builder().kind(ErrorKind::InvalidFormat).message("invalid JWT").source(e).build()
     }
 }
 
 impl From<ring::error::Unspecified> for Error {
     fn from(e: ring::error::Unspecified) -> Self {
-        Error::new(ErrorKind::CryptoError).message("Ring error").source(e)
+        Error::builder().kind(ErrorKind::CryptoError).message("ring error").source(e).build()
     }
 }
 
 impl From<hex::FromHexError> for Error {
     fn from(e: hex::FromHexError) -> Self {
-        Error::new(ErrorKind::InvalidFormat).message("Hex decode error").source(e)
+        Error::builder()
+            .kind(ErrorKind::InvalidFormat)
+            .message("hex decode error")
+            .source(e)
+            .build()
     }
 }
 
 impl From<base64::DecodeError> for Error {
     fn from(e: base64::DecodeError) -> Self {
-        Error::new(ErrorKind::InvalidFormat).message("Base64 decode error").source(e)
+        Error::builder()
+            .kind(ErrorKind::InvalidFormat)
+            .message("base64 decode error")
+            .source(e)
+            .build()
     }
 }
 
 impl From<std::string::FromUtf8Error> for Error {
     fn from(e: std::string::FromUtf8Error) -> Self {
-        Error::new(ErrorKind::InvalidFormat).message("UTF-8 decode error").source(e)
+        Error::builder()
+            .kind(ErrorKind::InvalidFormat)
+            .message("utf-8 decode error")
+            .source(e)
+            .build()
     }
 }
 
 impl From<omnius_core_cloud::Error> for Error {
     fn from(e: omnius_core_cloud::Error) -> Self {
         match e.kind() {
-            omnius_core_cloud::ErrorKind::IoError => Error::new(ErrorKind::IoError).message("I/O operation failed").source(e),
-            omnius_core_cloud::ErrorKind::TimeError => Error::new(ErrorKind::TimeError).message("Time conversion failed").source(e),
-
-            omnius_core_cloud::ErrorKind::AwsError => Error::new(ErrorKind::AwsError).message("AWS operation failed").source(e),
-            omnius_core_cloud::ErrorKind::GcpError => Error::new(ErrorKind::GcpError).message("GCP operation failed").source(e),
-
-            omnius_core_cloud::ErrorKind::InvalidFormat => Error::new(ErrorKind::InvalidFormat).message("Invalid format error").source(e),
-            omnius_core_cloud::ErrorKind::NotFound => Error::new(ErrorKind::NotFound).message("Resource not found").source(e),
+            omnius_core_cloud::ErrorKind::Unknown => Error::builder().kind(ErrorKind::IoError).source(e).build(),
+            omnius_core_cloud::ErrorKind::IoError => Error::builder().kind(ErrorKind::IoError).source(e).build(),
+            omnius_core_cloud::ErrorKind::TimeError => Error::builder().kind(ErrorKind::TimeError).source(e).build(),
+            omnius_core_cloud::ErrorKind::AwsError => Error::builder().kind(ErrorKind::AwsError).source(e).build(),
+            omnius_core_cloud::ErrorKind::GcpError => Error::builder().kind(ErrorKind::GcpError).source(e).build(),
+            omnius_core_cloud::ErrorKind::InvalidFormat => Error::builder().kind(ErrorKind::InvalidFormat).source(e).build(),
+            omnius_core_cloud::ErrorKind::NotFound => Error::builder().kind(ErrorKind::NotFound).source(e).build(),
         }
     }
 }

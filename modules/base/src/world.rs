@@ -65,7 +65,10 @@ CREATE TABLE IF NOT EXISTS _world (
             Ok(row) => {
                 let got_mode: String = row.get(0);
                 if self.info.mode.to_string() != got_mode {
-                    return Err(Error::new(ErrorKind::Mismatch).message(format!("world mismatch: expected: {}, found: {}", self.info.mode, got_mode)));
+                    return Err(Error::builder()
+                        .kind(ErrorKind::Mismatch)
+                        .message(format!("world mismatch: expected: {}, found: {}", self.info.mode, got_mode))
+                        .build());
                 }
                 Ok(WorldValidatedStatus::Match)
             }

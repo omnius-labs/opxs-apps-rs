@@ -180,7 +180,7 @@ UPDATE email_send_job_batches
         .await?;
 
         if res.rows_affected() < 1 {
-            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
+            return Err(Error::builder().kind(ErrorKind::DatabaseError).message("no rows affected").build());
         }
 
         let res = sqlx::query(
@@ -198,7 +198,7 @@ UPDATE email_send_job_batch_details
         .await?;
 
         if res.rows_affected() < 1 {
-            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
+            return Err(Error::builder().kind(ErrorKind::DatabaseError).message("no rows affected").build());
         }
 
         tx.commit().await?;
@@ -234,7 +234,7 @@ UPDATE email_send_job_batch_details
         .await?;
 
         if res.rows_affected() < 1 {
-            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
+            return Err(Error::builder().kind(ErrorKind::DatabaseError).message("no rows affected").build());
         }
 
         sqlx::query(
@@ -285,7 +285,7 @@ UPDATE email_send_job_batch_details
         .await?;
 
         if res.rows_affected() < 1 {
-            return Err(Error::new(ErrorKind::DatabaseError).message("no rows affected"));
+            return Err(Error::builder().kind(ErrorKind::DatabaseError).message("no rows affected").build());
         }
 
         let (job_id, batch_id): (String, i32) = sqlx::query_as(

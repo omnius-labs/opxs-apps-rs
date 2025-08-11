@@ -1,0 +1,4 @@
+[tasks.gen-openapi]
+args = ["run", "--", "--gen-openapi", "openapi.yml"]
+workspace = false
+command = "cargo"

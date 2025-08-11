@@ -14,6 +14,7 @@ impl WorldRepo {
             .fetch_one(self.db.as_ref())
             .await?;
 
-        row.try_get("value").map_err(|e| Error::new(ErrorKind::UnexpectedError).source(e))
+        row.try_get("value")
+            .map_err(|e| Error::builder().kind(ErrorKind::UnexpectedError).source(e).build())
     }
 }

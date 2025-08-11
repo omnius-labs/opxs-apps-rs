@@ -34,9 +34,9 @@ pub fn verify(secret: &str, token: &str, now: DateTime<Utc>) -> Result<Claims> {
     let validation = Validation::default();
     let claims: Claims = jsonwebtoken::decode(token, &key, &validation).map(|token| token.claims)?;
 
-    let expired_at = DateTime::from_timestamp(claims.exp, 0).ok_or_else(|| Error::new(ErrorKind::TokenExpired))?;
+    let expired_at = DateTime::from_timestamp(claims.exp, 0).ok_or_else(|| Error::builder().kind(ErrorKind::TokenExpired).build())?;
     if expired_at < now {
-        return Err(Error::new(ErrorKind::TokenExpired));
+        return Err(Error::builder().kind(ErrorKind::TokenExpired).build());
     }
 
     Ok(claims)

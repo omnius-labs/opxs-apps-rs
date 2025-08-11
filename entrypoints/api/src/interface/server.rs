@@ -82,7 +82,7 @@ impl WebServer {
             let app = tower::ServiceBuilder::new().layer(axum_aws_lambda::LambdaLayer::default()).service(app);
             lambda_http::run(app)
                 .await
-                .map_err(|e| Error::new(ErrorKind::UnexpectedError).source(e))?;
+                .map_err(|e| Error::builder().kind(ErrorKind::UnexpectedError).source(e).build())?;
         }
 
         state.service.terminate().await;
@@ -118,6 +118,14 @@ impl MakeRequestId for MyRequestId {
 
 #[derive(OpenApi)]
 #[openapi(
+    info(
+        license(
+            name = "MIT"
+        ),
+    ),
+    servers(
+        (url = "https://localhost.omnius-labs.com/api", description = "local"),
+    ),
     paths(
         health::check,
         auth::me,
@@ -136,6 +144,7 @@ impl MakeRequestId for MyRequestId {
             auth::google::NonceOutput,
             auth::google::RegisterInput,
             auth::google::LoginInput,
+            omnius_opxs_auth::model::AuthToken,
             file_convert::image::UploadInput,
             file_convert::image::UploadOutput,
             file_convert::image::StatusInput,
@@ -143,11 +152,13 @@ impl MakeRequestId for MyRequestId {
             omnius_opxs_file_convert::FileConvertJobStatus,
             omnius_opxs_file_convert::FileConvertImageInputFileType,
             omnius_opxs_file_convert::FileConvertImageOutputFileType,
+            crate::error::ApiErrorMessage,
+            crate::error::ApiErrorCode
         )
     ),
     modifiers(&SecurityAddon),
 )]
-struct ApiDoc;
+pub struct ApiDoc;
 
 struct SecurityAddon;
 

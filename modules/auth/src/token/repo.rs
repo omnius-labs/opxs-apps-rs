@@ -32,6 +32,46 @@ INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, upda
         Ok(())
     }
 
+    pub async fn create_token_and_delete_token(
+        &self,
+        user_id: &str,
+        refresh_token: &str,
+        refresh_token_expires_at: &DateTime<Utc>,
+        old_refresh_token: &str,
+    ) -> Result<()> {
+        let now = self.clock.now();
+
+        let mut tx = self.db.begin().await?;
+
+        sqlx::query(
+            r#"
+INSERT INTO refresh_tokens (refresh_token, user_id, expires_at, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5);
+"#,
+        )
+        .bind(refresh_token)
+        .bind(user_id)
+        .bind(refresh_token_expires_at)
+        .bind(now)
+        .bind(now)
+        .execute(&mut *tx)
+        .await?;
+
+        sqlx::query(
+            r#"
+DELETE FROM refresh_tokens
+    WHERE user_id = $1;
+"#,
+        )
+        .bind(old_refresh_token)
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(())
+    }
+
     pub async fn delete_token(&self, user_id: &str) -> Result<()> {
         sqlx::query(
             r#"
@@ -62,7 +102,7 @@ SELECT u.*
         .await?;
 
         if user.is_none() {
-            return Err(Error::new(ErrorKind::NotFound).message("User not found"));
+            return Err(Error::builder().kind(ErrorKind::NotFound).message("User not found").build());
         }
 
         Ok(user.unwrap().id)

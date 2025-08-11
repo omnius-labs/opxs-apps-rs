@@ -62,7 +62,7 @@ parking_lot = { workspace = true }
 axum-aws-lambda = { workspace = true }
 lambda_http = { workspace = true }
 tempfile = { workspace = true }
-backtrace = { workspace = true }
+clap = { workspace = true }
 
 [dev-dependencies]
 testcontainers = { workspace = true }

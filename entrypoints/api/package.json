@@ -1,13 +1,19 @@
 {
-    "author": "Lyrise",
+    "name": "@omnius-labs/opxs-openapi",
+    "version": "0.0.3",
     "description": "",
-    "devDependencies": {
-        "@openapitools/openapi-generator-cli": "^2.21.4"
-    },
+    "author": "Lyrise",
+    "license": "MIT",
     "files": [
         "openapi.yml"
     ],
-    "license": "MIT",
-    "name": "@omnius-labs/opxs-openapi",
-    "version": "0.0.2"
+    "scripts": {
+        "lint-api": "redocly lint openapi.yml"
+    },
+    "devDependencies": {
+        "@openapitools/openapi-generator-cli": "^2.21.4"
+    },
+    "dependencies": {
+        "@redocly/cli": "^2.0.2"
+    }
 }

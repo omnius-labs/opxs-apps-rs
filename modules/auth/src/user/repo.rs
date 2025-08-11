@@ -22,7 +22,7 @@ SELECT *
         .await?;
 
         if user.is_none() {
-            return Err(Error::new(ErrorKind::NotFound).message("User not found"));
+            return Err(Error::builder().kind(ErrorKind::NotFound).message("User not found").build());
         }
 
         Ok(user.unwrap())

@@ -1,0 +1,14 @@
+extends:
+  - recommended
+rules:
+    operation-summary: warn
+    security-defined: warn
+    operation-operationId-unique: error
+    rule/operationId-case:
+        subject:
+            type: Operation
+            property: operationId
+        assertions:
+            casing: camelCase
+        message: "OperationIdはキャメルケースで命名してください"
+        severity: error

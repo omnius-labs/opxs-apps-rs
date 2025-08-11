@@ -32,7 +32,6 @@ CREATE TABLE refresh_tokens (
     user_agent VARCHAR(1024),
     expires_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX refresh_tokens_user_id_index ON refresh_tokens(user_id);

@@ -24,19 +24,25 @@ pub fn gen_service(state: AppState) -> Router {
 
 #[utoipa::path(
     post,
+    tag = "file-convert",
+    operation_id = "fileConvertImageUpload",
     path = "/api/v1/file-convert/image/upload",
     request_body = UploadInput,
     responses(
-        (status = 200, body = UploadOutput)
+        (status = 200, body = UploadOutput),
+        (status = 500, body = ApiErrorMessage)
+    ),
+    security(
+        ("bearer_token" = [])
     )
 )]
-pub async fn upload(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<UploadInput>) -> Result<Json<UploadOutput>> {
+pub async fn upload(State(state): State<AppState>, ValidatedJson(input): ValidatedJson<UploadInput>) -> ApiResult<Json<UploadOutput>> {
     let job_id = state.service.tsid_provider.lock().create().to_string();
     let param = FileConvertImageRequestParam {
         in_type: input.in_type,
         out_type: input.out_type,
     };
-    let upload_url = state
+    let upload_url = match state
         .service
         .image_convert_job_creator
         .create_job(
@@ -47,7 +53,14 @@ pub async fn upload(State(state): State<AppState>, ValidatedJson(input): Validat
             &input.in_file_name,
             &input.out_file_name,
         )
-        .await?;
+        .await
+    {
+        Ok(v) => v,
+        Err(e) => {
+            warn!(error = ?e);
+            return Err(ApiErrorCode::InternalServerError);
+        }
+    };
 
     Ok(Json(UploadOutput { job_id, upload_url }))
 }
@@ -68,18 +81,31 @@ pub struct UploadOutput {
 
 #[utoipa::path(
     get,
+    tag = "file-convert",
+    operation_id = "fileConvertImageStatus",
     path = "/api/v1/file-convert/image/status",
     request_body = StatusInput,
     responses(
-        (status = 200, body = StatusOutput)
+        (status = 200, body = StatusOutput),
+        (status = 500, body = ApiErrorMessage)
+    ),
+    security(
+        ("bearer_token" = [])
     )
 )]
-pub async fn status(State(state): State<AppState>, input: Query<StatusInput>, user: Option<User>) -> Result<Json<StatusOutput>> {
-    let (status, download_url) = state
+pub async fn status(State(state): State<AppState>, input: Query<StatusInput>, user: Option<User>) -> ApiResult<Json<StatusOutput>> {
+    let (status, download_url) = match state
         .service
         .image_convert_job_creator
         .get_download_url(&input.job_id, user.map(|u| u.id).as_deref())
-        .await?;
+        .await
+    {
+        Ok(v) => v,
+        Err(e) => {
+            warn!(error = ?e);
+            return Err(ApiErrorCode::InternalServerError);
+        }
+    };
 
     Ok(Json(StatusOutput { status, download_url }))
 }

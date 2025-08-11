@@ -32,7 +32,10 @@ impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
 
         if res.status() != StatusCode::OK {
             let message = res.text().await?;
-            return Err(Error::new(ErrorKind::GcpError).message(format!("get oauth2 token error: {}", message)));
+            return Err(Error::builder()
+                .kind(ErrorKind::GcpError)
+                .message(format!("get oauth2 token error: {}", message))
+                .build());
         }
 
         let oauth2_token = res.json::<OAuth2Token>().await?;
@@ -52,7 +55,10 @@ impl GoogleOAuth2Provider for GoogleOAuth2ProviderImpl {
 
         if res.status() != StatusCode::OK {
             let message = res.text().await?;
-            return Err(Error::new(ErrorKind::GcpError).message(format!("get user info error: {}", message)));
+            return Err(Error::builder()
+                .kind(ErrorKind::GcpError)
+                .message(format!("get user info error: {}", message))
+                .build());
         }
 
         let user_info = res.json::<UserInfo>().await?;
